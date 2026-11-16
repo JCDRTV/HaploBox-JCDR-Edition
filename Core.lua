@@ -921,6 +921,8 @@ SlashCmdList.HAPLOBOX = function(input)
             local name=rest:match("^[Ii][Mm][Pp][Oo][Rr][Tt]%s+(.+)$")
             if HB.ImportBoxMacro then HB.ImportBoxMacro(name) end
         else print_("Use /hb box on|off|status|localoff|spell|import") end
+    elseif cmd == "macros" or cmd == "macromenu" then
+        if HB.OpenMacroMenu then HB.OpenMacroMenu() else print_("Macro Menu not loaded.") end
     elseif cmd == "followbind" then
         if HB.InstallSmartFollowBinding then HB.InstallSmartFollowBinding(rest:lower()=="confirm") end
 	elseif cmd == "followmode" then
