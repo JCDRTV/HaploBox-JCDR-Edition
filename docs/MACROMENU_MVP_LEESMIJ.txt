@@ -1,0 +1,51 @@
+HaploBox — JCDR Edition / TB19.1m Macro Menu MVP (ongeteste development branch)
+
+BASIS: TB19.1l op jcdr-development (16 november 2026).
+BRANCH: jcdr-total-overhaul-macros-mvp. Main en TB19.1l blijven onaangeroerd.
+
+TESTSCOPE — precies twee onderdelen:
+1) F1 SMART FOLLOW: Direct volgt Mael (party1). Dungeon: healer volgt Mael,
+   DPS volgt de enige Blizzard-HEALER. Geen follow zonder echte F1-toetsaanslag.
+   Huidige BOX-mode implementatie schakelt Smart Follow uit als BOX OFF staat.
+2) SLIMME SPELL MACRO'S: klein Druid-voorbeeld uit de bestaande BoxMode-code.
+   Wrath en Moonfire: BOX ON = /assist party1 + /cast; BOX OFF = /cast.
+   Rejuvenation: BOX ON = /cast [@party1], BOX OFF = normale /cast.
+   Elke testmacro wordt aangemaakt in de eigen Blizzard-macroslots, kan uit
+   HaploBox worden opgepakt en op de gewone skillbalk worden geplaatst.
+
+BEDIENING:
+- In HaploBox Quick Menu: klik MACRO MENU. Of typ /hb macros.
+- Tab Volgen/Multibox: F1 Smart Follow -> Maak -> Toets. Is F1 al bezet,
+  dan moet je de keybinding bewust bevestigen; er is geen stille vervanging.
+- Tab Slimme spells: maak 1 Druid-testmacro en klik Pak op om hem naar
+  een actiebar te slepen. Schakel BOX ON/OFF buiten combat en inspecteer
+  de Blizzard macro-inhoud. BOX mode blijft ook in het Quick Menu aanwezig.
+
+BELANGRIJKE BEPERKINGEN:
+- Dit is uitsluitend een eerste lokale clienttest. De centrale Share UI / Party
+  keybinding-overdracht is nog NIET ingebouwd in dit Macro Menu.
+- Geen nieuwe F3 Assist of F5/F6 Focus macro's. Bestaande Blizzard Focus en
+  de oude keybindings blijven staan. Trade NUM1 volgt in een latere stap.
+- Er worden geen bestaande macro's met afwijkende tekst overschreven.
+- Macro aanmaken/binding veranderen alleen buiten combat.
+- Macro's worden nooit automatisch gecast en volgen nooit automatisch.
+- Beschikbare character macro-slots nodig. Test in WoW; API- en combatgedrag
+  zijn NIET in de echte client bewezen.
+- TAB-naam in de UI: Multibox = Follow en Slimme spells = Druid-voorbeeld.
+
+TESTVOLGORDE:
+1. Zorg dat TB19.1k ZIP als betrouwbare rollback bewaard blijft.
+2. Voeg deze development-code alleen toe aan een testinstallatie. /reload.
+3. Check UI, errors en de bestaande Party/HoT/Buff-frames.
+4. Open /hb macros en probeer F1, test conflictmelding en bevestiging.
+5. Controleer Direct/Dungeon met verschillende Blizzard-HEALER-rollen.
+6. Maak HB Wrath; sleep via Pak op naar de skillbalk.
+7. BOX OFF/ON buiten combat en bekijk de Blizzard-macrotekst, cast handmatig.
+8. Test Rejuvenation op de bedoelde vriendelijke unit; controleer BOX OFF.
+9. Test in combat, na /reload, bij verandering van party/role, solo en BG.
+
+OFFLINE TESTSCRIPT (niet automatisch uitgevoerd in ChatGPT):
+  lua tests/jcdr_boxmode_smoke.lua
+  lua tests/jcdr_macromenu_smoke.lua
+
+GEEN PRODUCTIE-RELEASE EN GEEN INGAME GOEDGEKEURDE BUILD.
