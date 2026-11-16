@@ -1,0 +1,49 @@
+HAPLOBOX — JCDR EDITION / ALPHA 5 TB19.1l / ONGETESTE DEVELOPMENT BUILD
+
+Deze build is NIEUW. Houd TB19.1k als betrouwbare terugvalversie.
+
+Nieuwe functies:
+- Centrale BOX ON/OFF, alleen door vertrouwde party leader; addon-synchronisatie met followers.
+- Alleen expliciet geregistreerde Blizzard-spellmacro's wisselen tussen BOX ON en BOX OFF, buiten combat.
+- BOX ON: DPS /assist party1 gevolgd door /cast spell; gerichte heals/buffs /cast [@party1] spell.
+- BOX OFF: normale /cast spell zonder assist party1; ook geschikt voor solo/andere party/BG.
+- Smart Follow genereert lokaal een Blizzard-macro; F1-toets moet expliciet worden ingesteld.
+- Combat-indicator in oude Focus-vak: groene achtergrond uit combat, rode achtergrond in combat, originele meerkleurige zwaardicoon, grijs onbekend.
+- FOLLOW en HoT-ankers/afmetingen blijven ongewijzigd.
+- BOX ON/OFF in Quick Menu en HaploBar; import van eigen /assist focus-macro's opt-in.
+
+COMMANDO'S (op de juiste client):
+  /hb box on                 leider: zet BOX ON en synchroniseert followers
+  /hb box off                leider: zet BOX OFF en synchroniseert followers
+  /hb box status             huidige lokale stand
+  /hb box localoff           eigen client veilig BOX OFF, ook buiten boxparty
+  /hb box spell Wrath        maak eigen 'HB Wrath' macro (DPS, /assist party1 tijdens BOX ON)
+  /hb box spell Rejuvenation party1
+                             maak eigen heal/buff-macro naar Mael tijdens BOX ON
+  /hb box import <macro naam>
+                             registreer bestaande macro met precies één /assist focus regel
+  /hb followbind             maak/bereid Smart Follow; laat conflict met huidige F1 zien
+  /hb followbind confirm     zet F1 expliciet om naar Smart Follow, indien gewenst
+
+SPELREGELS:
+- Installeer eerst testmacro's en verplaats ze MANUEEL naar de actionbars.
+- Bestaande persoonlijke macros worden NIET automatisch aangepast of gewist.
+- 'HB Smart Follow' volgt pas na een fysieke F1-toetsaanslag; geen automatische follow.
+- Direct: iedere follower volgt Mael (party1 volgens JCDR-teamafspraak).
+- Dungeon: healer volgt Mael, DPS volgen de ENIGE aangewezen Blizzard HEALER.
+- Bij ontbrekende/dubbele healer is de F1-macro bewust inactief.
+- Een moduswissel tijdens combat wordt bij followers uitgesteld tot combat einde; de leider mag niet vanuit combat wisselen.
+- BOX OFF op inloggen; bij onverwachte raid/andere party BOX OFF buiten combat.
+- Nieuwe combat-status van followers bereikt Mael via addon-messages; bij geen betrouwbare status grijs.
+- Blizzard Focus blijft volledig beschikbaar. FocusMonitor-code blijft voorlopig legacy voor veilige regressie/rollback.
+
+BELANGRIJK: NIET live getest op vijf clients. Volgorde test:
+1. Backup van TB19.1k bewaren.
+2. Eerste client /reload; let op LUA-errors, bars, Follow, HoTs.
+3. /hb box spell Wrath; macro naar actionbar; test BOX OFF en BOX ON buiten combat.
+4. Met Mael + één follower: BOX mode sync; daarna volle groep.
+5. Smart Follow Direct en Dungeon en foutafhandeling (niet in combat macro wijzigen).
+6. Combat status iedere client, afstand/zonewissel, leader monitor, geel/grijs bij missing.
+7. Solo, andere party, BG-raid, logout/reload, character-swap, combat wissel testen.
+
+GitHub: ontwikkelbranch jcdr-development; main moet onaangeroerd blijven.

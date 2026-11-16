@@ -476,7 +476,7 @@ local function createRow(i)
     r.focusBorder:SetAlpha(0.96)
     r.focusIcon = r.focusTile:CreateTexture(nil, "ARTWORK")
     r.focusIcon:SetSize(15, 15)
-    r.focusIcon:SetTexture(MEDIA .. "focus")
+    r.focusIcon:SetTexture("Interface\\Icons\\Ability_DualWield")
     r.focusIcon:SetPoint("CENTER", r.focusTile, "CENTER", 0, 0)
     r.focusText = r.focusTile:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     r.focusText:SetPoint("BOTTOM", r.focusTile, "BOTTOM", 0, 2)
@@ -928,52 +928,22 @@ local function updateRange(r)
 	end
 end
 
-local function updateFocus(r)
-    -- All player identities remain in the monitor's underlying comparison.
-    -- The compact tile shows a status only; never print a focus target name.
-    local state = HB.FocusStatus and HB.FocusStatus(r.name) or "unknown"
-    local color, art, label
-    if state == "leader" then
-        color, art, label = C.lead, "user-x", "LEADER" -- no focus is correct here
-    elseif state == "correct" then
-        color, art, label = C.ok, "focus", "FOCUS OK"
-    elseif state == "leader_wrong" then
-        color, art, label = C.broken, "focus-clear", "CLEAR FOCUS"
-    elseif state == "wrong" then
-        color, art, label = C.broken, "user-alert", "WRONG FOCUS"
-    elseif state == "missing" then
-        color, art, label = C.broken, "user-x", "NO FOCUS"
-    else
-        color, art, label = C.unknown, "focus", "..."
-    end
-    -- Narrow tiles have short labels rather than clipped character names.
-    local maxW = r.focusMaxW or 60
-    if maxW < 49 then
-        if state == "correct" then label = "OK"
-        elseif state == "leader_wrong" then label = "CLEAR"
-        elseif state == "wrong" then label = "WRONG"
-        elseif state == "missing" then label = "NONE" end
-    end
-    r.focusBg:SetVertexColor(color[1], color[2], color[3], color[4])
-    r.focusIcon:SetTexture(MEDIA .. art)
-    r.focusIcon:SetVertexColor(1, 1, 1)
-    if state=="correct" then
-        local original=r.focusTile:GetHeight()
-        local pixel=math.min(20,math.floor(original*0.55))
-        r.focusIcon:SetSize(pixel,pixel)
-    else
-        local original=r.focusTile:GetHeight()
-        local pixel=math.min(27,math.floor(original*0.72))
-        r.focusIcon:SetSize(pixel,pixel)
-    end
+-- The former Focus tile now shows this character's reported combat status.
+-- Preserve all sizing/anchors: HoT rails still attach to the same tile frame.
+local function updateCombat(r)
+    local state=HB.CombatState and HB.CombatState(r.name)
+    local color=state==true and C.broken or state==false and C.ok or C.unknown
+    r.focusBg:SetVertexColor(color[1],color[2],color[3],color[4])
+    r.focusIcon:SetTexture("Interface\\Icons\\Ability_DualWield")
+    r.focusIcon:SetVertexColor(1,1,1) -- original multicolour icon, not tinted
+    local size=r.focusTile:GetHeight()
+    r.focusIcon:SetSize(math.min(27,math.floor(size*0.72)),math.min(27,math.floor(size*0.72)))
     r.focusIcon:Show()
-    r.focusText:SetText("") -- icon-only focus/target tile
-    for _, e in ipairs(r.focusTile.edges) do
-        e:Show() -- gilded perimeter AROUND Focus, matching Follow
-    end
+    r.focusText:SetText("") -- icon only; never a combat label
+    for _,edge in ipairs(r.focusTile.edges) do edge:Show() end
 end
 local function updateRow(r)
-	updateColors(r) updateHealth(r) updatePower(r) updateXP(r) updateStatus(r) updateFocus(r) updateRange(r)
+	updateColors(r) updateHealth(r) updatePower(r) updateXP(r) updateStatus(r) updateCombat(r) updateRange(r)
 	if HB.UpdateAuraWidgets then HB.UpdateAuraWidgets(r) end
 end
 
@@ -985,9 +955,11 @@ function HB.OnXPChanged()
 	for _, r in ipairs(rows) do if r:IsShown() then updateXP(r) end end
 end
 
-function HB.OnFocusChanged()
-	for _, r in ipairs(rows) do if r:IsShown() then updateFocus(r) end end
+function HB.OnCombatStateChanged()
+    for _,r in ipairs(rows) do if r:IsShown() then updateCombat(r) end end
 end
+-- Kept for compatibility with old focus messages until migration is complete.
+function HB.OnFocusChanged() end
 
 function HB.OnFollowStateChanged()
 	for _, r in ipairs(rows) do if r:IsShown() then updateStatus(r) end end
@@ -1358,7 +1330,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2, arg3)
             if refreshAuras then auraRefreshAt = timeNow + 1.0 end
 			if container:IsShown() then
 				for _, r in ipairs(rows) do if r:IsShown() then
-                    updateRange(r) updateHealth(r)
+                    updateRange(r) updateHealth(r) updateCombat(r)
                     if refreshAuras and HB.UpdateAuraWidgets then
                         pcall(HB.UpdateAuraWidgets, r)
                     end

@@ -66,7 +66,7 @@ local function makeStatus(key)
     f:SetWordWrap(false)
     status[key]={frame=b,text=f}
 end
-local ORDER={"follow","loot","repair","quest"}
+local ORDER={"box","follow","loot","repair","quest"}
 local function buildBar()
     if bar then return end
     bar=CreateFrame("Frame","HaploBoxHaploBar",UIParent)
@@ -205,13 +205,13 @@ local function layoutStatus()
     end
     -- Two lines, both still INSIDE the fixed 38-height bar, no ellipses.
     -- The complete follow label is never truncated to "FOLLOW: DIRE...".
-    local first={"follow","loot"}
+    local first={"box","follow","loot"}
     local second={"repair","quest"}
-    font(status.follow.text,9);font(status.loot.text,9)
+    font(status.box.text,9);font(status.follow.text,9);font(status.loot.text,9)
     font(status.repair.text,9);font(status.quest.text,9)
     local rows={first,second}
     local x0=labelX
-    if (sizes.follow+sizes.loot+10)>usable or
+    if (sizes.box+sizes.follow+sizes.loot+15)>usable or
         (sizes.repair+sizes.quest+10)>usable then
         -- Remove only decorative title space for very narrow client windows.
         bar.name:SetShown(sw>=640)
@@ -233,6 +233,7 @@ end
 function HB.RefreshHaploBar()
     if not (HB.db and bar) then return end
     local mode=HB.db.followMode
+    setStatus("box",HB.db.boxMode and "BOX: ON" or "BOX: OFF",HB.db.boxMode and "on" or "off")
     -- Mode selected by user is not a claim every follower is actively following.
     setStatus("follow",mode=="direct" and "FOLLOW: DIRECT" or
         mode=="dungeon" and "FOLLOW: DUNGEON" or "FOLLOW: ?","warn")

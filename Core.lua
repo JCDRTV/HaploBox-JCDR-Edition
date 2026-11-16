@@ -37,6 +37,8 @@ local DEFAULTS = {
 	autoFFA             = true,   -- leader auto-sets FFA with trusted teammates, Group Loot with outsiders
 	autoLeaveWithLeader = false,
 	followMode          = "direct", -- direct: all follow actual leader; dungeon: DPS follow healer
+    boxMode             = false, -- safe default: ordinary solo/party/BG spell targeting
+    boxMacros           = {},    -- per-character explicitly registered spell macros
 	focusAlerts         = false,    -- Alpha3: focus errors only inline in team frames, no alerts
 	teamFrame           = "show", -- new installs: party frames on every client; existing DB setting is preserved
 	partyFrameSolo      = false,  -- also show it when not in a group
@@ -456,6 +458,7 @@ local function queryFollowStates()
 	lastQuery = GetTime()
 	send("F|?")
 	send("D|?") -- ask the real leader for the shared follow mode
+    send("Z|?") -- request authoritative BOX state from trusted current leader
 	send("Q|?") -- ask whether the leader enabled quest sharing
 	send("V|?") -- ask whether the leader enabled automatic trade
 	if not HB.IAmLeader() then send(myFollowMsg(true)) end
@@ -473,7 +476,8 @@ function HB.SetFollowMode(mode)
 	send("D|" .. mode)
 	if HB.OnFollowStateChanged then HB.OnFollowStateChanged() end
 	if HB.RefreshControls then HB.RefreshControls() end
-	print_("Follow mode: " .. mode .. ". This is monitoring only; use your existing /follow macros.")
+    if HB.PrepareSmartFollow then HB.PrepareSmartFollow() end
+    print_("Follow mode: " .. mode .. ". Smart Follow F1 is updated outside combat.")
 	return true
 end
 
@@ -776,10 +780,19 @@ function handlers.CHAT_MSG_ADDON(prefix, msg, _, sender)
 			if HB.IAmLeader() then send("D|" .. (HB.db.followMode or "direct")) end
 		elseif (code == "direct" or code == "dungeon") and HB.Norm(sender) == HB.Norm(HB.GroupLeader()) then
 			HB.db.followMode = code
+            if HB.PrepareSmartFollow then HB.PrepareSmartFollow() end
 			if HB.OnFollowStateChanged then HB.OnFollowStateChanged() end
 		end
 		return
 	end
+    if kind == "Z" then
+        if HB.OnBoxMessage then HB.OnBoxMessage(sender,code,arg) end
+        return
+    end
+    if kind == "C" then
+        if HB.OnCombatMessage then HB.OnCombatMessage(sender,code,arg) end
+        return
+    end
 	if kind == "M" then onTeamMessage(sender, code, arg) return end
 	if kind == "R" then onRoleMessage(sender, code, arg) return end
 	if kind == "T" then
@@ -855,7 +868,12 @@ local function help()
 	print_("  /hb test <event> - play a sound; /hb test alert - show the leader alert")
 	print_("  /hb frame auto|show|hide - team frame on this toon (auto: only when it is the leader)")
 	print_("  /hb followmode direct|dungeon|status - leader selects direct or healer chain monitoring")
-	print_("  /hb focuscheck - show current focus accuracy for all five characters")
+    print_("  /hb box on|off|status - BOX MODE, sent from trusted party leader")
+    print_("  /hb box localoff - restore this client's normal spell macros")
+    print_("  /hb box spell <spell> [assist|party1] - create a managed actionbar macro")
+    print_("  /hb box import <macro name> - explicitly register existing /assist focus macro")
+    print_("  /hb followbind [confirm] - bind F1 to the prepared Smart Follow macro")
+    print_("  /hb focuscheck - LEGACY focus diagnostics (retired after BOX tests)")
     print_("  /hb auramode - see whether the 12.1 live-combat aura engine is active")
     print_("  /hb statusdebug - inspect live mainbar source flags (follow, loot, repair, quest)")
     print_("  /hb debuffpanel unlock|lock|reset - move mirrored Debuff Overview")
@@ -886,6 +904,25 @@ SlashCmdList.HAPLOBOX = function(input)
 	elseif cmd == "team" then
 		if rest:lower() == "show" then print_("team: " .. HB.TeamSummary()) return end
 		HB.SetTeamFromGroup()
+    elseif cmd == "box" then
+        local action=rest:lower()
+        if action=="on" or action=="off" then
+            if HB.SetBoxMode then HB.SetBoxMode(action=="on") end
+        elseif action=="localoff" then
+            if HB.LocalBoxOff then HB.LocalBoxOff() end
+        elseif action=="status" or action=="" then
+            print_("BOX "..(HB.db.boxMode and "ON" or "OFF").." (managed spell macros only; Smart Follow uses F1)")
+        elseif action:match("^spell%s+") then
+            local spec=rest:match("^[Ss][Pp][Ee][Ll][Ll]%s+(.+)$") or ""
+            local spell,kind=spec:match("^(.-)%s+(%S+)$")
+            if kind~="assist" and kind~="party1" then spell,kind=spec,"assist" end
+            if HB.AddBoxSpell then HB.AddBoxSpell(spell,kind) end
+        elseif action:match("^import%s+") then
+            local name=rest:match("^[Ii][Mm][Pp][Oo][Rr][Tt]%s+(.+)$")
+            if HB.ImportBoxMacro then HB.ImportBoxMacro(name) end
+        else print_("Use /hb box on|off|status|localoff|spell|import") end
+    elseif cmd == "followbind" then
+        if HB.InstallSmartFollowBinding then HB.InstallSmartFollowBinding(rest:lower()=="confirm") end
 	elseif cmd == "followmode" then
 		local mode = rest:lower()
 		if mode == "direct" or mode == "dungeon" then
