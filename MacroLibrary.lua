@@ -13,9 +13,9 @@ local BOX={
 -- BOX ON: assist Mael for DPS, heal Mael for party1. BOX OFF: ordinary /cast.
 local SMART={
     DRUID={
-        {id="wrath", name="HB Wrath", title="Wrath - DPS (assist Mael)", spell="Wrath", kind="assist"},
-        {id="moonfire", name="HB Moonfire", title="Moonfire - DPS (assist Mael)", spell="Moonfire", kind="assist"},
-        {id="rejuvenation", name="HB Rejuvenation", title="Rejuvenation - heal Mael", spell="Rejuvenation", kind="party1"},
+        {id="wrath", name="HB Wrath", title="Wrath - DPS (assist party1)", spell="Wrath", kind="assist"},
+        {id="moonfire", name="HB Moonfire", title="Moonfire - DPS (assist party1)", spell="Moonfire", kind="assist"},
+        {id="rejuvenation", name="HB Rejuvenation", title="Rejuvenation - heal party1", spell="Rejuvenation", kind="party1"},
     },
 }
 local function say(message)
@@ -178,7 +178,7 @@ local function refresh()
     if page=="spells" then
         local token=myClass() or "UNKNOWN"
         notice:SetText(#entries==0 and ("Nog geen slimme spells voor "..token..".") or
-            "Slimme spells: BOX ON = assist/heal Mael; BOX OFF = gewoon casten. Maak + Pak op.")
+            "Slimme spells: BOX ON = assist/heal party1; BOX OFF = gewoon casten. Maak + Pak op.")
     else
         notice:SetText("F1 volgt volgens Direct/Dungeon en is actief bij BOX ON. Toets vervangen alleen na akkoord.")
     end
