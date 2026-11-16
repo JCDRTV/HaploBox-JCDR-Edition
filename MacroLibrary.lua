@@ -10,12 +10,12 @@ local BOX={
     {id="follow", name="HB Smart Follow", title="F1 - Smart Follow", key="F1"},
 }
 -- Small proof-of-concept collection. More classes/spells only after real tests.
--- BOX ON: assist Mael for DPS, heal Mael for party1. BOX OFF: ordinary /cast.
+-- BOX ON heals: Shift=self, friendly mouseover=mouseover, otherwise=party1. BOX OFF: Shift/self, mouseover, normal cast.
 local SMART={
     DRUID={
         {id="wrath", name="HB Wrath", title="Wrath - DPS (assist party1)", spell="Wrath", kind="assist"},
         {id="moonfire", name="HB Moonfire", title="Moonfire - DPS (assist party1)", spell="Moonfire", kind="assist"},
-        {id="rejuvenation", name="HB Rejuvenation", title="Rejuvenation - heal party1", spell="Rejuvenation", kind="party1"},
+        {id="rejuvenation", name="HB Rejuvenation", title="Rejuvenation - Shift / mouseover / party1", spell="Rejuvenation", kind="heal"},
     },
 }
 local function say(message)
@@ -178,7 +178,7 @@ local function refresh()
     if page=="spells" then
         local token=myClass() or "UNKNOWN"
         notice:SetText(#entries==0 and ("Nog geen slimme spells voor "..token..".") or
-            "Slimme spells: BOX ON = assist/heal party1; BOX OFF = gewoon casten. Maak + Pak op.")
+            "BOX ON: DPS assisteert party1; heals = Shift zelf, mouseover of party1. BOX OFF = normale cast.")
     else
         notice:SetText("F1 volgt volgens Direct/Dungeon en is actief bij BOX ON. Toets vervangen alleen na akkoord.")
     end
