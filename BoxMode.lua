@@ -79,6 +79,12 @@ local function buildSpell(spell,kind,on)
     local head="#showtooltip "..spell.."\n"
     if on and kind=="assist" then return head.."/assist party1\n/cast "..spell end
     if on and kind=="party1" then return head.."/cast [@party1] "..spell end
+    if kind=="heal" then
+        if on then
+            return head.."/cast [mod:shift,@player][@mouseover,help,nodead][@party1,help,nodead] "..spell
+        end
+        return head.."/cast [mod:shift,@player][@mouseover,help,nodead][] "..spell
+    end
     return head.."/cast "..spell
 end
 local function expected(entry)
@@ -123,8 +129,8 @@ function HB.AddBoxSpell(spell,kind)
     if locked() then notify("Create spell macros after combat.") return false end
     spell=tostring(spell or ""):match("^%s*(.-)%s*$")
     kind=kind or "assist"
-    if spell=="" or spell:find("[\r\n|;]") or (kind~="assist" and kind~="party1") then
-        notify("Usage: /hb box spell <spell name> [assist|party1]") return false
+    if spell=="" or spell:find("[\r\n|;]") or (kind~="assist" and kind~="party1" and kind~="heal") then
+        notify("Usage: /hb box spell <spell name> [assist|party1|heal]") return false
     end
     local name="HB "..spell
     if #name>16 then notify("Macro name too long (16 characters): "..name) return false end
