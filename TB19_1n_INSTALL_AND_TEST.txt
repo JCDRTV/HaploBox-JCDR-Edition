@@ -1,0 +1,70 @@
+HAPLOBOX — JCDR EDITION | TB19.1n TOTAL OVERHAUL PREVIEW
+16 November 2026 | Development/test build, NOT approved for production
+
+ROLLBACK
+- Known prior TB19.1m ZIP is preserved separately in Drive / 03_BACKUPS.
+- Do not delete WTF/SavedVariables, existing macros or account bindings.
+- Install by replacing the entire Interface/AddOns/HaploBox folder with the
+  HaploBox folder inside this ZIP while WoW is completely closed.
+- Restore the TB19.1m ZIP if testing reports regressions.
+
+CHANGES IN THIS BUILD
+1. Reload macro reconciliation: accepts only exact known BOX OFF, BOX ON,
+   leader and legacy macro bodies even if the last SavedVariables 'applied'
+   marker is stale. NEVER overwrites unknown/personal macro body changes.
+2. Separate leader Smart Spell profile. Mael Wrath: /cast Wrath (no assist).
+   Mael Rejuvenation: Shift->self; friendly mouseover; friendly target;
+   fallback->self. Follower BOX ON retains /assist party1 for DPS and
+   Shift->self / friendly mouseover / party1 fallback for heals.
+3. BOX sync ERROR indicator (amber) when an error/negative ACK occurs.
+   Red = local BOX OFF; green = local BOX ON, NOT proof all five synced.
+4. Quick Menu now a separate draggable dark window. Launch button at TOP LEFT
+   of full-width HaploBar, no second gear button on the Party Frame; no
+   duplicate 'SMART FOLLOW F1' in Quick Menu.
+5. Both menus open centered under HaploBar and reset there on each opening.
+   Dragging them while open is temporary, not saved.
+6. Macro Menu English, Smart Follow (without 'F1' in title), displays actual
+   keybinding fields (primary and secondary) and explicit collision consent.
+7. Multibox: Smart Follow, Assist and Trade with Leader as dedicated presets;
+   Set Role Tank / Healer / DPS via existing HB team role manager. Native
+   Blizzard role availability varies by client; verify Dungeon Follow roles.
+8. Druid spell selection expanded to curated spells (Balance, healing, buffs)
+   displayed as spell icon tiles. Only selected spells create macro slots.
+9. Preview leader-to-followers config sync: on leader 'Sync Team'; opt in on
+   each follower with /hb macros sync allow (or Allow Sync button). No
+   unapproved personal binding conflicts are replaced; ACKs appear in chat.
+10. Transparent crossed-swords icons on party blocks, outer gold border,
+    party UI can be positioned flush left 4pt below HaploBar with:
+       /hb frame left
+    Native Blizzard raid sidebar tab hide is guarded; protected frames are
+    never changed, so client-side confirmation of the overlap is required.
+11. Names over OWNED HB macros on standard Blizzard bars are hidden. Other
+    macro names, keybinding labels and cooldowns are left untouched.
+12. /hb macros reset confirm removes only unchanged HB-owned macros. No other
+    macros are deleted. Existing keybindings are deliberately retained.
+
+IMPORTANT LIMITS: NOT YET FULLY IMPLEMENTED OR VERIFIED
+- True spell-icon dragging to Blizzard bars with ZERO Blizzard macro slots is
+  not available in this preview. Create/Pick Up STILL uses Blizzard slots.
+  The addon can show icon tiles without creating a macro until Create is clicked.
+- Full team profile presets, multi-class spell database and complete central
+  keybinding synchronization require further in-game API verification.
+- /trade with leader macro uses target party1, /trade, /targetlasttarget;
+  WoW Forever client behavior MUST be tested out of combat before relying on it.
+- Exact native Blizzard Party anchor identification and protected frame
+  compatibility must be verified in-game; guarded hide is best-effort only.
+- Mouse/keyboard input NEVER broadcasts and macros NEVER auto-cast.
+- This ZIP passed static Lua parsing and local mocked macro-engine tests;
+  it HAS NOT BEEN tested on the actual WoW Forever client.
+
+FIRST LIVE TEST NEXT TIME
+A. Backup WTF; use one test follower first; install ZIP; login /reload.
+B. Check errors, leader/follower BOX OFF macro contents, then BOX ON.
+C. On Mael verify Wrath without /assist; Rejuvenation with @player fallback.
+D. /reload while BOX ON on all 5 clients; verify recovery and no failed ACK.
+E. Quick Menu opens from TOP LEFT HaploBar; drags; closes; reopens centered.
+F. Keybind fields read actual bindings; test collision warning WITHOUT
+   replacing personal key until approved.
+G. Druid spell icons, Pick Up, actionbar names, transparent swords and border.
+H. Test Assist/Trade manually; test opt-in Sync Team last, outside combat.
+If blocked/failed, save exact screenshot and rollback to TB19.1m.

@@ -5,7 +5,7 @@
 local HB=HaploBox
 local panel,header,flyout
 local nativeParent,buttons=nil,{}
-local gear,headline,quickBadges,menuSectionLabels
+local gear,headline,quickBadges,menuSectionLabels,quickHeader
 local summaryGold, summaryBags, summaryBagIcon, summaryCurrencyCells
 -- TB13: custom JCDRbox line-art, matching the approved Focus/Follow glyphs.
 local media="Interface\\AddOns\\HaploBox\\Media\\"
@@ -109,52 +109,36 @@ local function applyPosition()
             -- Preserve the user's existing TB5 position on the same client.
             panel:SetPoint("TOPLEFT",UIParent,"BOTTOMLEFT",p[1],p[2])
         else
-            panel:SetPoint("TOPLEFT",UIParent,"TOPLEFT",20,-44)
+            panel:SetPoint("TOPLEFT",UIParent,"TOPLEFT",0,-42)
         end
     end
 end
 -- TB13: place the independent popup INSIDE the current game client's viewport.
 -- In Mini Heal the normal controlbar is hidden, so the small settings button
 -- above the five heal blocks becomes the popup anchor instead.
-function HB.PositionQuickSettings()
+-- Every OPEN starts from the same position, centred below the HaploBar.
+-- Dragging is temporary; no position is ever saved between opens.
+function HB.PositionQuickSettings(force)
     if not (flyout and HB.db) then return end
-    local screenW,screenH=UIParent:GetWidth(),UIParent:GetHeight()
-    if not (screenW and screenH and safe(screenW) and safe(screenH) and screenW>0 and screenH>0) then return end
-    local anchor=(HB.db.miniHealMode and HB.GetMiniHealSettingsAnchor and HB.GetMiniHealSettingsAnchor()) or panel
-    local effective=anchor and anchor:GetEffectiveScale() or 1
-    local parentEffective=UIParent:GetEffectiveScale() or 1
-    if not (effective and parentEffective and safe(effective) and safe(parentEffective) and parentEffective>0) then return end
-    local aScale=effective/parentEffective
+    if flyout:IsShown() and not force then return end
+    local sw,sh=UIParent:GetWidth(),UIParent:GetHeight()
     local w,h=flyout:GetWidth(),flyout:GetHeight()
-    if not (w and h and safe(w) and safe(h) and w>0 and h>0) then return end
-    -- On small windows scale only the popup, never a secure unit button or the
-    -- underlying party layout. Clamp also when the original bar is near edges.
-    local baseScale=(tonumber(HB.db.partyScale) or 1)
-    if not safe(baseScale) then baseScale=1 end
-    local fitScale=math.min((screenW-12)/w,(screenH-12)/h)
-    local scale=clamp(math.min(baseScale,fitScale),0.45,2)
+    if not (sw and sh and w and h and safe(sw) and safe(sh) and sw>0 and sh>0) then return end
+    local bar=HB.GetHaploBarFrame and HB.GetHaploBarFrame()
+    local gap=7
+    local topY=(bar and bar:GetBottom()) or (sh-38)
+    if not topY or not safe(topY) then topY=sh-38 end
+    local fit=math.min((sw-12)/w,(math.max(120,topY-gap-5))/h,1)
+    local scale=clamp(fit,0.45,1)
     flyout:SetScale(scale)
-    local menuW,menuH=w*scale,h*scale
-    local left=anchor and anchor:GetLeft()
-    local right=anchor and anchor:GetRight()
-    local top=anchor and anchor:GetTop()
-    if not (left and right and top and safe(left) and safe(right) and safe(top)) then
-        flyout:ClearAllPoints()
-        flyout:SetPoint("CENTER",UIParent,"CENTER",0,0)
-        return
-    end
-    left,right,top=left*aScale,right*aScale,top*aScale
-    -- Touch the Controlbar edge so it reads as one integrated extension.
-    local x=right
-    if x+menuW>screenW-5 then x=left-menuW end
-    x=clamp(x,5,math.max(5,screenW-menuW-5))
-    local y=clamp(top,menuH+5,math.max(menuH+5,screenH-5))
     flyout:ClearAllPoints()
-    flyout:SetPoint("TOPLEFT",UIParent,"BOTTOMLEFT",x,y)
+    if bar then flyout:SetPoint("TOP",bar,"BOTTOM",0,-gap)
+    else flyout:SetPoint("TOP",UIParent,"TOP",0,-45) end
 end
 function HB.ToggleQuickSettings()
     if not HB.db then return end
     HB.db.controlsOpen=not HB.db.controlsOpen
+    if HB.db.controlsOpen then HB.PositionQuickSettings(true) end
     if HB.RefreshControls then HB.RefreshControls() end
 end
 function HB.GetControlAnchor() return panel end
@@ -209,6 +193,13 @@ function HB.AttachControlBar(parent)
     goldTop:SetPoint("TOPRIGHT",header,"TOPRIGHT",0,0)
     goldTop:SetHeight(2)
     goldTop:SetColorTexture(0.65,0.49,0.23,1)
+    for _,side in ipairs({"LEFT","RIGHT"}) do
+        local edge=panel:CreateTexture(nil,"OVERLAY")
+        edge:SetColorTexture(0.72,0.54,0.20,0.95)
+        if side=="LEFT" then edge:SetPoint("TOPLEFT",panel,"TOPLEFT");edge:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT")
+        else edge:SetPoint("TOPRIGHT",panel,"TOPRIGHT");edge:SetPoint("BOTTOMRIGHT",panel,"BOTTOMRIGHT") end
+        edge:SetWidth(2)
+    end
     -- TB19.1: reuse the EXISTING 24px drag header for party totals.
     -- Ordinary fontstrings/textures never intercept the drag handle's mouse.
     header.label=font(header,"")
@@ -255,6 +246,9 @@ function HB.AttachControlBar(parent)
     gear:SetScript("OnClick",function()
         if HB.ToggleQuickSettings then HB.ToggleQuickSettings() end
     end)
+    -- Quick Menu launcher is now at the TOP-LEFT of HaploBar instead.
+    gear:EnableMouse(false)
+    gear:Hide()
     gear:SetScript("OnEnter",function(self)
         GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
         GameTooltip:SetText("Quick Settings",1,0.82,0.43)
@@ -291,17 +285,36 @@ function HB.AttachControlBar(parent)
     -- to the right of ALL party columns, not over healthbars or beneath them.
     flyout=CreateFrame("Frame","HaploBoxControlsFlyout",UIParent)
     flyout:SetClampedToScreen(true)
+    flyout:SetMovable(true)
+    flyout:EnableMouse(true)
     flyout:SetFrameStrata("DIALOG")
     flyout:SetFrameLevel(panel:GetFrameLevel()+2)
     flyout.back=flyout:CreateTexture(nil,"BACKGROUND")
-    flyout.back:SetAllPoints();flyout.back:SetColorTexture(0.08,0.09,0.12,0.96)
+    flyout.back:SetAllPoints();flyout.back:SetColorTexture(0.07,0.09,0.13,0.98)
+    quickHeader=CreateFrame("Frame",nil,flyout)
+    quickHeader:SetPoint("TOPLEFT",flyout,"TOPLEFT",0,0)
+    quickHeader:SetPoint("TOPRIGHT",flyout,"TOPRIGHT",0,0)
+    quickHeader:SetHeight(26)
+    quickHeader:EnableMouse(true)
+    quickHeader:RegisterForDrag("LeftButton")
+    quickHeader:SetScript("OnDragStart",function()flyout:StartMoving()end)
+    quickHeader:SetScript("OnDragStop",function()flyout:StopMovingOrSizing()end)
+    local close=CreateFrame("Button",nil,quickHeader,"UIPanelButtonTemplate")
+    close:SetSize(24,20);close:SetPoint("TOPRIGHT",quickHeader,"TOPRIGHT",-6,-3)
+    close:SetText("X")
+    close:SetScript("OnClick",function()
+        HB.db.controlsOpen=false
+        flyout:Hide()
+        if HB.RefreshControls then HB.RefreshControls() end
+    end)
     flyout:Hide()
     mkButton(19,"BOX OFF",function()
         if HB.SetBoxMode then HB.SetBoxMode(not HB.db.boxMode) end
     end)
-    mkButton(20,"SMART FOLLOW F1",function()
-        if HB.InstallSmartFollowBinding then HB.InstallSmartFollowBinding(false) end
-    end)
+    buttons[19].statusLight=buttons[19]:CreateTexture(nil,"OVERLAY")
+    buttons[19].statusLight:SetTexture(media.."status-dot.tga")
+    buttons[19].statusLight:SetSize(15,15)
+    buttons[19].statusLight:SetPoint("LEFT",buttons[19],"LEFT",8,0)
     mkButton(21,"MACRO MENU",function()
         if HB.OpenMacroMenu then HB.OpenMacroMenu() end
     end)
@@ -417,7 +430,7 @@ function HB.UpdateControlSize(parent)
     local bw=math.floor((menuW-14)/2)
     -- Reuse every existing action, but group them by purpose.
     local sections={
-        {"BOX MODE",{19,20,21}},
+        {"BOX MODE",{19,21}},
         {"Follow Mode",{1,2}},
         {"Roles",{3,13}},
         {"Party Control",{5,7,8,4}},
@@ -469,7 +482,7 @@ function HB.UpdateControlSize(parent)
         y=y+math.ceil(#section[2]/2)*25+8
     end
     flyout:SetSize(menuW,y+5)
-    HB.PositionQuickSettings()
+    HB.PositionQuickSettings(false)
 end
 function HB.RefreshControls()
     if not (panel and HB.db) then return end
@@ -477,8 +490,10 @@ function HB.RefreshControls()
     local inGroup=IsInGroup and IsInGroup()
     local mode=HB.db.followMode
     buttons[19].label:SetText(HB.db.boxMode and "BOX ON" or "BOX OFF")
-    color(buttons[19],HB.db.boxMode and GREEN or OFF)
-    color(buttons[20],OFF)
+    color(buttons[19],OFF)
+    local lamp=HB.boxSyncError and {1,0.66,0.09} or
+        (HB.db.boxMode and {0.21,0.95,0.40} or {1,0.22,0.20})
+    if buttons[19].statusLight then buttons[19].statusLight:SetVertexColor(unpack(lamp)) end
     color(buttons[21],OFF)
     color(buttons[1],mode=="direct" and GREEN or OFF)
     color(buttons[2],mode=="dungeon" and GREEN or OFF)
@@ -525,7 +540,7 @@ function HB.RefreshControls()
     panel:SetShown(not HB.db.miniHealMode)
     -- Always honor the click, even in combat when layout resizing is deferred.
     -- Flyout is a normal, non-secure settings frame parented to UIParent.
-    HB.PositionQuickSettings()
+    HB.PositionQuickSettings(false)
     flyout:SetShown(not not HB.db.controlsOpen)
     gear.icon:SetVertexColor(HB.db.controlsOpen and 0.4 or 0.9,
         HB.db.controlsOpen and 0.95 or 0.9,0.48)

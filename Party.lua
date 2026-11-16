@@ -476,7 +476,7 @@ local function createRow(i)
     r.focusBorder:SetAlpha(0.96)
     r.focusIcon = r.focusTile:CreateTexture(nil, "ARTWORK")
     r.focusIcon:SetSize(15, 15)
-    r.focusIcon:SetTexture("Interface\\Icons\\Ability_DualWield")
+    r.focusIcon:SetTexture(MEDIA .. "swords-clear.tga")
     r.focusIcon:SetPoint("CENTER", r.focusTile, "CENTER", 0, 0)
     r.focusText = r.focusTile:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     r.focusText:SetPoint("BOTTOM", r.focusTile, "BOTTOM", 0, 2)
@@ -934,7 +934,7 @@ local function updateCombat(r)
     local state=HB.CombatState and HB.CombatState(r.name)
     local color=state==true and C.broken or state==false and C.ok or C.unknown
     r.focusBg:SetVertexColor(color[1],color[2],color[3],color[4])
-    r.focusIcon:SetTexture("Interface\\Icons\\Ability_DualWield")
+    r.focusIcon:SetTexture(MEDIA .. "swords-clear.tga")
     r.focusIcon:SetVertexColor(1,1,1) -- original multicolour icon, not tinted
     local size=r.focusTile:GetHeight()
     r.focusIcon:SetSize(math.min(27,math.floor(size*0.72)),math.min(27,math.floor(size*0.72)))
@@ -1168,6 +1168,16 @@ local function createChrome()
 	lock:SetPoint("RIGHT", -2, 0)
 	lock:SetText("Lock")
 	lock:SetScript("OnClick", function() HB.SetTeamFrameLocked(true) end)
+    -- Distinct outer gold border for the whole team block, not individual
+    -- swords/status tiles. Decorative textures cannot intercept clicks.
+    for side=1,4 do
+        local line=container:CreateTexture(nil,"OVERLAY")
+        line:SetColorTexture(0.72,0.54,0.20,0.95)
+        if side==1 then line:SetPoint("TOPLEFT",container,"TOPLEFT");line:SetPoint("TOPRIGHT",container,"TOPRIGHT");line:SetHeight(2)
+        elseif side==2 then line:SetPoint("BOTTOMLEFT",container,"BOTTOMLEFT");line:SetPoint("BOTTOMRIGHT",container,"BOTTOMRIGHT");line:SetHeight(2)
+        elseif side==3 then line:SetPoint("TOPLEFT",container,"TOPLEFT");line:SetPoint("BOTTOMLEFT",container,"BOTTOMLEFT");line:SetWidth(2)
+        else line:SetPoint("TOPRIGHT",container,"TOPRIGHT");line:SetPoint("BOTTOMRIGHT",container,"BOTTOMRIGHT");line:SetWidth(2) end
+    end
 	container.handle = h
 
 	local g = CreateFrame("Button", nil, container)
@@ -1212,12 +1222,41 @@ local function wanted()
 	return #visibleTeamOrder() > 0
 end
 
+-- The narrow Blizzard raid-manager tab can overlap a flush-left HB team UI.
+-- Never touch a protected native frame or attempt protected changes in combat.
+-- Restore original visibility/mouse state whenever HB party UI is not active.
+local nativeSidebar={}
+local function suppressNativeSidebar(active)
+    if InCombatLockdown and InCombatLockdown() then return end
+    for _,name in ipairs({"CompactRaidFrameManagerToggleButton"}) do
+        local f=_G[name]
+        if f and (not f.IsForbidden or not f:IsForbidden()) and
+            (not f.IsProtected or not f:IsProtected()) then
+            local state=nativeSidebar[f]
+            if active and not state then
+                local alpha=(f.GetAlpha and f:GetAlpha()) or 1
+                local mouse=(f.IsMouseEnabled and f:IsMouseEnabled()) or false
+                nativeSidebar[f]={alpha=alpha,mouse=mouse}
+                f:SetAlpha(0)
+                f:EnableMouse(false)
+            elseif not active and state then
+                f:SetAlpha(state.alpha)
+                f:EnableMouse(state.mouse)
+                nativeSidebar[f]=nil
+            elseif active and state and f.GetAlpha and f:GetAlpha()~=0 then
+                f:SetAlpha(0)
+            end
+        end
+    end
+end
+
 function HB.LayoutPartyFrame()
 	if not container then return end
 	if InCombatLockdown() then pendingLayout = true return end
 	pendingLayout = false
 	container:SetScale(HB.db.partyScale or 1)
     if not wanted() then
+        suppressNativeSidebar(false)
         container:Hide()
         if HB.LayoutBuffOverview then HB.LayoutBuffOverview(false,rows) end
         if HB.LayoutDebuffOverview then HB.LayoutDebuffOverview(false,rows) end
@@ -1247,6 +1286,7 @@ function HB.LayoutPartyFrame()
 	sizeContainer()
 	updateLockUI()
 	container:Show()
+    suppressNativeSidebar(true)
     if HB.LayoutBuffOverview then HB.LayoutBuffOverview(true,rows) end
     if HB.LayoutDebuffOverview then HB.LayoutDebuffOverview(true,rows) end
     if HB.UpdateMiniHealLayout then HB.UpdateMiniHealLayout() end
@@ -1282,7 +1322,7 @@ end
 
 function HB.ResetPartyPosition()
 	if InCombatLockdown() then HB.print("not in combat") return end
-    HB.db.partyPos,HB.db.controlsPos,HB.db.teamW,HB.db.teamRowH=nil,nil,nil,nil
+    HB.db.partyPos,HB.db.controlsPos,HB.db.controlsFrac,HB.db.teamW,HB.db.teamRowH=nil,nil,nil,nil,nil
     if HB.ApplyControlPosition then HB.ApplyControlPosition() end
     HB.ApplyPartyPosition()
 	HB.LayoutPartyFrame()

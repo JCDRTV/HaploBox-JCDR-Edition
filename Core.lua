@@ -332,6 +332,20 @@ local function refreshTeam()
 	if HB.RefreshControls then HB.RefreshControls() end
 end
 HB.RefreshTeam = refreshTeam
+function HB.SetMyRoleFromMenu(role)
+    if role~="tank" and role~="healer" and role~="dps" then return false end
+    local name=clean(HB.UnitIdent("player"))
+    if not name or name=="" then return false end
+    setRole(name,role)
+    send("R|"..role.."|"..name)
+    refreshTeam()
+    -- The HB team role is separate from native Blizzard party role assignment.
+    if UnitSetRole and not (InCombatLockdown and InCombatLockdown()) then
+        local ok=pcall(UnitSetRole,"player",role=="dps" and "DAMAGER" or role:upper())
+        if not ok then print_("HB role updated; verify native Blizzard role for Dungeon Follow.") end
+    else print_("HB role updated; verify native Blizzard role for Dungeon Follow.") end
+    return true
+end
 
 local function applyTeam(leader, list)
 	HaploBoxTeam.leader = leader
@@ -793,6 +807,10 @@ function handlers.CHAT_MSG_ADDON(prefix, msg, _, sender)
         if HB.OnCombatMessage then HB.OnCombatMessage(sender,code,arg) end
         return
     end
+    if kind == "K" then
+        if HB.OnMacroSyncMessage then HB.OnMacroSyncMessage(sender,code,arg) end
+        return
+    end
 	if kind == "M" then onTeamMessage(sender, code, arg) return end
 	if kind == "R" then onRoleMessage(sender, code, arg) return end
 	if kind == "T" then
@@ -904,6 +922,23 @@ SlashCmdList.HAPLOBOX = function(input)
 	elseif cmd == "team" then
 		if rest:lower() == "show" then print_("team: " .. HB.TeamSummary()) return end
 		HB.SetTeamFromGroup()
+    elseif cmd == "macros" then
+        local action=rest:lower()
+        if action=="sync allow" then
+            if HB.SetMacroSyncAllowed then HB.SetMacroSyncAllowed(true) end
+            print_("HB Macro Sync allowed on this client.")
+        elseif action=="sync deny" then
+            if HB.SetMacroSyncAllowed then HB.SetMacroSyncAllowed(false) end
+            print_("HB Macro Sync disabled on this client.")
+        elseif action=="sync" then
+            if HB.RequestMacroSync then HB.RequestMacroSync() end
+        elseif action=="reset confirm" then
+            if HB.ResetOwnedMacros then HB.ResetOwnedMacros(true) end
+        elseif action=="reset" then
+            if HB.ResetOwnedMacros then HB.ResetOwnedMacros(false) end
+        else
+            if HB.OpenMacroMenu then HB.OpenMacroMenu() end
+        end
     elseif cmd == "box" then
         local action=rest:lower()
         if action=="on" or action=="off" then
@@ -915,13 +950,13 @@ SlashCmdList.HAPLOBOX = function(input)
         elseif action:match("^spell%s+") then
             local spec=rest:match("^[Ss][Pp][Ee][Ll][Ll]%s+(.+)$") or ""
             local spell,kind=spec:match("^(.-)%s+(%S+)$")
-            if kind~="assist" and kind~="party1" and kind~="heal" then spell,kind=spec,"assist" end
+            if kind~="assist" and kind~="party1" and kind~="heal" and kind~="buff" then spell,kind=spec,"assist" end
             if HB.AddBoxSpell then HB.AddBoxSpell(spell,kind) end
         elseif action:match("^import%s+") then
             local name=rest:match("^[Ii][Mm][Pp][Oo][Rr][Tt]%s+(.+)$")
             if HB.ImportBoxMacro then HB.ImportBoxMacro(name) end
         else print_("Use /hb box on|off|status|localoff|spell|import") end
-    elseif cmd == "macros" or cmd == "macromenu" then
+    elseif cmd == "macromenu" then
         if HB.OpenMacroMenu then HB.OpenMacroMenu() else print_("Macro Menu not loaded.") end
     elseif cmd == "followbind" then
         if HB.InstallSmartFollowBinding then HB.InstallSmartFollowBinding(rest:lower()=="confirm") end
@@ -1076,11 +1111,17 @@ SlashCmdList.HAPLOBOX = function(input)
 		elseif a == "colors" or a == "colours" then
 			HB.db.teamClassColors = not HB.db.teamClassColors
 			print_("team frame class colours: " .. (HB.db.teamClassColors and "on" or "off"))
+		elseif a == "left" then
+            local height=UIParent and UIParent:GetHeight() or 768
+            if height>0 and HB.SetControlFractions then
+                HB.SetControlFractions(0,42/height)
+                print_("Party UI aligned flush left, 4pt below the HaploBar.")
+            end
 		elseif a == "reset" then
 			if HB.ResetPartyPosition then HB.ResetPartyPosition() end
 		else
 			print_("team frame on this toon: " .. tostring(HB.db.teamFrame) .. ", scale " .. tostring(HB.db.partyScale)
-				.. ". Use /hb frame auto|show|hide|lock|unlock|colors|scale <n>|solo|reset|order <names|off>")
+				.. ". Use /hb frame auto|show|hide|lock|unlock|colors|scale <n>|solo|left|reset|order <names|off>")
 			return
 		end
 		if HB.LayoutPartyFrame then HB.LayoutPartyFrame() end

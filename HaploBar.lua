@@ -67,6 +67,7 @@ local function makeStatus(key)
     status[key]={frame=b,text=f}
 end
 local ORDER={"box","follow","loot","repair","quest"}
+function HB.GetHaploBarFrame() return bar end
 local function buildBar()
     if bar then return end
     bar=CreateFrame("Frame","HaploBoxHaploBar",UIParent)
@@ -82,10 +83,26 @@ local function buildBar()
     rule:SetPoint("BOTTOMLEFT");rule:SetPoint("BOTTOMRIGHT")
     rule:SetHeight(2);rule:SetColorTexture(0.65,0.49,0.23,1)
     bar.name=bar:CreateFontString(nil,"OVERLAY","GameFontNormal")
-    bar.name:SetPoint("LEFT",bar,"LEFT",10,0)
+    bar.name:SetPoint("LEFT",bar,"LEFT",41,0)
     bar.name:SetText("HAPLOBOX")
     font(bar.name,11)
     bar.name:SetTextColor(0.97,0.78,0.41)
+    -- The only Quick Menu launcher is at the upper-left of HaploBar.
+    local menuButton=CreateFrame("Button","HaploBoxQuickMenuButton",bar)
+    menuButton:SetFrameStrata("HIGH")
+    menuButton:SetSize(29,29)
+    menuButton:SetPoint("TOPLEFT",bar,"TOPLEFT",5,-4)
+    local gearIcon=menuButton:CreateTexture(nil,"ARTWORK")
+    gearIcon:SetAllPoints()
+    gearIcon:SetTexture("Interface\\AddOns\\HaploBox\\Media\\ui-settings.tga")
+    menuButton:SetHighlightTexture("Interface\\Buttons\\UI-Listbox-Highlight2","ADD")
+    menuButton:SetScript("OnClick",function()
+        if HB.ToggleQuickSettings then HB.ToggleQuickSettings() end
+    end)
+    menuButton:SetScript("OnEnter",function(self)
+        if GameTooltip then GameTooltip:SetOwner(self,"ANCHOR_BOTTOM");GameTooltip:SetText("Quick Menu");GameTooltip:Show() end
+    end)
+    menuButton:SetScript("OnLeave",function()if GameTooltip then GameTooltip:Hide() end end)
     for _,key in ipairs(ORDER) do makeStatus(key) end
     dock=CreateFrame("Frame","HaploBoxMinimapToolbar",bar)
     dock:SetFrameStrata("HIGH")
@@ -173,7 +190,7 @@ local function layoutStatus()
     if not bar then return end
     local sw=screenSize()
     if sw<1 then return end
-    local labelX=math.max(90,measure(bar.name,76)+19)
+    local labelX=math.max(123,measure(bar.name,76)+62)
     local usable=math.max(0,sw-labelX-buttonsWidth-14)
     -- Font and HORIZONTAL allocation change, but never bar height or labels.
     -- First attempt one row; for small client windows use TWO complete rows.
@@ -233,7 +250,9 @@ end
 function HB.RefreshHaploBar()
     if not (HB.db and bar) then return end
     local mode=HB.db.followMode
-    setStatus("box",HB.db.boxMode and "BOX: ON" or "BOX: OFF",HB.db.boxMode and "on" or "off")
+    setStatus("box",HB.boxSyncError and "BOX: ERROR" or
+        (HB.db.boxMode and "BOX: ON" or "BOX: OFF"),
+        HB.boxSyncError and "warn" or (HB.db.boxMode and "on" or "off"))
     -- Mode selected by user is not a claim every follower is actively following.
     setStatus("follow",mode=="direct" and "FOLLOW: DIRECT" or
         mode=="dungeon" and "FOLLOW: DUNGEON" or "FOLLOW: ?","warn")

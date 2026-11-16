@@ -75,36 +75,72 @@ local function changeMacro(name,body)
     local ok=pcall(EditMacro,name,nil,nil,body)
     return ok and macroBody(name)==body
 end
-local function buildSpell(spell,kind,on)
+-- The leader has a deliberately distinct profile. In particular @party1 on the
+-- leader is a follower, NOT the leader. Never let his heals fall back to it.
+local function buildSpell(spell,kind,profile)
     local head="#showtooltip "..spell.."\n"
-    if on and kind=="assist" then return head.."/assist party1\n/cast "..spell end
-    if on and kind=="party1" then return head.."/cast [@party1] "..spell end
-    if kind=="heal" then
-        if on then
+    if kind=="assist" then
+        if profile=="on" then return head.."/assist party1\n/cast "..spell end
+        return head.."/cast "..spell
+    elseif kind=="party1" then
+        return profile=="on" and (head.."/cast [@party1] "..spell) or (head.."/cast "..spell)
+    elseif kind=="heal" then
+        if profile=="on" then
             return head.."/cast [mod:shift,@player][@mouseover,help,nodead][@party1,help,nodead] "..spell
+        elseif profile=="leader" then
+            return head.."/cast [mod:shift,@player][@mouseover,help,nodead][@target,help,nodead][@player] "..spell
         end
         return head.."/cast [mod:shift,@player][@mouseover,help,nodead][] "..spell
+    elseif kind=="buff" then
+        return head.."/cast [mod:shift,@player][@mouseover,help,nodead][@target,help,nodead][@player] "..spell
+    elseif kind=="boxassist" then
+        return profile=="on" and ("#showtooltip\n/assist party1") or "#showtooltip\n/stopmacro"
+    elseif kind=="trade" then
+        -- The /trade command requires a deliberate physical button press.
+        -- No automatic trade acceptance, inventory, or money operations.
+        return profile=="on" and ("#showtooltip\n/target party1\n/trade\n/targetlasttarget") or "#showtooltip\n/stopmacro"
     end
     return head.."/cast "..spell
 end
-local function expected(entry)
-    if entry.applied=="legacy" then return entry.legacyBody end
-    return entry.applied=="on" and entry.onBody or entry.offBody
+local function desiredProfile(enabled)
+    return (HB.IAmLeader and HB.IAmLeader()) and "leader" or (enabled and "on" or "off")
+end
+local function knownBody(entry,body)
+    -- A legitimate macro can be in a previous profile after /reload. Accept
+    -- ALL exactly generated variants, but never silently overwrite user edits.
+    return body==entry.offBody or body==entry.onBody or
+        (entry.leaderBody and body==entry.leaderBody) or
+        (entry.legacyBody and body==entry.legacyBody)
 end
 local function updateMacros(enabled)
     local list=registry()
     if not list then return false,"No character macro registry" end
     if locked() then return false,"in combat" end
-    local edits={}
+    local edits,stale={},{ }
+    local profile=desiredProfile(enabled)
     for name,entry in pairs(list) do
-        local current=macroBody(name)
-        if not current then return false,"Missing managed macro: "..name end
-        if current~=expected(entry) then
-            return false,"Macro changed outside HaploBox: "..name.." (not overwritten)"
+        if not entry.leaderBody then
+            local spell=entry.spell or name:match("^HB (.+)$")
+            local kind=entry.kind or (spell=="Rejuvenation" or spell=="Regrowth" or spell=="Healing Touch") and "heal" or "assist"
+            -- Only infer spells for canonical generated records, never imports.
+            if not entry.legacyBody and type(spell)=="string" then
+                entry.spell,entry.kind=spell,kind
+                entry.leaderBody=buildSpell(spell,kind,"leader")
+            end
         end
-        local newBody=enabled and entry.onBody or entry.offBody
-        if type(newBody)~="string" or #newBody>255 then return false,"Invalid managed macro: "..name end
-        edits[#edits+1]={name=name,before=current,after=newBody,entry=entry}
+        local current=macroBody(name)
+        if not current then
+            -- A deleted macro cannot be restored by registry state alone. It
+            -- is safe to forget an ownership record for an absent macro.
+            stale[#stale+1]=name
+        elseif not knownBody(entry,current) then
+            return false,"Macro changed outside HaploBox: "..name.." (not overwritten)"
+        else
+            local nextBody=(profile=="leader" and (entry.leaderBody or entry.offBody)) or
+                (profile=="on" and entry.onBody) or entry.offBody
+            if type(nextBody)~="string" or #nextBody>255 then return false,"Invalid managed macro: "..name end
+            edits[#edits+1]={name=name,before=current,after=nextBody,entry=entry}
+        end
     end
     local committed={}
     for _,edit in ipairs(edits) do
@@ -119,42 +155,102 @@ local function updateMacros(enabled)
             committed[#committed+1]=edit
         end
     end
-    for _,edit in ipairs(edits) do edit.entry.applied=enabled and "on" or "off" end
+    for _,name in ipairs(stale) do list[name]=nil end
+    for _,edit in ipairs(edits) do edit.entry.applied=profile end
     return true
 end
 HB.UpdateBoxMacros=updateMacros
 
 -- Generate safe, visible Blizzard macros to drag onto the ordinary action bars.
-function HB.AddBoxSpell(spell,kind)
+function HB.AddBoxSpell(spell,kind,requestedName)
     if locked() then notify("Create spell macros after combat.") return false end
     spell=tostring(spell or ""):match("^%s*(.-)%s*$")
     kind=kind or "assist"
-    if spell=="" or spell:find("[\r\n|;]") or (kind~="assist" and kind~="party1" and kind~="heal") then
-        notify("Usage: /hb box spell <spell name> [assist|party1|heal]") return false
+    if spell=="" or spell:find("[\r\n|;]") or (kind~="assist" and kind~="party1" and kind~="heal" and kind~="buff") then
+        notify("Usage: /hb box spell <spell name> [assist|party1|heal|buff]") return false
     end
-    local name="HB "..spell
+    local name=requestedName or ("HB "..spell)
+    if type(name)~="string" or not name:match("^HB [%w ]+$") then return false end
     if #name>16 then notify("Macro name too long (16 characters): "..name) return false end
     local list=registry()
     if not list then return false end
+    if list[name] and not macroIndex(name) then list[name]=nil end
     if list[name] or macroIndex(name) then
         notify("Macro already exists; nothing overwritten: "..name) return false
     end
-    local offBody=buildSpell(spell,kind,false)
-    local onBody=buildSpell(spell,kind,true)
-    if #offBody>255 or #onBody>255 or not CreateMacro then return false end
+    local offBody=buildSpell(spell,kind,"off")
+    local onBody=buildSpell(spell,kind,"on")
+    local leaderBody=buildSpell(spell,kind,"leader")
+    if #offBody>255 or #onBody>255 or #leaderBody>255 or not CreateMacro then return false end
     local ok,idx=pcall(CreateMacro,name,"INV_MISC_QUESTIONMARK",offBody,true)
     if not ok or type(idx)~="number" or idx<1 or macroBody(name)~=offBody then
         notify("Could not create character macro; check macro limits.") return false
     end
-    list[name]={offBody=offBody,onBody=onBody,applied="off"}
-    if HB.db.boxMode and not (HB.IAmLeader and HB.IAmLeader()) then
-        local done,err=updateMacros(true)
-        if not done then notify(err or "Macro update failed") end
-    end
+    list[name]={spell=spell,kind=kind,offBody=offBody,onBody=onBody,leaderBody=leaderBody,applied="off"}
+    local done,err=updateMacros(HB.db.boxMode)
+    if not done then notify(err or "Macro update failed") end
     notify("Created "..name..". Drag it from Blizzard Macros to the action bar.")
     return true
 end
 
+
+-- Dedicated multibox actions, kept distinct from the class spell library.
+function HB.AddBoxAction(id)
+    if locked() then notify("Create action macros after combat.") return false end
+    if id~="assist" and id~="trade" then return false end
+    local name=id=="assist" and "HB Assist" or "HB Trade"
+    local list=registry()
+    if not list then return false end
+    if list[name] and not macroIndex(name) then list[name]=nil end
+    if list[name] or macroIndex(name) then
+        notify("Macro already exists; nothing overwritten: "..name) return false
+    end
+    local kind=id=="assist" and "boxassist" or "trade"
+    local offBody=buildSpell("",kind,"off")
+    local onBody=buildSpell("",kind,"on")
+    if not CreateMacro then return false end
+    local ok,idx=pcall(CreateMacro,name,"INV_MISC_QUESTIONMARK",offBody,true)
+    if not ok or type(idx)~="number" or idx<1 or macroBody(name)~=offBody then return false end
+    list[name]={kind=kind,spell="",onBody=onBody,offBody=offBody,leaderBody=offBody,applied="off"}
+    local done,err=updateMacros(HB.db.boxMode)
+    if not done then notify(err or "Action macro update failed") end
+    notify("Created "..name)
+    return true
+end
+
+-- Explicit opt-in reset: only known, unchanged HB macros are removed. Any
+-- personally edited or unknown macro survives. Keybindings are not touched.
+function HB.ResetOwnedMacros(confirm)
+    if not confirm then notify("Use /hb macros reset confirm to remove only unchanged HaploBox macros.") return false end
+    if locked() then notify("Reset macros after combat.") return false end
+    local list=registry()
+    if not list or not DeleteMacro then return false end
+    local removed,skipped=0,0
+    for name,entry in pairs(list) do
+        local current=macroBody(name)
+        if not current then list[name]=nil
+        elseif knownBody(entry,current) then
+            local ok=pcall(DeleteMacro,name)
+            if ok and not macroIndex(name) then list[name]=nil removed=removed+1 else skipped=skipped+1 end
+        else skipped=skipped+1 end
+    end
+    -- Smart Follow is also HB-owned, but never delete a different macro that
+    -- happens to share its name. Its live body must be a known generated form.
+    local key=norm(myName())
+    local follow=macroBody(FOLLOW_MACRO)
+    local knownFollow=follow=="#showtooltip\n/stopmacro" or
+        (type(follow)=="string" and follow:match("^#showtooltip\n/follow party[1-4]$"))
+    if follow and knownFollow and key and HB.db.smartFollowOwners and HB.db.smartFollowOwners[key] then
+        local ok=pcall(DeleteMacro,FOLLOW_MACRO)
+        if ok and not macroIndex(FOLLOW_MACRO) then
+            HB.db.smartFollowOwners[key]=nil
+            removed=removed+1
+        else skipped=skipped+1 end
+    elseif follow then skipped=skipped+1 end
+    notify("HB reset: "..removed.." unchanged macros removed, "..skipped.." modified/blocked kept. Bindings kept.")
+    if HB.RefreshMacroMenu then HB.RefreshMacroMenu() end
+    return true
+end
 -- Optional, explicit migration of an existing /assist focus spell macro.
 -- Preserve every other line; only replace/remove a full standalone assist line.
 function HB.ImportBoxMacro(name)
@@ -269,13 +365,15 @@ local function localApply(enabled,remote)
         notify("BOX mode switch queued until combat ends.")
         return false
     end
-    local ok,err=updateMacros(enabled and not (HB.IAmLeader and HB.IAmLeader()))
+    local ok,err=updateMacros(enabled)
     if not ok then
+        HB.boxSyncError=true
         ack("E")
         notify("BOX switch cancelled: "..tostring(err))
         return false
     end
     HB.db.boxMode=enabled
+    HB.boxSyncError=false
     pendingMode=nil
     HB.PrepareSmartFollow()
     refresh()
@@ -293,6 +391,7 @@ function HB.SetBoxMode(enabled)
     if locked() then notify("Switch BOX mode after combat.") return false end
     if not localApply(enabled,false) then return false end
     HB.boxAcks={}
+    HB.boxSyncError=false
     send("Z|"..(enabled and "1" or "0"))
     -- Detect old/unreachable followers instead of silently claiming a full sync.
     HB.boxSyncSerial=(HB.boxSyncSerial or 0)+1
@@ -309,7 +408,11 @@ function HB.SetBoxMode(enabled)
                 end
             end
         end
-        if #missing>0 then notify("BOX sync NOT confirmed for: "..table.concat(missing,", ")) end
+        if #missing>0 then
+            HB.boxSyncError=true
+            notify("BOX sync NOT confirmed for: "..table.concat(missing,", "))
+            refresh()
+        end
     end) end
     notify("BOX "..(enabled and "ON" or "OFF").." sent to your team.")
     return true
@@ -331,7 +434,7 @@ function HB.OnBoxMessage(sender,code,arg)
            HB.IsGroupMember and HB.IsGroupMember(sender) and
            (arg=="0" or arg=="1" or arg=="P" or arg=="E") then
             HB.boxAcks[teamKey(sender)]=arg
-            if arg=="E" then notify("BOX sync failed on "..sender) end
+            if arg=="E" then HB.boxSyncError=true notify("BOX sync failed on "..sender) refresh() end
         end
         return
     end
@@ -389,7 +492,10 @@ e:SetScript("OnEvent",function(_,event)
         HB.db.boxMode=false
         pendingMode=nil
         local ok,err=updateMacros(false)
-        if not ok then notify("BOX OFF macro restore requires attention: "..tostring(err)) end
+        if not ok then
+            HB.boxSyncError=true
+            notify("BOX OFF macro restore requires attention: "..tostring(err))
+        else HB.boxSyncError=false end
         HB.PrepareSmartFollow()
         if C_Timer and C_Timer.NewTicker then
             C_Timer.NewTicker(0.5,function()
@@ -405,6 +511,12 @@ e:SetScript("OnEvent",function(_,event)
     elseif event=="PLAYER_REGEN_DISABLED" then
         pulseCombat(true)
     elseif event=="PLAYER_ENTERING_WORLD" or event=="GROUP_ROSTER_UPDATE" then
+        -- Reconcile safe saved macro variants with the current team role even
+        -- if BOX is OFF; the group leader may be determined after PLAYER_LOGIN.
+        if not locked() then
+            local ok,err=updateMacros(HB.db.boxMode)
+            if not ok then HB.boxSyncError=true notify("BOX macro restore needs repair: "..tostring(err)) end
+        end
         -- Never carry BOX targeting into another party, solo play or a BG/raid.
         if HB.db.boxMode and (not (IsInGroup and IsInGroup()) or
             (IsInRaid and IsInRaid()) or not isTeamLeader(HB.GroupLeader and HB.GroupLeader())) then
