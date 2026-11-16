@@ -10,6 +10,8 @@ TESTSCOPE — precies twee onderdelen:
 2) SLIMME SPELL MACRO'S: klein Druid-voorbeeld uit de bestaande BoxMode-code.
    Wrath en Moonfire: BOX ON = /assist party1 + /cast; BOX OFF = /cast.
    Rejuvenation: BOX ON = /cast [@party1], BOX OFF = normale /cast.
+   Party1 is de WoW-unitreferentie, NIET een vastgelegde characternaam. Ook
+   wanneer iemand anders die positie inneemt, gebruiken de macros party1.
    Elke testmacro wordt aangemaakt in de eigen Blizzard-macroslots, kan uit
    HaploBox worden opgepakt en op de gewone skillbalk worden geplaatst.
 
