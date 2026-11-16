@@ -915,7 +915,7 @@ SlashCmdList.HAPLOBOX = function(input)
         elseif action:match("^spell%s+") then
             local spec=rest:match("^[Ss][Pp][Ee][Ll][Ll]%s+(.+)$") or ""
             local spell,kind=spec:match("^(.-)%s+(%S+)$")
-            if kind~="assist" and kind~="party1" then spell,kind=spec,"assist" end
+            if kind~="assist" and kind~="party1" and kind~="heal" then spell,kind=spec,"assist" end
             if HB.AddBoxSpell then HB.AddBoxSpell(spell,kind) end
         elseif action:match("^import%s+") then
             local name=rest:match("^[Ii][Mm][Pp][Oo][Rr][Tt]%s+(.+)$")
