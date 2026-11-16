@@ -1,14 +1,13 @@
 -- JCDR Edition / TB19.1m MVP: local multibox macro controls and a tiny class library.
 -- This panel NEVER casts, follows, trades or modifies somebody else's macro.
+-- F3 Assist Focus and F5/F6 focus keys are legacy user bindings, NOT managed here:
+-- BOX ON spell macros assist party1 directly; Blizzard Focus remains untouched.
 -- Blizzard actions still require the user's real keypress/click, and writes stay OOC.
 local HB=HaploBox
 local panel, rows, tabs, notice, page, pending = nil, {}, {}, nil, "box", nil
 
 local BOX={
     {id="follow", name="HB Smart Follow", title="F1  Smart Follow", key="F1", detail="Direct/Dungeon via BOX mode"},
-    {id="assist", name="HB Assist Focus", title="F3  Assist Focus", key="F3", body="#showtooltip\n/assist focus"},
-    {id="focus", name="HB Focus Leader", title="F5  Focus leader", key="F5", body="#showtooltip\n/focus party1"},
-    {id="clear", name="HB Clear Focus", title="F6  Clear Focus", key="F6", body="#showtooltip\n/clearfocus"},
     {id="trade", name="HB Trade Leader", title="NUM1  Trade with Mael", key="NUMPAD1", body="#showtooltip\n/run InitiateTrade(\"party1\")"},
 }
 local CLASS={
@@ -169,7 +168,7 @@ local function refresh()
         notice:SetText(#entries==0 and ("Nog geen testmacro's voor "..token..".") or
             "Class library ("..token.."): maak een Blizzard-macro, pak hem op en plaats hem op je skillbalk.")
     else
-        notice:SetText("Multibox: Maak -> Toets (2x bij conflict). F1 werkt met BOX ON; niets volgt automatisch.")
+        notice:SetText("F1 Smart Follow + NUM1 Trade. BOX ON handles spell assist; F3/F5/F6 stay in WoW, not HB.")
     end
 end
 local function createPanel()
