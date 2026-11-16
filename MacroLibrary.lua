@@ -128,6 +128,7 @@ function HB.BindMacroPreset(id,confirm)
     return true
 end
 function HB.PickupMacroPreset(id)
+    if inCombat() then say("Drag macros after combat.") return false end
     local entry=preset(id)
     if not entry then return false end
     local own,index=ownedMatch(entry)
