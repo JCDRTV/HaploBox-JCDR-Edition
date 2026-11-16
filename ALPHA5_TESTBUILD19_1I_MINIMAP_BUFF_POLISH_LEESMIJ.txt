@@ -1,0 +1,15 @@
+JCDRbox / HaploBox Alpha5 TB19.1i — targeted visual corrections
+15 November 2026. Baseline: approved TB19.1h layout built from TB19.1g.
+
+Changes only HaploBar.lua / Auras.lua / TOC:
+- Calendar position and tracking magnifier remain exactly as approved.
+- Native clock text font enlarged to 14pt inside existing clock control.
+- DielFrame moon/sun hidden on explicit user request.
+- Black backing bars behind zone name and inside-map coordinates are transparent.
+- Inside-map coordinates remain. A narrowly scoped text-only scan attempts to hide a duplicate matching coordinate FontString directly below the square map. No other text or entire addon frames hidden. Unidentified external addon may still recreate this text on some clients.
+- Buff orange number labels optically centered; consistent divider and missing-buff rail alignment across all five rows. Timers and class colors unchanged.
+- Saved manually dragged Buff/Debuff positions remain priority over default anchors.
+
+Protected: ControlBar.lua Party Totals byte-identical to TB19.1g; Party.lua / secure heals / Focus / Follow / HoT engine unchanged.
+
+This is an OFFLINE testbuild, not live-approved. Test 5 clients with /reload, clock legibility, calendar/tracking, no Diel, transparent labels, only one coord display, divider/missing icons after buffs change, drag persistence, UI scale, mouseover fading, zonechange, combat.

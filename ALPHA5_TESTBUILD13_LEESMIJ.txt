@@ -1,0 +1,61 @@
+JCDRbox / HaploBox v0.7.0 – ALPHA 5 TESTBUILD 13 – QUICK SETTINGS HOTFIX
+14 NOVEMBER 2026
+
+SOURCE: Exact Alpha 5 Testbuild 12 MiniHeal QuickSettings UI ZIP.
+UNMODIFIED SOURCE BACKUP VERIFIED IN GOOGLE DRIVE / HaploBox / 03_BACKUPS:
+https://drive.google.com/file/d/1zQrW56tuoi2QdqZl4UA6iIMWhh6ncYNv/view
+
+FIXES AND VISUAL REFINEMENTS – INGAME VERIFICATION STILL REQUIRED
+
+1. BUG-28: QUICK SETTINGS MENU
+- The Quick Settings flyout is parented to UIParent, independent of the
+  main Controlbar, so Mini Heal mode no longer hides the menu's popup.
+- The original main-view gear now explicitly registers LeftButtonUp.
+- Mini Heal adds an independent small gear to the left of its MAIN button
+  above the five HP blocks; this gear toggles the same Quick Settings flyout.
+- The flyout is positioned within the local WoW client's current viewport;
+  near the right edge it opens to the left and clamps to available space.
+- The popup is independently rescaled when the client window is too small,
+  without resizing secure Heal frames or the existing party UI.
+- Toggle display updates even when layout size changes are deferred in combat.
+- Switching MAIN <-> MINI HEAL automatically closes any open flyout, to
+  prevent it covering the five mouseover-healing blocks.
+- Slash fallback unchanged: /hb controls, /hb view main, /hb view heal.
+
+2. CONSISTENT JCDRBOX CONTROLBAR ICON STYLE
+- The visible controlbar heading now says JCDRBOX (addon folder and internal
+  addon/DB names remain HaploBox for compatibility).
+- Six new 64x64 transparent TGA glyphs for Settings, Loot, Auto Repair,
+  Quest, Mini Heal and Frame Lock; white clean icon style matching existing
+  Focus and Follow line-art. Backgrounds are dark, not inventory item art.
+- The existing approved original Focus/Follow icons, status logic,
+  shape, positions and colors are not modified.
+
+UNCHANGED AND PROTECTED
+- Auras.lua, Party.lua, Core.lua, FocusMonitor.lua, Gameplay.lua,
+  Options.lua, Alpha4/ files and all existing combat-aura logic.
+- Original Mini Heal secure unit buttons, health refresh logic,
+  mouseover targets and five-block layout.
+- SavedVariables format, team syncing, Follow modes and role logic.
+
+REQUIRED LIVE TESTS (OFFLINE TESTS ARE NOT A SUBSTITUTE)
+1. Install Testbuild 13 on all five clients while logged out. Keep SavedVariables.
+2. MAIN: click the gear on the Controlbar twice – menu opens and closes.
+3. MINI HEAL: use /hb view heal; a new small gear is beside MAIN; open the
+   SAME menu without hiding the five large HP blocks, then close it.
+4. From Mini Heal click MAIN; check full UI and gear still work.
+5. Check smallest/furthest-right window: every menu button must fit on screen.
+6. Try /hb controls in both views, including during combat, and note Lua errors.
+7. Test @mouseover healing against every occupied Mini Heal HP block DURING
+   combat; confirm that health updates and secure target clicks still work.
+8. Verify Follow, Focus, buffs, HoTs and debuffs in/out of combat on all 5 clients.
+9. Check status-color meaning and new icons in the Controlbar; no focus name.
+10. Only mark a behavior LIVE APPROVED after direct in-game confirmation.
+
+ROLLBACK
+Reinstall the exact Testbuild 12 backup in Google Drive (link above).
+
+OFFLINE CHECKS
+Lua syntax, normal view open/close, Mini Heal independent gear access,
+combat-toggle behavior and viewport anchoring are validated in a Lua mock.
+This does not validate real WoW protected-frame behavior or event order.

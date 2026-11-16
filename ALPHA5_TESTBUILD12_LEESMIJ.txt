@@ -1,0 +1,72 @@
+HAPLOBOX ALPHA 5 – TESTBUILD 12 – MULTI-FEATURE LAB
+14 NOVEMBER 2026
+
+SOURCE: Alpha 5 Testbuild 11 FocusFollowIconsHotfix, untouched backup created
+in Google Drive HaploBox/03_BACKUPS before working on this build.
+
+BUILT IN THIS TEST CANDIDATE (NOT YET TESTED IN WOW FOREVER)
+
+1. CLIENT-LOCAL MINI HEAL MODE
+- Large main WoW client keeps the familiar full partyframes (MAIN view).
+- Each smaller client can switch independently to five extra-large HP blocks
+  in one horizontal row at the bottom of its own WoW window.
+- Blocks are SecureUnitButtonTemplate buttons with genuine WoW unit tokens;
+  intended for @mouseover healing, not simulated/painted unit frames.
+- Only character names and HP/HP percentages; absent party members have
+  inert placeholder slots. Underlying party sync and follow data remain active.
+- MAIN button above the row returns to the full UI.
+- Click MINI HEAL in Quick Settings or type /hb view heal; return with
+  /hb view main; /hb view toggle switches. Mode is local, not sent by SHARE UI.
+- Mode changes are rejected during combat to avoid protected-frame changes.
+  Health values refresh while in combat via native StatusBar setter.
+
+2. CONTROLBAR + QUICK SETTINGS
+- Narrow fixed Controlbar now extends to the right edge of the Focus/Follow
+  indicators, not across aura icons; title remains the drag handle if unlocked.
+- Four compact status icons report actual follow mode, loot method,
+  auto repair and quest sharing. Gear opens Quick Settings flush to the right.
+- Menu retains Direct/Dungeon selection without implicit Reapply.
+- Menu retains invite, healer assignment, trade, options, auto repair,
+  frame lock, safe-sell lock, and group leave.
+- Menu now adds MINI HEAL and LOOT AUTO (restores auto FFA/Group selection).
+- Manual LOOT click toggles actual FFA vs Group when group leader and disables
+  auto loot, rather than silently using an auto-check as a manual toggle.
+- Click-away closing is NOT yet implemented: it must not swallow game clicks.
+
+3. VISUAL POLISH
+- Missing Buff warning icons now approximately Focus tile height, separate
+  from the existing smaller active-buff icons and HoT/debuff sizes.
+- Bronze bar borders made more prominent (2px vs previous 1px).
+- All Focus and Follow icon combinations from Testbuild 11 are preserved.
+
+NOT INCLUDED / REQUIRES LIVE PROOF
+- No invented spell IDs for Camp Benefits or Sleeping Bag. Exact separate
+  missing-buff profiles and Camp 1/3...3/3 alert policy remain open.
+- No renaming of HaploBox/JCDRbox or major layout rewrites.
+- No claims that in-combat Healing Mouseover or 12.x protected API behavior
+  are confirmed: TEST IN WOW on five clients.
+- Existing TB11 follow/focus and TB10 combat aura code paths remain intact.
+
+INITIAL TEST CHECKLIST
+1. All five clients fully logged out before replacing addon, keep SavedVariables.
+2. Main client /hb view main; smaller client /hb view heal. Check 5 blocks.
+3. Hover each active block and cast a healing spell with @mouseover;
+   re-test DURING COMBAT and ensure it heals the hovered unit.
+4. Switch Main -> Mini -> Main outside combat, ensure no stale frames.
+5. During combat try mode switch: should be refused, never break partyframe.
+6. Verify other clients are NOT switched by Share UI or local mode changes.
+7. Open gear Quick Settings; switch Direct to Dungeon, check that follow
+   statuses only report actual follow chain and don't silently reapply.
+8. Check loot, repair, quest icons reflect observed current values.
+9. Check large Missing Buff warning, active buffs, HoTs and debuffs and their
+   click-through/combats, plus more visible bar borders.
+10. Log screenshot, error/stack trace and character on any issue.
+
+OFFLINE VERIFICATION
+- Lua syntax parsing, Mini Heal secure-row mock, Controlbar mock and ZIP
+  integrity checks run in build environment. They do not prove game behavior.
+- See source checkout/testing scripts in project work area; installer ZIP
+  contains only addon files (no development scripts).
+
+ROLLBACK
+- Reinstall the exact, unmodified Testbuild 11 ZIP from HaploBox/03_BACKUPS.

@@ -1,0 +1,67 @@
+JCDRbox / HaploBox — Alpha 5 — TB18 P1 Incoming Heals + HoT Size
+15 november 2026 — TESTBUILD, NIET live goedgekeurd
+
+GEBOUWD VAN: TB17 Full UI Fix (complete JCDRbox-addon, inclusief TB16.1 side margin,
+TB17 classbadge/bag/gold/Share UI-uitbreidingen). Behoud oude ZIP als backup.
+
+NIEUW IN TB18
+1. INCOMING HEALS (P1): hetzelfde native healing-prediction-spoor op de
+   HP-balken van Party Frames EN Follower Heal UI. Voorspelde healing verschijnt
+   rechts van de bestaande HP-vulling, binnen de HP-balk (clipped), zonder
+   extra mouse-hitbox. De client bepaalt de waarde; geen Lua-rekensommen met
+   'secret' protected HP of spellwaarden in combat. Nieuwe 12.x
+   UnitHealPredictionCalculator + UnitGetDetailedHealPrediction waar beschikbaar,
+   fallback UnitGetIncomingHeals voor oudere clients. Healcasts worden opnieuw
+   uitgelezen tijdens bestaande HP-refreshes en UNIT_HEAL_PREDICTION-events.
+   GEEN nieuwe healcomm-protocol of onbetrouwbare zelf bedachte voorspellingen.
+2. HoTs (P1): VRAAG 'Hot-size nog niet meegekomen': native HoT AuraButton,
+   native AuraContainer layoutelement EN legacy texture nu 25px (was 20px).
+   Native rail direct ingericht op 8 kolommen / 2 rijen met bijpassende hoogte.
+   De grotere 2 rijen kunnen visueel iets boven/onder de bestaande Focus-tegel
+   uitsteken, zónder de goedgekeurde Focus/Follow-tile zelf te veranderen.
+   Native combat aura scanner, filtering en expiry logica NIET aangeraakt.
+3. Characterheader (P2): level 12pt, tas/slot tekst en munten 11pt,
+   backpackicon 18px, alles op gezamenlijke verticale middellijn; meer ruimte
+   onder/boven en 12px rechterinset. Gold/silver/copper hebben een flexibele
+   geldbreedte en de naam geeft zo nodig ruimte vrij.
+4. DEBUFFS (P2): alleen Debuff Overview iconen 27 -> 24px en stap 30 -> 27,
+   rijhoogte 41 -> 38. Buff Overview houdt het al goedgekeurde 27px formaat.
+5. MINI HEAL class colors (P3): classkleur op naam en dunne accentstreep,
+   per werkelijk player-class (nu 5 Druids); HP-bar blijft groen,
+   VIJF HP blokken/switch/positie/hoogte/zijmarges en veilige healclicks identiek.
+
+BEWUST NIET AANGEPAST
+- Workende follow/status-/aura-/secure click/mouseover-heal code.
+- Share UI to Party blijft TB17 volledige config-protocol.
+- Camp Benefits stackcijfer, 3-zones-buffsortering, nog niet geduide
+  mainbarstatus-bug en automatisch verbergen lege Debuff Overview: OPEN.
+
+OFFLINE CONTROLES
+- Lua syntax en XML worden vóór inpakken gecontroleerd.
+- Unit mock test voor 12.x calculator en legacy UnitGetIncomingHeals succesvol,
+  plus on/off/0/geen unit en resize.
+- Dit simuleert GEEN live WoW 12.x/Forever combat en voorspelt NIET of elke
+  compatibele client daadwerkelijk heal-predictions levert.
+
+TEST IN WOW — EERST OUT OF COMBAT
+1. Sluit alle 5 clients, backup Interface/AddOns/HaploBox en SavedVariables;
+   vervang de gehele AddOns/HaploBox map door deze ZIP, daarna alle clients starten.
+2. Test zichtbare HoT art > TB17: Rejuvenation / Regrowth 2 icon-rijen op 5 partyframes,
+   geen icon-overlap of afwijking van Focus/Follow.
+3. Laat Mael of een andere Druid Healing Touch (casttijd) naar een gedeeltelijk
+   gewond partylid casten: voorspelling in BOTH Party HP en Mini Heal HP (toon
+   Mini Heal op een andere client, want MAIN en HEAL mode zijn per client lokaal).
+4. Annuleer cast: voorspelling verdwijnt. Complete cast: HP wordt bijgesteld.
+   Kijk of voorspelling verschijnt bij meerdere healers. Als het niet verschijnt,
+   noteer caster, target, spreuk, clientmode en eventuele Lua-fout.
+5. Controleer characterheader voor level/naam/bags/gold/silver/copper binnen
+   rechter border. Buff icon size onveranderd; Debuff icons kleiner dan TB17.
+6. Heal UI classkleuraccent, 5 blokken, switch, vrije bag/micromenuknoppen,
+   Quick Menu en /reload; Share UI to Party op alle vier ontvangers checken.
+
+PAS DAARNA IN DUNGEON-COMBAT
+- Nieuwe/verlengen/aflopende HoTs (ook tijdens combat), incoming-heal casts
+  target en cancel, debuffupdates, echte heals, geen 'secret value'/taint/Lua-errors.
+- COMBAT-AURA-SCANNER en Focus/Follow moeten werken zoals TB13–TB17.
+
+Terugvalopties: TB17 of bekende TB13/TB15 ZIP bij combat-aura-regressie.

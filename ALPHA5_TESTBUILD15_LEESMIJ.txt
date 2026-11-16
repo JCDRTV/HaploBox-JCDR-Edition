@@ -1,0 +1,74 @@
+JCDRbox / HaploBox - Alpha 5 TESTBUILD 15 (UI Layout & 5-Row Buff Overview)
+Date: 15 November 2026 | TEST CANDIDATE - NOT LIVE-VERIFIED
+
+BASELINE
+Built from the exact original TB14 ZIP. TB14 SHA-256:
+3dd323c3325011d58f370b3806b1e899a15f8c4cf2c5f0bc1adbacbc516ec3d6
+TB14 rollback: https://drive.google.com/file/d/133LclZ5pFlf-VAsxENs2WY6rLjBAZXsg/view
+TB13 additional rollback: https://drive.google.com/file/d/1Rz5IW0n3FZ8q8WJ6gWix7od7xsGKBj7J/view
+
+WHAT CHANGED IN TB15
+- Visually separate, independently anchored top-right Buff Overview with five fixed numbered rows.
+- 1=Mael, 2=Lyra, 3=Elya, 4=Nyra, 5=Ayla. Names are NOT printed in the panel.
+- Active helpful aura icons (but not HoTs) and counters/timers grow RIGHT TO LEFT.
+- A ONE-PIXEL vertical line is shared by all five rows. Out of combat it
+  follows the LONGEST existing buff row, not each character's own buff count.
+- Missing Buffs appear to the LEFT of this one line, aligned as a 5-row group.
+  Existing required buff configuration, 3/3 Sleeping Bag XP rule, stacking
+  and group class detection are not rewritten.
+- Active Buff and Missing Buff displays are removed from the LEFT party rows.
+  Only their non-secure visual parents/anchors and icon order were changed.
+- Same HP/Mana/XP bars as TB14; straight-edged Focus/Follow indicators instead
+  of chamfered corners. Focus/Target is smaller and icon-only, no label.
+  Follow stays larger with its previous click behavior and state colors.
+- The full-width JCDRBOX header now ends exactly at the Follow column's right edge.
+- HoTs and Debuffs remain in their TB14 positions beside Follow for phase 1.
+  Their new, larger per-character/multi-row layout and a separate Debuff panel
+  are future phases, AFTER real-screen-space review of this five-row Buff panel.
+
+IMPORTANT COMBAT SAFETY
+- TB14 aura acquisition, native combat visibility, secure unit binding, timers,
+  3-stack completion, Missing Buff detection, follow logic and all macros retained.
+- Native AuraContainer visual flow is mirrored for regular Buffs only; C-side
+  engine continues to own the live combat icon updates.
+- The shared separator uses the last safe out-of-combat aura counts. Its position
+  freezes during combat on 12.1 clients. New combat-only buffs may make it stale
+  until combat ends; this is intentional to avoid secret aura reads in combat.
+- Blizzard's ORIGINAL top-right BuffFrame is deliberately NOT forcibly hidden:
+  changing protected Blizzard frames during combat risks taint or missing controls.
+  TB15 initially places its own panel slightly BELOW the native buff area. You can
+  reposition via the supported command below. Evaluate Blizzard Edit Mode options
+  separately if you want the original icon bar moved/hidden. This test does not
+  change Blizzard's BuffFrame. Avoid assuming no duplicate original player buffs.
+
+ADJUSTING THE NEW PANEL (outside combat)
+  /hb buffpanel unlock   => reveals a thin 'MOVE BUFFS' drag handle above the panel
+  /hb buffpanel lock     => hides the drag handle; normal view is click-through
+  /hb buffpanel reset    => restores the first upper-right position
+These per-client offsets are stored in the existing HaploBoxDB SavedVariables.
+The new panel does NOT follow partyframe drag/scale (by design).
+
+INSTALLATION
+1. Back up your existing Interface/AddOns/HaploBox directory and WTF/SavedVariables.
+2. Exit WoW completely on all five clients.
+3. Extract this ZIP into Interface/AddOns; the directory must be HaploBox.
+4. Start WoW, check 'JCDRBOX' header and /hb auramode.
+5. With five Druids in party, check 1..5 from top to bottom and compare buffs
+   shown on all five clients. /hb buffpanel unlock lets you move panel.
+
+FIRST LIVE CHECKS
+A. Buffs and Missing Buffs are top-right ONLY; correct 1..5 assignments.
+B. Mael 6 buffs, Lyra 1: ONE shared divider after sixth active buff; all
+   missing rows remain vertically aligned; add/remove buff to see divider move.
+C. Verify missing Food, Mark, Thorns, Camp Benefits; Sleeping Bag stacks
+   0/1/2 show Missing XP, stack 3 clears it; timer labels below native icons.
+D. Test native and custom Buff/Missing changes in combat; verify HoTs and
+   Debuffs never vanish. Pay attention to combat-only icon growth and divider.
+E. Verify Follow, Focus icon-only, gear menu, Mini/Follower Heal click path,
+   /reload persistence, UI scaling and click-through of empty aura zones.
+F. Post screenshots of panel alignment / screen space before deciding HoT
+   and Debuff future locations.
+
+STATUS: OFFLINE-TESTED ONLY. No WoW client was run in producing this ZIP.
+If any aura vanishes in combat: rollback TB14 immediately and report character,
+current aura, combat state, /hb auramode and screenshots. Do not rewrite combat engine.

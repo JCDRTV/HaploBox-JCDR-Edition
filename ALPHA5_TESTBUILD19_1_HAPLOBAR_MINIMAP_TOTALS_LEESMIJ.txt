@@ -1,0 +1,49 @@
+JCDRbox / HaploBox Alpha5 – TB19.1 TEST
+15 november 2026
+
+BASIS
+Gebouwd rechtstreeks vanuit TB19 ZIP (op TB18.3 HoTs One Row Focus Blue).
+TB18.3 is de bekende rollback. Dit is een OFFLINE TEST-build, geen live OK.
+
+VERWERKTE AFSPRAKEN
+1. Bovenste HaploBar blijft VOLLEDIG SCHERMBREED en exact 38 UI-punten HOOG.
+   Alleen statustekst iets kleiner / dynamisch verdeeld. Nooit bewust 'FOLLOW: DIRE...' of andere ellipsis.
+   Wanneer de client te smal is gebruikt de balk binnen dezelfde hoogte twee tekstregels.
+2. Blizzards vierkante native minimap ONDER de HaploBar, rechts. Het kaartbeeld is 6px
+   groter dan TB19 binnen een 205px paneel. Native Blizzard map/clicks/questmarkers blijven.
+3. Vijf Buff Overview-rijen direct LINKS naast de minimap onder de HaploBar;
+   boven- en onderranden dezelfde 205px wanneer overzicht LOCKED is.
+   Individueel verplaatsen via UNLOCK blijft mogelijk.
+4. Waar technisch en veilig mogelijk verhuizen bestaande klikbare Blizzard/
+   LibDBIcon-minimapknoppen naar de bovenbalk; geen eigen niet-werkende imitatieknoppen.
+   Protected/ongekende buttons blijven onaangeroerd; functionaliteit boven uiterlijk.
+5. Bestaande GRIJZE 24px Party Frames-header: 'PARTY FRAMES - DRAG' tekst weg.
+   In dezelfde kolommen als individuele gold/bags: PARTY GOLD (g/s/c) en uitsluitend
+   som vrije bag slots. Drag en Quick Menu gear blijven werken. GEEN extra footer.
+6. Individuele en totale BAG-iconen kleuren naar percentage resterende capaciteit:
+   groen >50%, geel 20-50%, rood <20%. Onbekende data -> neutraal;
+   teamtotaal '?' als één client ontbreekt of oudere/stale data geeft.
+7. Een optionele, volledig muistransparante esthetische verbindingsstrook links
+   verschijnt alleen wanneer de top van de oorspronkelijke Blizzard Raid Manager
+   meetbaar onder onze HaploBar staat. Niets aan Blizzard-frame of onze frames veranderd.
+
+ONGEWIJZIGD
+- TB18.3 HoT iconen/een horizontale rij, Focus/Follow, TB13 native combat aura-engine.
+- HealPrediction.lua, MiniHeal.lua, beveiligde partyframe button handlers.
+- Bestaande chat/damage meter; HoT-timers blijven apart voor latere cosmetische polish.
+
+LIVE TEST
+- Maak backup van TB18.3 en SavedVariables voordat je deze ZIP installeert.
+- Controleer tekst volledig voor FOLLOW DIRECT én DUNGEON, ook bij andere UI scale.
+- Test elke minimapknop apart, vooral kalender, tracking, mail, zoom, wereldkaart
+  en addon-knoppen; knop niet verhuisd = niet automatisch kapot.
+- Controleer native mapmarkers/quests, Buff Overview 5 rijen, /reload, Edit Mode.
+- Controleer goud + vrije slots pas als alle vijf clients data hebben gestuurd.
+- Bagkleuren bij 0%, 20%, 50%, >50% vrije ruimte; hoofdvenster en followers.
+- Controleer onderzijde HaploBar tot Blizzard-zijbalk als die zichtbaar is.
+- Pas na OOC visueel OK: combat en secure healing/follow/Focus/HoT regressie.
+- Als iets niet goed werkt: terug naar TB18.3.
+- Uitschakelen eigen minimap: /haplobar minimap off, daarna /reload.
+
+STATUS
+Lua-syntax en basis-standalone mock gestart; geen echte vijf-client- of Blizzard API-live-test.

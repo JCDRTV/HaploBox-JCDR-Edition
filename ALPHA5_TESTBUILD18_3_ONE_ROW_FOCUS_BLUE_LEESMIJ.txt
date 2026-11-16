@@ -1,0 +1,20 @@
+JCDRbox / HaploBox - TB18.3 - SINGLE ROW HoTs exactly Focus BLUE
+15 November 2026. Offline syntax/layout checks passed. Requires live WoW test.
+
+USER CORRECTION: 'ah daar geet het fout, 1 rij' - "Yes, fix maar".
+
+Exactly ONE horizontal row to the right of Focus. Icon height = the INNER
+BLUE Focus face height: FocusTile:GetHeight() minus 2px gold edge at top
+and 2px at bottom. Top of all HoTs starts 2px below Focus gold top,
+bottom ends 2px above Focus gold bottom. One native and legacy texture
+cell has this full height. Additional HoTs flow only RIGHT, max 16 icons,
+with 3px horizontal spacing. ZERO second row and no overlap with Follow.
+
+Only Auras.lua and .toc changed since TB18.2; all other addon code is
+identical (including existing incoming heals, Focus/Follow, secure combat
+native aura engine, Mini Heal UI, buffs, debuffs, Sharing and UI polish).
+
+TEST OOC: 1-2 active Rejuvenation/Regrowth -> artwork size and blue Focus
+alignment; multiple HoTs should extend right without wrapping; /reload,
+UI scale and Follow clickable. Then in-combat apply/refresh/expiration,
+Incoming Heals and secret/taint console checks. Keep TB18.2 as rollback.

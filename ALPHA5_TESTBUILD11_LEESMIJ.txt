@@ -1,0 +1,32 @@
+HAPLOBOX ALPHA 5 – TESTBUILD 11 – FOCUS & FOLLOW ICON HOTFIX
+14 NOVEMBER 2026
+
+SOURCE: unmodified Alpha 5 Testbuild 10 CombatAuraHotfix.
+Pre-change backup in HaploBox/03_BACKUPS on Google Drive.
+
+CHANGES (ICON/UI ONLY)
+- FOCUS: leader without focus = BLUE user-with-X; follower missing focus = RED user-with-X.
+- FOCUS: correct = GREEN reticle; wrong focus = RED user-with-warning;
+  leader with a focus = RED clear-reticle-and-X. Focus status text contains
+  only state, never the current focus character name.
+- FOLLOW: leader = BLUE crown; direct follow of leader = GREEN link+crown;
+  dungeon follower of healer = GREEN link+healer-cross;
+  DPS whose healer stops follow = YELLOW pause+healer-cross.
+- General FOLLOW BREAK retains the original broken-link symbol/status.
+- Same square Follow and Focus tile geometry, scaling and placement.
+- No modifications to actual follow/focus validation, aura scanning, combat
+  events, unit targeting, cast/mana or other gameplay logic.
+
+OFFLINE CHECKS: Lua parsing, status-to-icon mapping assertions, image asset
+integrity, archive integrity. Actual in-game behavior needs testing.
+
+LIVE REGRESSION
+1. Party leader: blue crown in Follow; blue user-X in Focus with no focus.
+2. Direct: each correct follower shows green link+crown.
+3. Dungeon: healer follows leader (green link+crown), DPS follow healer
+   (green link+cross), healer breaks and DPS show yellow pause+cross.
+4. Follower no focus: red user-X; wrong focus: red user-alert;
+   correct focus: green reticle, no target name. Leader forced focus:
+   red reticle-X / CLEAR FOCUS; remove focus => blue user-X / LEADER.
+5. Check no overlap/clipping at different sizes, and no regressions
+   to combat auras / UI sync / follow refresh from TB10.

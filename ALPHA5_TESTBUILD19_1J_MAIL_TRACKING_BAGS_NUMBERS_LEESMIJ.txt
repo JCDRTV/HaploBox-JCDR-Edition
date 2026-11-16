@@ -1,0 +1,15 @@
+JCDRbox / HaploBox Alpha5 TB19.1j — targeted followup testbuild — 15 November 2026
+Baseline: TB19.1i with prior TB19.1g approved Party Totals baseline.
+
+CHANGES:
+- Clock native time text 16pt, aligned 2pt closer to the approved calendar at the far right.
+- Tracking assigned a fixed stable slot (99pt from right), avoiding automatic shifting.
+- Native incoming mail envelope placed directly LEFT of tracker (134pt from right); normal Blizzard mail show/hide behavior retained. Must LIVE TEST when mail actually arrives.
+- In-map coordinate text retained; guarded external duplicate coordinate FontString scan allows nearby positions within 72pt below map and updates differing by 0.3 coordinate units. The third-party source is UNKNOWN: not guaranteed to remove duplicates in all client builds; no frames or POIs are destroyed.
+- Buff/Debuff orange square player number centered precisely with CENTER anchor and no offset shadow; other buff geometry unchanged.
+- Party Totals BAG SPACE fixed width 48 UIpt (0..999) in the 13pt summary header; gear/coin computations and the approved Gold/Silver/Copper algorithm unchanged.
+- Party HP bars display player number 1..5 as decorative text at LEFT with same 15pt THICKOUTLINE type as Buff Overview; no health status calculations or secure attributes changed.
+
+Protected: HealPrediction.lua, MiniHeal.lua, FocusMonitor.lua, Core.lua and Alpha4 secure modules unchanged. Party.lua visual addition only; ControlBar.lua bag-cell geometry only.
+
+OFFLINE testbuild; no in-game test. Verify calendar, time, mail when post received, tracking exact location, duplicate coords, 999 bags, buff and HP numerals, buff drag and combat regressions on all 5 clients.

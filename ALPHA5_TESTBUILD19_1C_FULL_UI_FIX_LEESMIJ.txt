@@ -1,0 +1,27 @@
+HaploBox Alpha5 — TESTBUILD TB19.1c — INGAME HERTEST VEREIST
+Datum: 15 november 2026
+Basis: TB19.1b (besproken gebruikersfixlijst), met eerder goedgekeurde TB18.3 HoTs ongewijzigd.
+
+VOLLEDIGE FIXRONDE
+1) PARTY TOTALEN: In de bestaande lichtgrijze 24px drag-header staan de teamtotalen RECHTS in de volgorde BAGS -> GOLD. Bagicon met bestaande groen/geel/rode capaciteitskleur; de vrije-slot-teller houdt 31px / driecijferige capaciteit (bijv. 7, 27, 127). Gold/silver/copper in vaste muntkolommen, met grotere fonts (13pt i.p.v. 11pt) EN dezelfde geldgegevens / geldigheidscontrole als TB19.1b. Bij incomplete/te oude sync staat '?'. Links blijft de balk versleepbaar. Geen onderste bar, individuele Party Frame resourcekolommen ongewijzigd.
+2) MINIMAP: Echte Blizzard zone-, kalender-/tijd-, dag/nacht- en mailbedieningsframes worden waar NIET BESCHERMD verplaatst naar het eigen HaploBar-toolbar-parent. Zo erven ze niet meer de mouse-leave alpha van Blizzard's MinimapCluster. Extra alpha-herstelcontrole op verplaatste controls; zone/titleframes hebben een expliciete breedte en clipping waar ondersteund; eigen statuslabels blijven staan. Minimap blijft vierkant onder 38 UI-punt hoge schermbrede HaploBar.  Zone/wijziging, Edit Mode en /reload komen in de hercontrole. Protected controls en quest/POI markers worden NIET verplaatst of verborgen. Geen Blizzard click handler overschreven.
+3) BUFF OVERVIEW: De verticale scheidingslijn wordt nu binnen de zichtbare schermrand gehouden, ook bij 16 buffs in één rij. Buffs blijven onafhankelijk te verplaatsen; handmatig opgeslagen posities winnen van standaard-snapping (inclusief /reload).
+4) NUMMERTEGELS: Ronde oranje badges vervangen door rechthoekige HP-bar-stijl tegels, exact 27x27px op Buff-rijen en 24x24px bij Debuff-rijen, met gecentreerde cijfers 1..5. Geen extra spacers, de timers onder de iconen leveren al de rijafstand. Native HoT auras, timers en secure healing onaangeraakt.
+5) STANDAARD-UITLIJNING: Buff Overview staat standaard links van de minimap, met circa 10 UI-punten tussen de cijfertegel en de kaart, en de cijfertegel circa 8 UI-punten onder de HaploBar. Alleen de bovenste lijn is afgestemd; de onderzijde volgt de timer onder de 5e rij, NIET de onderrand van de minimap. Een handmatig gekozen positie wordt nooit door dit default-overzicht overschreven.
+
+WIJZIGINGEN: HaploBar.lua, Auras.lua (alleen visuele nummertegels, divider, draggrip), ControlBar.lua (totals header), HaploBox.toc en deze LEESMIJ. De individuele Party.lua, Core.lua, FocusMonitor.lua, HealPrediction.lua, MiniHeal.lua en de Alpha4 data-/sync-modules zijn byte-voor-byte gelijk aan TB19.1b.
+
+OFFLINE VALIDATIE: 19 Lua syntaxchecks; simulaties voor 4 UI-situaties (groot, te klein, conflicterende minimap-addon, combat); specifieke Blizzard widget-docking en parent-alpha, Editscale-reset, POI/protected behoud en bewaarde buffpositie; resources 5 clients + stale '?'; vierkante nummertegelafmetingen en 16-buffs-divider; ZIP-integriteit. Dit is GEEN live WoW-API-validatie.
+
+LIVE TESTVOLGORDE:
+- Installeer dezelfde build op alle 5 clients. /reload buiten combat.
+- Kijk of de HP-balkachtige vierkante nummers Buff/Debuff goed leesbaar zijn en of onder rij 5 de timers vrij blijven; herpositioneer Buff Overview, lock, /reload (positie moet blijven).
+- Minimap: laat de muis 30s van de balk weg: zone/tijd/mail/dag-nacht mogen niet vervagen. Check Blizzard knoppen, tooltip, tracking, kalender, klok, mail, world-map, Edit Mode, zone-overgang en /reload. Echte '!'/'?' questmarkers blijven op kaart.
+- De linker Buff-scheidingslijn moet zichtbaar zijn bij 0..16 buffs, ook dicht bij linkerschermrand.
+- Bestaande PARTY TOTALS-header: rechts bags vóór money, grotere letters, 3-cijferbag en gekleurde iconen; vergelijk met 5 eigen clients en onbekende data.
+- Daarna pas combat: Party healclicks, buff/HoTs, Focus/Follow, MiniHeal, pings/zoom en native secure functies.
+- Toolbardiagnose: /haplobar buttons; status bevat docked/overgeslagen widgetaantallen.
+
+TERUGVAL: TB18.3 was de expliciet goedgekeurde stabiele HoT-basis. Bij minimapklachten kan /haplobar minimap off gevolgd door /reload de addon-minimapaanpassing omzeilen. Bewaar desgewenst de SavedVariables voor testen en herstel.
+
+STATUS: TESTBUILD. Geen LIVE OK totdat gebruiker de screenshots/functies bevestigt.

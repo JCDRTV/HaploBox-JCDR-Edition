@@ -1,0 +1,50 @@
+JCDRbox / HaploBox Alpha 5 TESTBUILD 14 – consolidated live-test corrections
+14 November 2026
+
+SOURCE: Exact Testbuild13 Quick Settings Hotfix ZIP (98,874 bytes).
+All files preserved except Auras.lua, Party.lua, MiniHeal.lua, ControlBar.lua,
+HaploBox.toc, and two extra Focus tile art textures.
+
+FIXES / DESIGN
+- Missing Sleeping Bag XP warning clears ONLY for Well-Rested spell 429959 with
+  applications >= 3; 0/1/2 stacks remain missing. Student Fodder and unrelated
+  XP auras no longer pretend the required +3% Sleeping Bag reward is fulfilled.
+- Required Sleeping Bag warning uses native Blizzard Well-Rested drink icon
+  (INV_Drink_15, spell texture fetched from Blizzard when available).
+- Legacy aura icons now draw numerical stack counts; native 12.1 AuraContainer
+  buttons register a Blizzard-managed SetApplicationCount FontString, which
+  remains safe for secret values in combat. Stack counts come from WoW, never
+  invented/forced to 3. Native engine is otherwise unchanged.
+- Buff icons stay top-aligned with Focus; buff duration labels sit UNDER the
+  icons in the remaining Focus-row height, not inside icons; separate HoT and
+  Debuff row positions are preserved, including native AuraContainer paths.
+- Buff and Missing Buff icon size equalized to leave timer space; transparent
+  chamfer gap after Focus and Follow stays clear. Rectangular Focus uses art
+  with cut-corner dimensions matched to existing Follow appearance.
+- Gear button elevated above other controls to prevent click interception;
+  same toggle as /hb controls. Quick Menu visually touches the Controlbar
+  and groups all existing actions under Follow Mode / Roles / Party Control /
+  Other Controls. Direct = link+crown; Dungeon = link+cross; Healer = cross.
+- MINl HEAL menu label updated to FOLLOWER HEAL UI; five secure heal frames
+  are 3x taller (clamped to window height), NOT wider.
+- Main Controlbar header fixed height increased from 20 to 24.
+
+PROTECTED / UNCHANGED
+- Core, party syncing, save format, role/loot/follow actions, zone quest hooks.
+- Secure MiniHeal unit targeting, five-column arrangement, health updates.
+- HoT/debuff data classification and native AuraContainer combat render path.
+- Active buff icons remain next to Focus; HoTs next to Follow, debuffs below.
+
+AFTER INSTALL: REQUIRED LIVE REGRESSION (NOT YET VERIFIED)
+1. Restart all five clients out of game; retain SavedVariables and TB13 backup.
+2. Sleeping Bag Well-Rested 0/1/2/3 stacks: at 3, Missing XP disappears.
+3. Check native + legacy buff counts and timer layout on all clients.
+4. Verify all Follow/Focus corner cuts and transparent aura gap.
+5. Click gear to open/close integrated Quick Menu (also in heal UI); if not,
+   check /hb controls fallback and capture error.
+6. All menu controls: Direct, Dungeon, Healer, Loot, Invite, Quest, Leave
+   (Leave only after party is safe), plus secondary settings.
+7. Follower Heal UI: 5 blocks taller only, secure mouseover heals in combat.
+8. AFTER PATCH: confirm live Buff/HoT/Debuff combat rendering and no overlap.
+
+ROLLBACK: Reinstall Testbuild13 ZIP. This ZIP has not been verified in WoW.

@@ -1,0 +1,34 @@
+JCDRbox / HaploBox Alpha5 TB19.1k — 15 November 2026
+Base: TB19.1j — live reports from Mael/Lyra/Nyra; only scoped UI fixes.
+
+HaploBar.lua:
+- 205pt square minimap flush RIGHT of screen, 4 UIpt below HaploBar's bottom edge.
+  Gold border and quest/POI/player icons untouched; avoid merged double gold line.
+- Native Tracking control lives in the HaploBar above the TOP-LEFT of the
+  minimap (relative to mapPlate), for native dropdown opening down along map.
+- Native unread-mail icon LEFT of Tracking, 34x30; only shows when Blizzard has mail.
+  Neither icon moves if the other icon is not visible.
+- Native clock glyphs 18pt, calendar pinned at far right; approved calendar
+  presentation/underlying Blizzard click handlers unchanged.
+
+Auras.lua:
+- Optical glyph centering for player numerals 1..5 inside orange Buff/Debuff
+  tiles, after inspection of real TB19.1j screenshot font raster placement.
+- Minor visual-only timer and XP application stack FontString positions relative
+  to each icon; stack width widened to prevent '3/3' cropping. Native engine
+  owns real duration, stack and sorting; no engine or aura data changed.
+- Existing five rows, fixed divider, orange colors, SavedVariables drag remain.
+
+ControlBar.lua:
+- Mouse-transparent 2pt gold accent across TOP of original 24pt Party Totals
+  header, matching HaploBar. No other Party Totals source changed (including
+  approved Bags 000..999, money, gear and drag).
+
+PROTECTED / NO CHANGE: Party.lua (approved HP player numerals), Core.lua,
+HealPrediction.lua, MiniHeal.lua, FocusMonitor.lua, Alpha4/ sync and other secure
+healing, HoT, Focus/Follow sources. No new logic/keys added to SavedVariables.
+
+OFFLINE testbuild only. LIVE test 5 clients: minimap 4pt lower / flush-right;
+tracking dropdown placement; mail shown/hidden; 18pt clock; Buff/Debuff glyphs,
+timers/XP stack with different aura counts; draggable positions after /reload;
+Party header gold line; no secure combat/heal regressions. Rollback TB19.1j.

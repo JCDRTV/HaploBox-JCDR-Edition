@@ -1,0 +1,75 @@
+JCDRbox / HaploBox — Alpha 5 TB17 FULL UI FIX — 15-11-2026
+OFFLINE TEST BUILD / REAL WOW COMBAT NOT YET VERIFIED
+
+BASED ON TB16.1 (includes the earlier Mini Heal side-inset adjustment).
+THIS REPLACES THE LIMITED TB16.1 HOTFIX; all accumulated safe UI improvements
+have been bundled into one coordinated build.
+
+IMPLEMENTED:
+- Party Frame: slightly taller name strip AND HP bar use the previously empty
+  space, same overall characterframe height; small inset top/bottom.
+- Focus / Follow: both indicator tiles receive complete golden borders, with
+  the shared outer border intact. Solo correct-Focus icon slightly smaller;
+  approved Follow status logic, position and click behavior kept.
+- HoTs: real native C-side AuraButton size from 17 -> 20px (and legacy icons
+  to 20px), two horizontal rows next to Focus. Native combat aura scanner
+  and secure aura container approach retained.
+- Buff/Debuff Overviews: icon artwork/natively rendered aura buttons from
+  22 -> 27px; 41px row pitch; both panels are mirrored (Buff right-to-left,
+  Debuff left-to-right). Class-colored round badges now have slim gold rings
+  and a larger gap to first icon. Timer below icons on both.
+- Inline small unlock/move grip at the RIGHT of Buff #1 / LEFT of Debuff #1;
+  narrow clamped frame anchors and normalized positions, not floating grips
+  above the pane. Existing /hb buffpanel reset still available.
+- Bag Slots: custom backpack TGA in JCDRbox dark/gold theme with real free
+  slot count. Gold displays real amounts with WoW native gold/silver/copper
+  coin icon textures, not just g/s/c text. Existing location preserved.
+- Follower Heal UI: TB16.1 symmetrical side margins included, five cells
+  same height and aligned, original MAIN/HEAL switch intact.
+- Share UI to Party: existing button now ALSO sends a versioned full UI and
+  transferable addon-settings snapshot (5 chunks in a typical Team A setup),
+  with validated trusted-leader receive, checksummed chunks, ACK/retry and
+  safe out-of-combat apply. Includes party layout and screen-normalized
+  Control/Buff/Debuff anchors, visibility and lock options, named UI options,
+  allowed automation and buff preferences, and selected sound settings.
+  Does NOT overwrite client-local Heal/Main view, WoW keybindings, actual
+  HP/buffs/inventory/gold, character identity, whispers or combat state.
+
+STILL OPEN / NOT CLAIMED FIXED:
+- Buff three-zone sort (expected / extra / missing + two separators): native
+  combat-safe class categorization is not yet proven; no unsafe scanner edit.
+- Main ControlBar status discrepancy: /hb statusdebug remains; exact failing
+  status and reproduction conditions still needed to diagnose.
+- Camp Benefits stack overlay: depends on client aura applications; no
+  invented stacks. Re-test separately alongside Sleeping Bag XP 3/3.
+- Debuff pane auto-collapse without any debuffs has not been implemented.
+- Full Share UI sync needs a real 5-client receipt and /reload test; offline
+  mock roundtrip is not a substitute for live party clients.
+
+TEST BEFORE A DUNGEON (OUT OF COMBAT):
+1. CLOSE all five WoW clients. Backup Interface/AddOns/HaploBox and
+   SavedVariables. Replace complete HaploBox folder with this ZIP.
+2. Verify five Party Frames, Follow states, correct-focus glyph and gold tile
+   edges. Name/HP/XP bars should not overlap and frame total height stays.
+3. Inspect new bag icon, dynamic free slots and gold/silver/copper coins.
+4. Buff Overview ON/OFF -> original Blizzard buff bar hidden and restored.
+   Debuff Overview ON/OFF -> original debuff bar restored. Test /reload.
+5. Unlock each pane: grip is beside #1; drag to the screen edge, lock and
+   /reload; /hb buffpanel reset should recover a missing buff panel.
+6. Check 5 rows with class-color gold-ring badges, larger icon art, XP 1/2/3
+   and Missing Buff disappearance at 3/3, plus Camp Benefits stack.
+7. From Mael use Share UI to Party, verify FULL UI/settings ACK from Lyra,
+   Elya, Nyra, Ayla. Compare panels/toggles/scale/positions and /reload.
+   Local MAIN/HEAL mode and custom keybind should remain per client.
+8. Follower HEAL mode: bag icons/micromenu accessible both sides; same
+   vertical tile height; upper Buff Overview clears and MAIN restores.
+
+NEXT DUNGEON (COMBAT):
+1. Existing buffs remain visible and current while in combat.
+2. Rejuvenation + Regrowth applied to several members: NEW HoT icons appear
+   immediately; refresh and expiry work; 10+ HoTs in two visible rows.
+3. Debuffs: appear, update/expire; icon direction correct and no taint.
+4. Follow indicator/click targeting/mouseover heals continue to work.
+5. Capture exact error text, screenshots and affected toon for regressions.
+
+SAFE ROLLBACK: TB16.1/TB16 ZIP, or TB15/TB13 for aura regressions.

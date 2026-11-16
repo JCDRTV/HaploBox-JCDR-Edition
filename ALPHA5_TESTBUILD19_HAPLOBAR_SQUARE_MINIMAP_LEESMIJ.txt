@@ -1,0 +1,71 @@
+JCDRbox / HaploBox Alpha5 — TB19 TESTBUILD
+15 november 2026 — schermbrede HaploBar + vierkante Blizzard-minimap
+
+BASIS
+Gebouwd rechtstreeks bovenop de goedgekeurde TB18.3 ZIP. Nieuwe testversie,
+GEEN live WoW-acceptatie of garantie dat Blizzard alle visuele stukken in
+client 1.15/12.x exact zo rendert. Maak voor installatie een backup van addon
+EN SavedVariables; houd TB18.3 als rollback.
+
+NIEUW IN TB19
+1. Schermbrede HaploBar bovenaan: altijd zichtbaar, 38 UI-punten hoog.
+   Tekststatussen in plaats van de vier kleine statusicoontjes:
+   FOLLOW: DIRECT/DUNGEON (monitoring-keuze, geen claim dat iedereen volgt),
+   LOOT: FFA/GROUP/?, REPAIR: ON/OFF, QUEST: ON/OFF.
+   Groen = actieve instelling; goud = geselecteerde modus/alternatief;
+   grijs = uit of onbekend. Veranderingen via Quick Menu worden ververst.
+2. Het bestaande kleine Party Frames-kopje is technisch het VERPLAATSANKER
+   van de goedgekeurde secure Party Frames. Het blijft staan met een duidelijke
+   titel "PARTY FRAMES - DRAG" en instellingen-gear. De vier onleesbare badges
+   daar zijn verborgen; de Quick Menu-knoppen zelf zijn niet gewijzigd.
+3. Rechtsboven een HaploBox-gekleurd vierkant van 205x205 UI-punten,
+   ongeveer vijf bestaande Buff Overview-rijhoogtes (5 x 41). De bestaande
+   Blizzard Minimap krijgt een vierkant mask en zit binnen een gouden rand.
+   Er wordt GEEN nieuwe kaartmotor gemaakt, en Blizzard's tracking, ping,
+   zoom, questmarkeringen, kalender, mail en addonknoppen blijven hun eigen
+   handlers behouden. Dit is een veilige eerste skin, geen vervanging.
+4. De minimap-skin wordt alleen op grotere MAIN-clients geactiveerd
+   (venster minimaal 920x520 UI-punten), niet op kleine Mini Heal-vensters.
+   Bestaande minimap-skin-addons zoals SexyMap/BasicMinimap/Chinchilla/
+   EKMinimap/SquareMinimap worden gedetecteerd: in dat geval slaat de skin
+   over en verschijnt een melding in de chat. Gebruik niet twee skins tegelijk.
+   De HaploBar met tekst blijft wel zichtbaar.
+5. Op smallere vensters verdwijnen de laatste tekststatussen naar behoefte
+   zodat ze niet door elkaar heen worden weergegeven.
+
+VEILIGHEID / UITDRUKKELIJK NIET VERANDERD
+- Geen wijziging van Party.lua, Auras.lua, HealPrediction.lua of MiniHeal.lua.
+- Goedgekeurde TB18.3 HoT-icoonrij en geometrie EXACT behouden.
+- Focus/Follow-tegels, TB13 secure combat-aura-engine, heal clicks en
+  individuele characterheader ongewijzigd.
+- Nog NIET in deze build: HoT-timer-polish, onderste Party Total-balk,
+  bagkleuren, losse Damage Meter- of Chat-vensters. Dit volgt pas na keuze.
+
+TEST VOLGORDE
+1. Test bij voorkeur eerst op MAIN client, OUT OF COMBAT.
+2. Controleer tekstlabels, Quick Menu, sleepfunctie Party Frames en de
+   nieuwe vaste topbar; /reload mag geen posities of functies beschadigen.
+3. Controleer de vierkante minimap (randen, positie, verhouding tot buffrijen)
+   en ALLE Blizzard-functies: zoom/wheel, tracking, kalender, ping,
+   mailindicatoren, questobjecten, addonbuttons, tooltips, klikken.
+4. Controleer Buff Overview links naast kaart, quest tracker en Blizzard-
+   minimapheader: geen overlap/verdwenen knoppen. Rapporteer screenshots.
+5. Controleer FOLLOW DIRECT/DUNGEON, FFA/GROUP, auto repair en quest toggle
+   tijdens klikken en na /reload. De mode moet kloppen met echte instellingen.
+6. Mini Heal-vensters: veilige randen, healclicks, /reload en switch.
+7. Pas daarna korte combatregressie: secure healing, HoTs, Focus, Follow,
+   map/tracking en foutmeldingen; niet tegelijk nieuwe modules testen.
+
+TERUGVAL
+- Beste rollback: restore TB18.3-addonmap en oude SavedVariables-backup.
+- Minimapskin uitschakelen binnen TB19: /haplobar minimap off
+  daarna /reload. Opnieuw aan: /haplobar minimap on, daarna /reload.
+- Bij conflict met SexyMap of andere minimapaddon: slechts 1 skin actief.
+- De vierkante minimap wordt alleen visueel aangepast; bestaande Blizzard
+  minimapframe/handlers blijven aanwezig, maar 'alles werkt' is pas na LIVE
+  WoW-test te bevestigen. Blizzard kan bepaalde decoraties herplaatsen.
+
+OFFLINE CHECKS
+Lua loadfile syntaxcheck voor alle 19 .lua-bestanden en gesimuleerde
+main/mini/andere minimapaddon/in-combat init voltooid. Geen echte
+in-game 12.x/Forever visual/combat checks mogelijk buiten de game.

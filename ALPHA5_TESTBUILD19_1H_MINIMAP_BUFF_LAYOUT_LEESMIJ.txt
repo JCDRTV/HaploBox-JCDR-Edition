@@ -1,0 +1,14 @@
+JCDRbox / HaploBox Alpha5 TB19.1h — MINIMAP / BUFF LAYOUT — OFFLINE TEST BUILD
+15 november 2026
+BASELINE: exactly TB19.1g approved Party Totals.
+
+Changed files: HaploBar.lua, Auras.lua, HaploBox.toc, this note only.
+Party Totals ControlBar.lua, Party.lua, Core.lua, secure healing modules, Focus/Follow, Hot rows, Alpha4 sync byte-identical to approved TB19.1g.
+
+HaploBar: rightmost calendar, clock immediately to its left when native controls unprotected and available. World map globe, + / - zoom, AddonCompartment and known LibDBIcon launcher buttons visually hidden while HaploBox minimap active, no removal of their underlying addon functionality; wheel zoom preserved. Zone label overlay within square minimap top; numeric PLAYER coordinates, when C_Map API is available, within bottom. Native quest/POI/player arrow untouched. Sun/Moon DielFrame is still handled exactly as previous build, no new change to it. /haplobar minimap off + /reload restores native controls.
+
+IMPORTANT: screenshot's original below-minimap '44.6, 70.8' is not produced anywhere in HaploBox Lua. Its owning external addon/frame is unverified, so this build does NOT forcibly delete an unknown external FontString. The new in-map native player-coordinate readout may coexist with that external label until its source is identified in-client.
+
+Buff Overview: row number tiles remain orange/class-colored and 27x27 (same buff icon size), now top-aligned at 5pt per row; Debuff tile top-aligned at 5pt as well. Missing-buff rail now follows each row's OWN actual buff count, not the maximum for all rows, preventing the disconnected gaps observed on screenshot. Existing individual row icon timer logic, five rows, divider, drag SavedVariables, user position precedence and reset-only-on-explicit-reset remain. No party secure aura code touched.
+
+LIVE REQUIRED: all five clients OOC /reload; confirm rightmost clock+calendar, no undesired buttons, native zoom via wheel, zone name/coord overlay at all map sizes and zonechanges; identify external 44.6,70.8 producer if duplicate persists. Buff Overview varied 1-5 active/missing icon counts; badges same-size top-aligned, timers visible. Drag Buff/Debuff and other movable UI, /reload and relog, check position persistence; combat/secure regressions. UI scale/edit mode/mouse fade; verify day/night and mailbox click intact. No WoW live confirmation yet.

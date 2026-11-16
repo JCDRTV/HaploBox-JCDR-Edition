@@ -1,0 +1,27 @@
+HaploBox Alpha5 — TB19.1g: laatste compactheidsfix Party Totals / TESTBUILD
+15 november 2026
+
+Gebouwd uitsluitend uit TB19.1f. Gebruiker toont TB19.1f live met 36 bags,
+17 gold, 19 silver, 14 copper: cijfers zijn leesbaar maar de afstand
+Gold -> Silver -> Copper is nog te groot. Gebruiker vraagt directe fix.
+
+WAT GEWIJZIGD IS:
+- Alleen ControlBar.lua teamtotalen (dus de 24px grijze dragheader).
+- Grote vaste Gold-minimumcel van 74pt is VERVANGEN door precieze breedte
+  van het actuele goudbedrag op hetzelfde 13pt lettertype + 4pt randmarge.
+  Grote goudtotalen kunnen zonder vaste limiet meegroeien.
+- Silver en Copper houden stabiele twee-cijfer breedte op basis van echt
+  gemeten '88'/'99'/'00' op 13pt + 3pt marge, minimaal 18pt; geen oude
+  extra 24pt of 38pt minimumruimte.
+- Native munticoon volgt 2pt na het getal, 3pt tussen muntgroepen.
+- Bags 3-cijferig links, volgorde Bags -> Gold -> Silver -> Copper,
+  tandwiel rechts, sleepzone en data-sync vraagteken blijven ongewijzigd.
+- Extra headerbreedte alleen bij onvoldoende ruimte voor groot goud.
+
+Alle 19 Lua-modules nagekeken; de overige modules zijn exact gelijk aan
+TB19.1f, inclusief alle minimap-/Buff-, HoT- en secure combat-code.
+
+LIVE HERTEST: vijf clients /reload; bij 36 bags/17g/19s/14c moet alles
+compact staan zonder '...'. Controleer 0/9/99 Silver/Copper, 2/4/7/10
+Gold-cijfers, bags 7/27/127 en '?', visuele munticoontjes, grijze
+headerdrag, tandwiel en kleinere UI scale. TB18.3 blijft stabiele fallback.

@@ -1,0 +1,31 @@
+HaploBox Alpha5 — TB19.1f / Gold headroom, Silver + Copper compact / TESTBUILD
+15 november 2026
+
+Gebouwd uit TB19.1e. De gebruiker toonde 17g/13s/70c zonder clipping,
+maar wil Silver en Copper compacter (iedere muntsoort is 0..99) en
+voor Gold juist veel meer ruimte en dynamisch meegroeien.
+
+ALLEEN de TEAM-totalen in ControlBar.lua aangepast:
+- Bags > Gold > Silver > Copper blijven LINKS in dezelfde 24px header.
+- Alle getallen behouden 13pt, zelfde native munticoontjes, gear rechts.
+- Silver en Copper krijgen per stuk de werkelijk gemeten tweecijferige
+  FontString-breedte (o.a. 88, 99, 00) + 5 UI-punten randmarge,
+  nooit minder dan 24 UI-punten (i.p.v. vaste 38).
+- Gold krijgt minimaal 74 UI-punten; voor grotere bedragen groeit de
+  breedte met het GEMETEN aantal UI-punten dat de volledige tekst vereist,
+  plus veiligheidsmarge. Geen begrenzing tot een vast aantal cijfers.
+- Meten gebeurt tijdelijk op ruime tekstbreedte, zodat geen breedte van
+  ingekorte '...' gemeten wordt. Hierna wordt originele tekst hersteld.
+- Coins blijven exact rechts van hun bijbehorende tekstveld.
+- De grijze header groeit ALLEEN als er werkelijk onvoldoende ruimte
+  voor geld/gear/drag is; de vijf individuele Party Frames niet wijzigen.
+- Bags zijn onveranderd: icoon, 3-cijferig veld, kleuren en stale '?'.
+
+Geen wijzigingen aan minimap, buff/debuff UI, Focus/Follow, HoTs,
+Blizzard-compatibiliteitscode, secure healing, sync of individuele
+characterresourceweergave.
+
+Live her-test (alle vijf clients /reload): kijk naar 17g 13s 70c,
+0s/99s, 0c/99c, grotere gold sums (5-10+ cijfers), Bags 7/27/127,
+onbekende '?', gear/draggebied, UI-scale. GEEN live-goedkeuring zonder
+in-game verificatie. TB19.1e blijft vorige build, TB18.3 stabiel.

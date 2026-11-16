@@ -1,11 +1,29 @@
 ## Interface: 16001, 11508, 120105
 ## Title: HaploBox
-## Notes: Multibox team helper: team frame with follow status, follow alerts on the leader's screen, XP, gold, bag space and buffs, whisper forwarding, auto roles, invites, quest sharing, free-for-all loot, role checks.
+## Notes: Multibox team helper: team frame with follow status, follow alerts on the leader's screen, invites, quest sharing, free-for-all loot, role checks.
 ## Author: Haplo
-## Version: 0.9.0
-## SavedVariables: HaploBoxDB, HaploBoxTeam
+## Version: 0.7.0-alpha5-testbuild19.1k-tracking-buffs-minimap-header
+## SavedVariables: HaploBoxDB, HaploBoxTeam, HaploBoxA4DB
 ## IconTexture: Interface\Icons\Ability_Hunter_BeastCall
 
 Core.lua
+HealPrediction.lua
 Party.lua
+MiniHeal.lua
+XP.lua
+FocusMonitor.lua
+Auras.lua
+Gameplay.lua
+Trade.lua
+ControlBar.lua
+HaploBar.lua
 Options.lua
+
+Alpha4\Core.lua
+Alpha4\Sync.lua
+Alpha4\Information.lua
+Alpha4\Inventory.lua
+Bindings.xml
+Alpha4\Whispers.lua
+Alpha4\Options.lua
+Alpha4\BlizzardParty.lua

@@ -1,0 +1,35 @@
+JCDRbox / HaploBox – TB18.2 P1 HoTs exact binnen blauw Focusvlak
+15 november 2026. OFFLINE GETEST; nog NIET goedgekeurd in de echte WoW-client.
+
+GEBOUWD VAN: TB18.1. Doel: gebruiker bevestigde expliciet met screenshot
+'alleen het blauwe gedeelte' van Focus als HoT-hoogtemaat.
+
+EEN BELANGRIJKE BEPERKING:
+Twee HoT-rijen SAMEN kunnen alleen in dat kleine blauwe Focusvlak passen
+als ELKE rij ongeveer de helft van het blauwe vlak is (plus 2 UI-px gap).
+Daarom VERKLEINEN de iconen t.o.v. TB18.1 32px. Dit is bewust en onvermijdelijk
+bij behoud van TWEE rijen en ongewijzigde hoogte van Focus.
+
+VOOR DEZE FIX:
+- blauw binnenvlak = dynamisch gemeten Focus-hoogte minus 2px gouden rand
+  aan bovenkant EN onderkant (FocusTile height -4);
+- HoT rijmaat = (innerBlueHeight - 2px gap) / 2;
+- eerste rij precies BOVEN bij begin blauwe vlak, tweede eindigt ONDER bij einde;
+- native Blizzard AuraButton layout en fallback texture gebruiken dezelfde maat;
+- initialisatie gebeurt pas nadat Focus echte afmetingen kreeg; bij UI-resize
+  wordt de native aura-container VISUEEL geschaald, zonder scannercode te wijzigen;
+- geen rendering meer naast / onder het Follow deel; geen muishitbox erbij.
+
+GEEN VERANDERING AAN:
+- Focus/Follow zelf, Incoming Heals, MiniHeal, Buff/Debuff, characterheader,
+  Share UI to Party, game/secure combat aura-scanner, detectie of afloop.
+
+TESTEN:
+1. Sluit alle vijf WoW clients en bewaar TB18.1 als backup.
+2. Kopieer HaploBox-map TB18.2 naar Interface/AddOns.
+3. Buiten combat Rejuvenation/Regrowth toepassen: twee rijen blijven binnen
+   alleen het blauwe Focusvlak en raken goldranden of Follow niet.
+4. Kijk vooral of iconen niet tot 32px blijven op de native/client UI.
+5. Test /reload en huidige party-frame grootte; na eventuele resize opnieuw.
+6. Daarna tijdens combat HoTs apply/refresh/expiry, Incoming Heals en geen
+   Lua/secret errors; bij regressie onmiddellijk terug naar TB18.1/TB18.

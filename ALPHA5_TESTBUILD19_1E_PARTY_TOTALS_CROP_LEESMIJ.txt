@@ -1,0 +1,25 @@
+HaploBox Alpha5 — TB19.1e / Team Gold-Silver-Copper no crop / TESTBUILD
+15 november 2026
+
+Gebouwd op TB19.1d. Alleen ControlBar.lua layout gewijzigd:
+- Bags -> Gold blijven links in bestaande lichtgrijze Party Frames dragheader.
+- Het al door gebruiker goedgekeurde 13pt lettertype blijft.
+- Silver/Copper waarden uit 2-digit gold grid werden door WoW als '...' getoond
+  omdat de individuele resource-grid-tekstcellen slechts 22 UI-punten breed
+  zijn. Voor uitsluitend de TEAM-TOTALEN gebruiken we ruimere geldkolommen:
+  Gold minimaal 46pt (dynamisch bij veel gold-digit), Silver/Copper 38pt.
+  Alle drie de coin-iconen blijven in de juiste volgorde en op een vaste plek.
+- De grijze header heeft minimaal 320 UIpt breedte, maar bestaande grotere
+  breedtes blijven gelijk. Bij uitzonderlijk lange bedragen wordt alleen de
+  header verder vergroot zodat er ruimte blijft vóór het tandwiel rechts.
+- Bags: zelfde 18pt icoon, 31pt uitgelijnd 3-cijferig tellerveld.
+- Onbekende/stale data toont '?' direct na de Bags, niet onnodig helemaal rechts.
+- Tandwiel en sleepzone blijven bruikbaar. Geen nieuwe balk.
+
+Ongewijzigd ten opzichte van TB19.1d: alle Party Rows, Minimap, Buff/Debuff
+Overview, Focus/Follow, HoT, secure healing, class/data sync, overige modules.
+
+Live test: 5 clients /reload; 16 gold, 52 silver, 20 copper (zonder '...'),
+32 bags links, gear rechts, paneel verslepen, grote goldbedragen, 7/27/127
+bags, onbekende '?', kleinere UI schaal. Daarna overige TB19.1c-tests.
+Dit is een testbuild, nog niet live-gevalideerd.

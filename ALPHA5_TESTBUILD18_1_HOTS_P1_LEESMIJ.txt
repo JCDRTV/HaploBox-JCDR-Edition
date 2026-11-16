@@ -1,0 +1,41 @@
+JCDRbox / HaploBox — TB18.1 P1 HoT Size & Focus Alignment Hotfix
+15 november 2026 — OFFLINE GETEST, NOG NIET LIVE IN WOW GOEDGEKEURD
+
+GEBOUWD VAN: exacte TB18 ZIP. Alle andere features/fixes uit TB18 blijven behouden.
+
+GEWIJZIGD IN TB18.1:
+- HoT iconen worden van 25 naar 32 UI-pixels gezet (zowel native AuraButton
+  als legacy icon-texture via dezelfde HOT_ICON constante).
+- 2 rijen, 8 kolommen per rij, horizontale stap icon+3px en verticale
+  tussenruimte 4px. Zowel native AuraContainer (incl. lineSpacing/height)
+  als legacy HoT rail gebruiken dezelfde maatvoering.
+- De bovenkant van de eerste HoT-rij staat nu EXACT in lijn met de TOP
+  van de Focus-indicator: TOPLEFT HoT rail aan TOPRIGHT Focus op (3,0).
+  TB18 gebruikte een positieve verticale offset waardoor iconen BOVEN Focus
+  begonnen; die fout is verwijderd.
+- Noodzakelijke geometrische beperking: Focus zelf is ~1/3 van het character-
+  frame (~30-40px). Twee goed zichtbare iconrijen van 32px passen NIET binnen
+  die hoogte. Rij 2 loopt daarom rechts van de Follow-indicator verder omlaag,
+  binnen de totale partyframe-rijhoogte en niet OVER de Focus/Follow-tegels.
+  De hoogte, plaats, randen en functionaliteit van Focus en Follow VERANDEREN NIET.
+- Eventuele HoT timers blijven onderaan in het icon en de rail blijft
+  mouse-transparent.
+
+NIET GEWIJZIGD:
+- Incoming Heals op Party en Mini Heal, classcolors, grootte/positie MiniHeal,
+  alle Buff/Debuff iconformaten, playerheader, Share UI to Party, Focus/Follow.
+- Native combat aura filtering, het aura scan/update/expire pad, secure heals.
+
+TEST — EERST OUT OF COMBAT:
+1. Sluit alle 5 WoW clients. Bewaar TB18 ZIP als backup.
+2. Vervang de volledige Interface/AddOns/HaploBox map door TB18.1.
+3. Cast Rejuvenation en Regrowth op een partijgenoot.
+4. Check dat HoT icoontjes merkbaar groter dan in TB18 zijn, en dat de TOP
+   van de eerste icoonrij op dezelfde hoogte als Focus begint (NIET erboven).
+5. Check tweede rij direct ONDER de eerste, rechts naast Follow, zonder
+   overlapping van volgende partyframe. Test diverse UI scales /reload.
+6. Check Incoming Heals, Buff/Debuff Overview en Follow ongewijzigd.
+
+PAS DAARNA IN COMBAT:
+- Nieuwe HoTs, refresh, expiry op alle vijf clients, geen Lua/secret errors.
+- Bij regressie onmiddellijk terug naar TB18 of bekende TB13 combatbasis.

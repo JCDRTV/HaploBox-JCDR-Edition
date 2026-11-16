@@ -1,0 +1,29 @@
+HaploBox Alpha5 TB19.1a — LIVE FEEDBACK FIX — 15 november 2026
+
+Bron: TB19.1, GEEN wijzigingen aan FocusMonitor.lua, HealPrediction.lua,
+MiniHeal.lua, de HoT native engine of secure partyframe healing.
+
+1) Buff Overview: minimap legt alleen een standaardpositie op als er GEEN
+handmatig opgeslagen positie is. Een drag-positie wordt NIET overschreven
+door UI_SCALE_CHANGED, ADDON_LOADED, reload, lock of reguliere layout.
+/hb buffpanel reset herstelt de standaardpositie; via Quick Settings idem.
+2) Buff EN Debuff Overview: badges 1-5 krijgen identieke grote 15pt
+witte cijfers met zwarte dikke omranding en schaduw, gecentreerd, zonder
+bestaande badge/icon-maten of rijhoogte aan te passen.
+3) Party totalen: font nu identiek aan karakterrij (11pt OUTLINE, schaduw)
+inclusief 11px goud/zilver/kopericonen, layout afgeleid van live resource
+teksten; geen nieuwe footer of verplaatsen van partyframes.
+4) Minimap: ook Blizzard GameTimeFrame en MiniMapTrackingFrame/Classic
+varianten detecteren als die gewone Frames zijn, hun oorspronkelijke
+interactie behouden, en meer gangbare minimap-buttons in de bovenbalk
+rangschikken. Kaartquest- en POI-markeringen NIET wijzigen.
+
+BELANGRIJK: OFFLINE TESTKANDIDAAT. Controleer in-game bij verschillende
+schermschalen, partywissel en /reload; Blizzard kan sommige knoppen
+beschermen of opnieuw positioneren. Dan blijft de Blizzardfunctionaliteit
+leidend; nooit secure UI forceren.
+
+Na het installeren liefst alle 5 clients /reload. Test Buff unlock->drag->
+lock->reload, Debuff 1-5, Gold+Bags font/kolommen, GameTime/Tracking knoppen,
+Map (zoom, ping, questmarks, calendar/mail) en daarna combat.
+Rollback ZIP: TB19.1, of TB18.3 als stable baseline.

@@ -1,0 +1,39 @@
+HAPLOBOX ALPHA 5 – TESTBUILD 10 – COMBAT AURA HOTFIX
+13 NOVEMBER 2026
+
+BELANGRIJK: OFFLINE GETEST, NOG NIET LIVE IN FOREVER. INSTALLEER OP ALLE VIJF CLIENTS.
+
+PRIORITEIT 1: BUFFS / HOTS / DEBUFFS VERDWIJNEN IN COMBAT (BUG-26)
+- De nieuwe 12.1+ native Blizzard AuraContainer geeft buff-, HoT- en debufficonen door vanuit het spel zelf. Deze containers kunnen tijdens combat beschermde aura-informatie bijwerken zonder dat HaploBox de geheime gegevens in Lua moet vergelijken.
+- Drie aparte native containers: gewone buffs naast Focus, 16 HoTs boven en 16 debuffs onder naast Follow. Bestaande grijs-metalen Focus/Follow en iconposities ongewijzigd; klikdoorlatende init.
+- HoT-filter op bekende druid spell-ID's; debuffs via HARMFUL.
+- Op clients ZONDER AuraContainer gebruikt HaploBox de vorige legacy weergave: bij onleesbare combatstatus blijven laatst bekende aura-iconen tot hun bekende eindtijd staan in plaats van na 5,5 seconden te verdwijnen. Let op: nieuwe tijdens combat toegepaste buffs/HoTs/debuffs kunnen in die fallback ontbreken; geen live updates mogelijk zonder compatibele WoW API.
+- In de native route wordt de LUA-aura-scanner niet aangeroepen tijdens protected combat.
+- Diagnose: /hb auramode (moet 'Blizzard native (live combat)' melden voor volledige live combat weergave).
+
+PRIORITEIT 2: ELYA VOLLEDIG ZONDER BUFFS, GEEN MISSING BUFFS (BUG-24/MEEST RECENT)
+- Geen early return meer op 0 buffs: na 2 consistente scans moet de vereiste bufflijst rood worden getoond.
+- Tijdens combat worden Missing Buff-evaluaties bevroren totdat betrouwbare gegevens terug zijn; geen valse nieuwe waarschuwingen op secret aura-data.
+- Sleeping Bag +3% XP: Well-Rested (met koppelteken) nu als xp herkend; niet te verwarren met Camp Benefits. Exact spell-ID nog niet hardcoded.
+
+PRIORITEIT 3: ONTERECHT RODE FOLLOW-INDICATOREN, REAPPLY HERSTELT (BUG-27)
+- Leader vraagt follow status periodiek elke 12s op; ook direct bij verlaten combat.
+- Een herhaalde /follow op hetzelfde doel stuurt nu opnieuw een stille followstatus (zonder dubbele waarschuwing).
+- De korte AUTOFOLLOW_END debounce is 0,65s (voorheen 0,3s).
+- Werkende eigenlijke /follow macro's niet veranderd.
+
+BEHOUDEN
+- TB9 compacte party layout; dezelfde positie van goud/bag slots; geen nieuwe gouden munticonen in deze hotfix (later ontwerp).
+- Mana/5SR, Cast/XP, Invite Team, Controls, Share UI, focus en statuskleuren.
+- Sleeping Bag en Camp Benefits als afzonderlijke concepten; Camp-stack Missing profielen blijven latere ontwerpkeuze.
+
+INGAME CHECKS (STRENG)
+1. /hb auramode op Mael en één follower. Als legacy: noteer dit, dan werkt volledige live combat-aura-update niet.
+2. Buiten combat: bufficonen en HoT/debuff-rijen, Missing Buffs bij ongebuffte Elya.
+3. In combat: Rejuvenation en Regrowth op Elya, Moonfire/debuff op Druid, nieuwe buffs/HoTs moeten LIVE bijwerken en blijven staan.
+4. Uit combat: geen duplicates, timers leesbaar, leegte correct.
+5. Dungeon follow: Lyra->Mael en DPS->Lyra, na wissel of combat niet rood tenzij werkelijk niet following.
+6. Geen muisblokkering door auraiconen en geen terugkeer van Blizzard default partyframes.
+
+ROLLBACK
+- Ongewijzigde TB9 staat in Drive Backups: https://drive.google.com/file/d/1wu1hHqWAzO5bOZBEPGe9_09gX-6X5LDV/view?usp=drivesdk

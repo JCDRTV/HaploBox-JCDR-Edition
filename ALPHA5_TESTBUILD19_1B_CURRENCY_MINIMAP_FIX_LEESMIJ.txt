@@ -1,0 +1,10 @@
+HaploBox Alpha5 TB19.1b — TEST / NIET LIVE GOEDGEKEURD (15 november 2026)
+
+Basis: TB19.1a. Gerichte correcties: 
+1. Geldweergave gebruikt nu vaste, afzonderlijke kolommen voor gold, silver, copper, met native Blizzard coin art en dezelfde font/rijstijl voor partyheader en elke characterheader. Geen verschuivende tussenruimtes meer door 1 vs 2 cijfers. Bedragen zijn uitsluitend echte clientdata. Bij onbekende data geen verzonnen getallen.
+2. Bagslots in de vijf characters en de samenvatting gebruiken één vast, rechts uitgelijnd veld voor drie cijfers, bijv. 7, 27 en 127. Het bagicoon blijft op een vaste X-kolom. Bij meer dan 999 slots wordt tekst niet stilzwijgend ingekort.
+3. De native Forever dag/nacht-indicator MinimapCluster.DielFrame wordt expliciet als niet-beschermde Frame ondersteund. De bestaande klikfunctionaliteit blijft. Bij MinimapCluster:SetEditModeScale organiseert de addon zijn minimapknoppen OOC opnieuw. Verplaatste knopankers worden gecontroleerd waar GetPoint beschikbaar is. Quest/POI markers worden niet verplaatst.
+
+Veiligheid: geen wijzigingen in FocusMonitor, HealPrediction, MiniHeal, native HoT-committing aura-engine, team role/sync, shared controls of Buff/Debuff nummerbadgecode. Alleen zichtbare resourcekolommen en minimap layout. Blizzard protected controls worden niet verplaatst.
+
+Live tests: juiste 1/2/3-cijferige bagkolom (ook ?), gold/silver/copper vaste kolommen, onbekende data, /reload, 5-client sync; DielFrame blauw/gele zon in topbar, Edit Mode, knoppen clickable en questicons op de kaart; combat en regressie van veilige healing/HoTs. Terugval: TB19.1a of TB18.3.

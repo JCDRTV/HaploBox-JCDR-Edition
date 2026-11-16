@@ -1,38 +1,30 @@
--- HaploBox: multibox team helper. This file holds names and team state, the addon
--- message protocol (follow state, focus, stats, team sync, whisper forwarding),
--- the automations (invites, quests, loot, roles, flights, quest tracker) and the
--- slash commands. Party.lua draws the team frame, Options.lua the options panel.
--- It avoids changing protected frames in combat and avoids known taint paths, but
--- it calls some Blizzard UI code, so it cannot promise never to taint.
+-- HaploBox: multibox team helper.
+-- Followers report follow start/stop and spell errors to the leader over a
+-- hidden addon channel. The leader gets a raid-warning style message on its
+-- own screen. Nothing here touches protected frames, so it cannot taint the UI.
 
 local ADDON = ...
 local HB = {}
 _G.HaploBox = HB
 
 local PREFIX = "HaploBox"
-local getMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
-local VERSION = getMetadata and getMetadata(ADDON, "Version") or "?"
-
--- The team roles. GAME_ROLE is the single validator: anything else is "no role".
-HB.ROLES = { "tank", "healer", "dps" }
-local GAME_ROLE = { tank = "TANK", healer = "HEALER", dps = "DAMAGER" }
-local function validRole(r) return GAME_ROLE[r] and r or nil end
-HB.ValidRole = validRole
+local VERSION = "0.7.0-alpha5-testbuild19-haplobar-squaremap"
 
 -- Sound values: a SOUNDKIT name ("RAID_WARNING"), a sound kit id (8959),
 -- a file id ("file:567397") or a file path ("Interface\\AddOns\\HaploBox\\Sounds\\x.ogg").
 -- false or "" turns the sound off.
+BINDING_HEADER_HAPLOBOX_MAIN = "JCDRbox"
+BINDING_NAME_HAPLOBOX_HEAL_TOGGLE = "Toggle Follower Heal UI"
 local DEFAULTS = {
 	sounds = {
 		followOn     = "IG_QUEST_LIST_OPEN",
 		followOff    = "IG_QUEST_LIST_CLOSE",
 		leaderAlert  = "RAID_WARNING",
+		focusError   = false,
 		shareError   = "IG_QUEST_FAILED",
 		inviteAccept = "IG_PLAYER_INVITE",
 		mountOn      = false,
 		mountOff     = false,
-		whisperIn    = "TELL_MESSAGE",
-		bagsFull     = false,
 	},
 	alertOnFollowStart  = false,  -- leader also gets a (green) message when a follower starts following
 	autoAcceptInvite    = true,   -- followers accept invites from the leader
@@ -42,23 +34,28 @@ local DEFAULTS = {
 	relayErrors         = true,   -- followers send cast errors to the leader
 	showRelayedErrors   = true,   -- leader prints them in chat
 	autoRoleCheck       = true,
-	autoFFA             = true,   -- leader sets free-for-all loot when the group changes
+	autoFFA             = true,   -- leader auto-sets FFA with trusted teammates, Group Loot with outsiders
 	autoLeaveWithLeader = false,
-	followFlights       = true,   -- followers: fly to the leader's flight destination when their flight map opens
-	teamFrame           = "auto", -- team frame on this toon: "auto" (only if it is the leader), "show" or "hide"
+	followMode          = "direct", -- direct: all follow actual leader; dungeon: DPS follow healer
+	focusAlerts         = false,    -- Alpha3: focus errors only inline in team frames, no alerts
+	teamFrame           = "show", -- new installs: party frames on every client; existing DB setting is preserved
 	partyFrameSolo      = false,  -- also show it when not in a group
-	partyScale          = 1,
+    partyScale          = 1.0, -- user-approved default; global WoW UI scale controls overall size
+    controlsOpen        = false,
+    haploMinimapEnabled = true, -- TB19: native minimap, square HaploBox presentation (MAIN / large view)
+    miniHealMode        = false, -- local-only; large screen keeps full Main view
+    buffOverviewEnabled = true, -- preserve the previously enabled TB15 panel
+    debuffOverviewEnabled = false, -- new visual pane opt-in until first test
+    goldDetailsOpen     = false,
+    bagsDetailsOpen     = false,
+	questEnabled        = false,
+	tradeEnabled        = false,
+	trustedMembers      = "Mael,Lyra,Elya,Nyra,Ayla",
 	teamLocked          = false,  -- team frame: locked in place (unlocked shows a drag bar and resize corner)
-	teamClassColors     = true,   -- team frame: names and health bars in class colours
-	teamShowXP          = true,   -- team frame: level and XP bar
-	teamShowGold        = true,   -- team frame: gold per toon and the team total
-	teamShowBags        = true,   -- team frame: free bag slots per toon and the team total
-	teamShowBuffs       = true,   -- team frame: buffs from the group (a minute or longer) with timers
-	autoPartyRole       = true,   -- set my party and group finder role from my team role
-	hideQuestTracker    = true,   -- hide Blizzard's quest tracker (objective tracker)
-	bagFullAlert        = true,   -- leader: message when a toon's bags are full
-	forwardWhispers     = true,   -- followers: forward whispers from outside the team to the leader
-	relayReplies        = true,   -- followers: pass the leader's replies on to the last whisperer
+	teamClassColors     = true,   -- keep existing user-selectable class colours
+    -- Buff Watcher defaults: food/XP and team-cast buffs required; Camp optional.
+    requiredBuffs       = {xp=true, food=true, camp=false, mark=true, thorns=true, intellect=true, fortitude=true, blessing=false},
+	preferredOrder      = "Mael,Lyra,Elya,Nyra,Ayla", -- match character names or their individual name parts
 	debug               = false,
 }
 
@@ -135,19 +132,76 @@ function HB.UnitIdent(unit)
 	return full
 end
 
-function HB.Leader() return HaploBoxTeam and str(HaploBoxTeam.leader) end
-function HB.IsLeaderName(name)
-	local l = HB.Norm(HB.Leader())
-	return l ~= nil and l == HB.Norm(name)
+-- The actual WoW party leader may change while the cached HaploBoxTeam.leader
+-- does not. Never rely on the static team roster for live focus/follow validation.
+function HB.GroupLeader()
+	if not (IsInGroup and IsInGroup()) or not UnitIsGroupLeader then return nil end
+	local function leaderAt(unit)
+		if UnitExists and not UnitExists(unit) then return nil end
+		local ok, isLeader = pcall(UnitIsGroupLeader, unit)
+		if ok and isLeader and not secret(isLeader) then return HB.UnitIdent(unit) end
+	end
+	local name = leaderAt("player")
+	if name then return name end
+	if IsInRaid and IsInRaid() then
+		for i = 1, (GetNumGroupMembers and GetNumGroupMembers() or 0) do
+			name = leaderAt("raid" .. i)
+			if name then return name end
+		end
+	else
+		for i = 1, 4 do
+			name = leaderAt("party" .. i)
+			if name then return name end
+		end
+	end
 end
-function HB.IAmLeader() return HB.IsLeaderName(HB.UnitIdent("player")) end
+function HB.Leader()
+	return HB.GroupLeader() or (HaploBoxTeam and str(HaploBoxTeam.leader))
+end
+function HB.IsLeaderName(name)
+	local leader = HB.Norm(HB.Leader())
+	return leader ~= nil and leader == HB.Norm(name)
+end
+function HB.IAmLeader()
+	if IsInGroup and IsInGroup() and UnitIsGroupLeader then
+		local ok, isLeader = pcall(UnitIsGroupLeader, "player")
+		if ok and not secret(isLeader) then return not not isLeader end
+	end
+	return HB.IsLeaderName(HB.UnitIdent("player"))
+end
+
+function HB.Healer()
+	local roles = HaploBoxTeam and HaploBoxTeam.roles or {}
+	for n, role in pairs(roles) do
+		if role == "healer" then
+			local wanted = HB.Norm(n)
+			if HB.Norm(HB.UnitIdent("player")) == wanted or (HB.SameTeamMember and HB.SameTeamMember(n, HB.UnitIdent("player"))) then return HB.UnitIdent("player") end
+			for i = 1, 4 do
+				local u = "party" .. i
+				if UnitExists(u) and (HB.Norm(HB.UnitIdent(u)) == wanted or (HB.SameTeamMember and HB.SameTeamMember(n, HB.UnitIdent(u)))) then return HB.UnitIdent(u) end
+			end
+			return n
+		end
+	end
+end
+-- Pure expected-target computation; never issues /follow or changes a focus.
+function HB.ExpectedFollowTarget(name)
+	local leader = HB.GroupLeader()
+	if not leader or HB.Norm(name) == HB.Norm(leader) then return nil end
+	if HB.db and HB.db.followMode == "dungeon" then
+		local healer = HB.Healer()
+		if not healer then return nil end
+		if HB.Norm(name) ~= HB.Norm(healer) then return healer end
+	end
+	return leader
+end
 
 function HB.RoleOf(name)
 	local roles = HaploBoxTeam and HaploBoxTeam.roles
 	local key = HB.Norm(name)
 	if not roles or not key then return nil end
 	for n, role in pairs(roles) do
-		if HB.Norm(n) == key then return validRole(role) end
+		if HB.Norm(n) == key or (HB.SameTeamMember and HB.SameTeamMember(n, name)) then return role end
 	end
 end
 function HB.MyRole() return HB.RoleOf(HB.UnitIdent("player")) end
@@ -174,106 +228,13 @@ function HB.PlaySound(key)
 	end
 end
 
--- ---------------------------------------------------------------- sending
--- Addon messages share a per-prefix allowance (about 10, regaining 1 a second), and
--- a send over it fails. Every message goes through a queue that stays under that
--- allowance and retries a send the game turned down as throttled. A queued message
--- with a key (stats, focus) is replaced by a newer one with the same key.
-local SEND_BURST, SEND_RATE, SEND_TRIES = 8, 1, 5
-local SEND_RESULT = Enum and Enum.SendAddonMessageResult
-local THROTTLED = {
-	[(SEND_RESULT and SEND_RESULT.AddonMessageThrottle) or 3] = true,
-	[(SEND_RESULT and SEND_RESULT.ChannelThrottle) or 8] = true,
-}
-local SEND_OK = (SEND_RESULT and SEND_RESULT.Success) or 0
-local sendQueue, sendTokens, sendRefillAt, drainScheduled = {}, SEND_BURST, GetTime(), false
-
-local function groupChannel()
-	if not IsInGroup() then return nil end
-	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then return "INSTANCE_CHAT" end
-	return IsInRaid() and "RAID" or "PARTY"
-end
-
--- "ok", "throttled" or "fail". Older clients return nothing or a boolean.
-local function rawSend(e)
-	local channel = e.target and "WHISPER" or groupChannel()
-	if not channel then return "fail" end
-	local ok, r = pcall(C_ChatInfo.SendAddonMessage, PREFIX, e.msg, channel, e.target)
-	if not ok or r == false then return "fail" end
-	if r == nil or r == true or r == SEND_OK then return "ok" end
-	if THROTTLED[r] then return "throttled" end
-	return "fail"
-end
-
-local drainQueue
-local function scheduleDrain()
-	if drainScheduled then return end
-	drainScheduled = true
-	C_Timer.After(1 / SEND_RATE, function()
-		drainScheduled = false
-		drainQueue()
-	end)
-end
-
-function drainQueue()
-	local now = GetTime()
-	sendTokens = math.min(SEND_BURST, sendTokens + (now - sendRefillAt) * SEND_RATE)
-	sendRefillAt = now
-	while sendQueue[1] and sendTokens >= 1 do
-		local e = sendQueue[1]
-		local result = rawSend(e)
-		e.tries = (e.tries or 0) + 1
-		if result == "throttled" and e.tries < SEND_TRIES then
-			sendTokens = 0
-			break
-		end
-		table.remove(sendQueue, 1)
-		sendTokens = sendTokens - 1
-		if result ~= "ok" then
-			debug("send failed (" .. result .. "): " .. e.msg:sub(1, 40))
-			if e.onFail then e.onFail() end
-		elseif e.onOk then
-			e.onOk()
-		end
-	end
-	if sendQueue[1] then scheduleDrain() end
-end
-
--- Drops queued messages: group ones (target nil) and/or whispers. Used when the group
--- or the leader changes, so a late message does not reach a group or toon it was not
--- meant for.
-local function dropQueued(groupMsgs, whispers)
-	for i = #sendQueue, 1, -1 do
-		local e = sendQueue[i]
-		if (e.target and whispers) or (not e.target and groupMsgs) then table.remove(sendQueue, i) end
-	end
-end
-
-local function enqueue(msg, target, key, onFail, onOk)
-	if key then
-		for _, e in ipairs(sendQueue) do
-			if e.key == key then e.msg = msg return end
-		end
-	end
-	sendQueue[#sendQueue + 1] = { msg = msg, target = target, key = key, onFail = onFail, onOk = onOk }
-	drainQueue()
-end
-
--- To the whole group (party, raid or instance chat).
-local function send(msg, key)
+local function send(msg)
 	if not IsInGroup() then return end
-	enqueue(msg, nil, key)
+	local channel = IsInRaid() and "RAID" or "PARTY"
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then channel = "INSTANCE_CHAT" end
+	C_ChatInfo.SendAddonMessage(PREFIX, msg, channel)
 end
-
--- To one toon only, as an addon whisper. Never falls back to the group.
-local function whisper(target, msg, onFail, onOk)
-	target = str(target)
-	if not target then
-		if onFail then onFail() end
-		return
-	end
-	enqueue(msg, target, nil, onFail, onOk)
-end
+HB.SendTeamMessage = send
 
 local function leaderAlert(text, color)
 	if RaidNotice_AddMessage and RaidWarningFrame then
@@ -345,80 +306,40 @@ end
 
 -- ---------------------------------------------------------------- team sync
 -- /hb team (on the leader, grouped): the current group becomes the team, in group
--- order, with the leader first. It is sent as M|<leader>|<name>=<role>;... A toon
--- applies it at once only when it comes from the leader this toon already has (set
--- here with /hb leader, the options button, /hb accept or the setup skill). From
--- anyone else it waits for /hb accept. A role the leader does not know is sent as
--- "none" (older versions parse letters only), and every toon keeps its own stored
--- role for that name. /hb role sends R|<role>|<name>.
+-- order, with the leader first. It is sent as M|<leader>|<name>=<role>;... and every
+-- toon that receives it from that leader stores it. /hb role sends R|<role>|<name>.
 local function clean(n) return (str(n) or ""):gsub("[|;=]", "") end
-
-local function isTeamName(name)
-	local k = HB.Norm(name)
-	if not k then return false end
-	if HB.IsLeaderName(name) then return true end
-	for _, n in ipairs(HaploBoxTeam.order or {}) do if HB.Norm(n) == k then return true end end
-	for n in pairs(HaploBoxTeam.roles or {}) do if HB.Norm(n) == k then return true end end
-	return false
-end
-HB.IsTeamName = isTeamName
-
--- true when that name is one of the other members of my current group
-local function inGroup(name)
-	local key = HB.Norm(name)
-	if not key or not IsInGroup() then return false end
-	local raid = IsInRaid()
-	for i = 1, raid and GetNumGroupMembers() or 4 do
-		local u = raid and ("raid" .. i) or ("party" .. i)
-		if UnitExists(u) and HB.Norm(HB.UnitIdent(u)) == key then return true end
-	end
-	return false
-end
 
 local function setRole(name, role)
 	HaploBoxTeam.roles = HaploBoxTeam.roles or {}
 	local key = HB.Norm(name)
-	for n in pairs(HaploBoxTeam.roles) do
-		if HB.Norm(n) == key then HaploBoxTeam.roles[n] = nil end
+	for n, oldRole in pairs(HaploBoxTeam.roles) do
+		if HB.Norm(n) == key then
+			HaploBoxTeam.roles[n] = nil
+		elseif role == "healer" and oldRole == "healer" then
+			HaploBoxTeam.roles[n] = "dps"
+		end
 	end
 	HaploBoxTeam.roles[name] = role
 end
+HB.SetRoleLocal = setRole
 
 local function refreshTeam()
 	if HB.LayoutPartyFrame then HB.LayoutPartyFrame() end
 	if HB.OnFollowStateChanged then HB.OnFollowStateChanged() end
+	if HB.RefreshControls then HB.RefreshControls() end
 end
+HB.RefreshTeam = refreshTeam
 
--- Every leader change goes through here. Private messages still queued for the old
--- leader, and the leader's reply target, are dropped.
-local function setLeader(name)
-	if HB.Norm(name) ~= HB.Norm(HaploBoxTeam.leader) then
-		dropQueued(false, true)
-		HB.lastRelay = nil
-	end
-	HaploBoxTeam.leader = name
-end
-
--- list: { name = , role = } with role nil when unknown. An unknown role keeps the
--- role this toon has stored for that name.
 local function applyTeam(leader, list)
-	local old = HaploBoxTeam.roles or {}
-	setLeader(leader)
+	HaploBoxTeam.leader = leader
 	HaploBoxTeam.order = {}
 	HaploBoxTeam.roles = {}
 	for _, m in ipairs(list) do
 		HaploBoxTeam.order[#HaploBoxTeam.order + 1] = m.name
-		local role = validRole(m.role)
-		if not role then
-			local key = HB.Norm(m.name)
-			for n, r in pairs(old) do
-				if HB.Norm(n) == key then role = validRole(r) end
-			end
-		end
-		HaploBoxTeam.roles[m.name] = role
+		HaploBoxTeam.roles[m.name] = m.role
 	end
 	refreshTeam()
-	if HB.ApplyRoles then C_Timer.After(0.5, HB.ApplyRoles) end
 end
 
 function HB.TeamSummary()
@@ -432,6 +353,7 @@ end
 
 function HB.SetTeamFromGroup()
 	if not IsInGroup() or IsInRaid() then print_("join a party (not a raid) with your team first") return end
+	if not HB.IAmLeader() then print_("only the actual party leader can sync the team") return end
 	local me = clean(HB.UnitIdent("player"))
 	local units = { "player", "party1", "party2", "party3", "party4" }
 	local list, wire = {}, {}
@@ -439,9 +361,9 @@ function HB.SetTeamFromGroup()
 		if UnitExists(u) then
 			local name = clean(HB.UnitIdent(u))
 			if name ~= "" then
-				local role = HB.RoleOf(name)
+				local role = HB.RoleOf(name) or (u == "player" and "tank" or "dps")
 				list[#list + 1] = { name = name, role = role }
-				wire[#wire + 1] = name .. "=" .. (role or "none")
+				wire[#wire + 1] = name .. "=" .. role
 			end
 		end
 	end
@@ -450,105 +372,22 @@ function HB.SetTeamFromGroup()
 	print_("team set and sent: " .. HB.TeamSummary())
 end
 
--- My role, from the options panel or /hb role: stored, sent to the group, applied.
-function HB.SetMyRole(r)
-	if not validRole(r) then print_("role must be " .. table.concat(HB.ROLES, ", ")) return end
-	local me = clean(HB.UnitIdent("player"))
-	setRole(me, r)
-	send("R|" .. r .. "|" .. me)
-	refreshTeam()
-	if HB.ApplyRoles then HB.ApplyRoles() end
-	print_("role set to " .. r .. (IsInGroup() and " (sent to the group)" or ""))
-end
-
--- This toon becomes the leader. In a party the whole group becomes the team (as /hb team).
-function HB.MakeMeLeader()
-	if IsInGroup() and not IsInRaid() then HB.SetTeamFromGroup() return end
-	setLeader(clean(HB.UnitIdent("player")))
-	refreshTeam()
-	print_("you are the leader. Group up and press it again (or /hb team) to send the team to every toon.")
-end
-
--- Parses and checks an M| team. Returns the member list, or nil and the reason.
-local MAX_TEAM = 40
-local function parseTeam(sender, leader, body)
-	if not str(leader) or HB.Norm(sender) ~= HB.Norm(leader) then return nil, "sender is not the leader it names" end
-	if not inGroup(sender) then return nil, "sender is not in my group" end
-	local list, seen = {}, {}
-	for entry in (body or ""):gmatch("[^;]+") do
-		local name, role = entry:match("^(.-)=(%a*)$")
-		local key = name and HB.Norm(name)
-		if not key or key == "" then return nil, "bad entry" end
-		if seen[key] then return nil, "duplicate name " .. name end
-		seen[key] = true
-		list[#list + 1] = { name = name, role = validRole(role) }
-	end
-	if #list == 0 or #list > MAX_TEAM then return nil, "bad team size" end
-	if not seen[HB.Norm(leader)] then return nil, "leader missing from the team" end
-	if not seen[HB.Norm(HB.UnitIdent("player"))] then return nil, "this toon is not in the team" end
-	return list
-end
-
-local pendingTeam  -- a team offered by someone who is not this toon's leader
-
 local function onTeamMessage(sender, leader, body)
-	local list, why = parseTeam(sender, leader, body)
-	if not list then debug("team from " .. tostring(sender) .. " ignored: " .. why) return end
-	if HB.IsLeaderName(sender) then
-		pendingTeam = nil
-		if HB.HideTeamOffer then HB.HideTeamOffer() end
-		applyTeam(leader, list)
-		print_("team set by |cffffff00" .. shortName(leader) .. "|r: " .. HB.TeamSummary())
-		return
+	-- Only the real WoW party leader can update the synchronized roster.
+	if HB.Norm(sender) ~= HB.Norm(leader) or HB.Norm(sender) ~= HB.Norm(HB.GroupLeader()) then return end
+	local list = {}
+	for entry in (body or ""):gmatch("[^;]+") do
+		local name, role = entry:match("^(.-)=(%a+)$")
+		if name and name ~= "" then list[#list + 1] = { name = name, role = role } end
 	end
-	pendingTeam = { leader = leader, list = list }
-	local names = {}
-	for i, m in ipairs(list) do names[i] = shortName(m.name) end
-	print_("|cffffff00" .. shortName(leader) .. "|r wants to lead the team (" .. table.concat(names, ", ")
-		.. "). Accept in the popup, or type |cffffff00/hb accept|r.")
-	if HB.ShowTeamOffer then HB.ShowTeamOffer() end
-end
-
--- The waiting offer as text for the popup: leader, member names. nil when none.
-function HB.PendingTeamText()
-	local p = pendingTeam
-	if not p then return nil end
-	local names = {}
-	for i, m in ipairs(p.list) do names[i] = shortName(m.name) end
-	return shortName(p.leader), table.concat(names, ", ")
-end
-
--- /hb accept, the popup or the key binding: take the team offered by someone who is
--- not (yet) this toon's leader.
-function HB.AcceptTeam()
-	local p = pendingTeam
-	if HB.HideTeamOffer then HB.HideTeamOffer() end
-	if not p then print_("no team offer to accept") return end
-	pendingTeam = nil
-	if not inGroup(p.leader) then print_(shortName(p.leader) .. " is no longer in your group") return end
-	applyTeam(p.leader, p.list)
-	print_("team accepted from |cffffff00" .. shortName(p.leader) .. "|r: " .. HB.TeamSummary())
-end
-
-function HB.DeclineTeam()
-	if not pendingTeam then return end
-	print_("team from " .. shortName(pendingTeam.leader) .. " declined")
-	pendingTeam = nil
-end
-
--- /hb leader and the "make my target the leader" key binding.
-function HB.SetLeaderName(name)
-	name = str(name)
-	if not name then print_("no target and no name given") return end
-	setLeader(name)
-	refreshTeam()
-	print_("leader set to |cffffff00" .. name .. "|r")
+	if #list == 0 then return end
+	applyTeam(leader, list)
+	print_("team set by |cffffff00" .. shortName(leader) .. "|r: " .. HB.TeamSummary())
 end
 
 local function onRoleMessage(sender, role, name)
 	if HB.Norm(sender) ~= HB.Norm(name) then return end
-	role = validRole(role)
-	if not role then return end
+	if role ~= "tank" and role ~= "healer" and role ~= "dps" then return end
 	setRole(name, role)
 	refreshTeam()
 	debug(name .. " is now " .. role)
@@ -587,13 +426,18 @@ end
 -- Focus of every team member: T|<name> when it changes, T| when cleared.
 -- Answered together with the follow state on F|?.
 HB.focus = {}
+HB.focusKnown = HB.focusKnown or {}
 local function setFocus(name, target)
 	local k = HB.Norm(name)
 	if not k then return end
 	target = str(target)
-	if HB.focus[k] == target then return end
+	local changed = not HB.focusKnown[k] or HB.focus[k] ~= target
+	HB.focusKnown[k] = true -- T| with an empty target is an explicit report, not unknown.
 	HB.focus[k] = target
-	if HB.OnFocusChanged then HB.OnFocusChanged() end
+	if changed then
+		if HB.OnFocusChanged then HB.OnFocusChanged() end
+		if HB.OnFocusMonitorChanged then HB.OnFocusMonitorChanged() end
+	end
 end
 local function myFocusName()
 	local n = str(UnitExists("focus") and HB.UnitIdent("focus") or nil)
@@ -603,281 +447,7 @@ local function focusMsg() return "T|" .. (myFocusName() or "") end
 
 function handlers.PLAYER_FOCUS_CHANGED()
 	setFocus(HB.UnitIdent("player"), myFocusName())
-	send(focusMsg(), "T")
-end
-
--- Level, XP, money and bag space of every team member. The game only gives these
--- for your own character, so each toon sends S|level|xp|xpMax|rested|copper|free|slots
--- when one of them changes (at most once a second) and when asked with F|?.
-HB.stats = {}
-local STAT_FIELDS = { "lvl", "xp", "xpMax", "rest", "copper", "free", "slots" }
-local function num(v)
-	if v == nil or secret(v) then return nil end
-	return tonumber(v)
-end
-
-local function bagSpace()
-	local CC = C_Container
-	local numSlots = (CC and CC.GetContainerNumSlots) or GetContainerNumSlots
-	local numFree = (CC and CC.GetContainerNumFreeSlots) or GetContainerNumFreeSlots
-	if not numSlots or not numFree then return nil end
-	local free, total = 0, 0
-	for bag = 0, NUM_BAG_SLOTS or 4 do
-		local okS, slots = pcall(numSlots, bag)
-		local okF, f, family = pcall(numFree, bag)
-		slots, f = okS and num(slots), okF and num(f)
-		-- only general bags: quivers, ammo pouches and soul bags hold one kind of item
-		if slots and f and (family == nil or secret(family) or family == 0) then
-			total, free = total + slots, free + f
-		end
-	end
-	return free, total
-end
-
-local function atMaxLevel(lvl)
-	if IsXPUserDisabled and IsXPUserDisabled() then return true end
-	if IsPlayerAtEffectiveMaxLevel then
-		local ok, v = pcall(IsPlayerAtEffectiveMaxLevel)
-		if ok and v ~= nil and not secret(v) then return v end
-	end
-	local cap = num(MAX_PLAYER_LEVEL)
-	return lvl and cap and lvl >= cap or false
-end
-
-local function myStats()
-	local s = { lvl = num(UnitLevel("player")) }
-	if atMaxLevel(s.lvl) then
-		s.xp, s.xpMax, s.rest = 0, 0, 0
-	else
-		s.xp, s.xpMax = num(UnitXP("player")), num(UnitXPMax("player"))
-		s.rest = num(GetXPExhaustion and GetXPExhaustion()) or 0
-	end
-	s.copper = num(GetMoney and GetMoney())
-	s.free, s.slots = bagSpace()
-	return s
-end
-
-local function statsMsg(s)
-	local t = {}
-	for i, k in ipairs(STAT_FIELDS) do t[i] = s[k] and tostring(math.floor(s[k])) or "" end
-	return "S|" .. table.concat(t, "|")
-end
-
-local function setStats(name, s)
-	local k = HB.Norm(name)
-	if not k then return end
-	local old = HB.stats[k]
-	HB.stats[k] = s
-	if HB.db.bagFullAlert and HB.IAmLeader() and s.free == 0 and (s.slots or 0) > 0
-		and old and (old.free or 0) > 0 then
-		print_("|cffff4444" .. shortName(name) .. ": bags are full|r")
-		HB.PlaySound("bagsFull")
-	end
-	if HB.OnStatsChanged then HB.OnStatsChanged(k) end
-end
-
-local function onStats(sender, ...)
-	local v, s = { ... }, {}
-	for i, k in ipairs(STAT_FIELDS) do s[k] = tonumber(v[i]) end
-	setStats(sender, s)
-end
-
-local statsPending, lastStatsMsg = false, nil
-local function sendStats()
-	lastStatsMsg = statsMsg(myStats())
-	send(lastStatsMsg, "S")
-end
-local function updateMyStats()
-	setStats(HB.UnitIdent("player"), myStats())
-	if statsPending then return end
-	statsPending = true
-	C_Timer.After(1, function()
-		statsPending = false
-		if statsMsg(myStats()) ~= lastStatsMsg then sendStats() end
-	end)
-end
-for _, e in ipairs({ "PLAYER_XP_UPDATE", "PLAYER_LEVEL_UP", "UPDATE_EXHAUSTION", "PLAYER_MONEY",
-	"BAG_UPDATE", "BAG_UPDATE_DELAYED" }) do
-	handlers[e] = updateMyStats
-end
-
--- ---------------------------------------------------------------- whisper forwarding
--- A follower forwards whispers from outside the team to the leader:
---   W|<flags>|<from>|<i>|<n>|<text>   flags: GM (from a GM), H (text hidden by the game)
--- The leader answers with /hb r <text>, which sends Y|<toon>|<to>|<i>|<n>|<text>, or by
--- whispering the toon directly within 5 minutes of the last whisper it forwarded.
--- The toon whispers the text on and answers K|<to>|ok, fail, hidden or off (relaying
--- turned off). "ok" only means the game took the whisper and did not say, within a
--- second, that nobody by that name is online: the game never confirms delivery.
--- W, Y and K are addon whispers between the two toons, never sent to the group.
--- Long text is split: one addon message holds at most 255 bytes, and a receiver
--- joins at most 10 pieces.
-local MAX_MSG, MAX_PIECES, RELAY_WINDOW = 255, 10, 300
-
--- Pieces for head|i|n|piece, each within MAX_MSG; nil when it cannot fit.
-local function splitText(head, text)
-	for n = 1, MAX_PIECES do
-		local room = MAX_MSG - #head - #("|" .. n .. "|" .. n .. "|")
-		if room < 1 then return nil end
-		local pieces, pos = {}, 1
-		repeat
-			local stop = pos + room - 1
-			-- never cut inside a UTF-8 character; a character that does not fit at all fails
-			while stop >= pos and stop < #text and text:byte(stop + 1) >= 0x80 and text:byte(stop + 1) < 0xC0 do
-				stop = stop - 1
-			end
-			if stop < pos and pos <= #text then return nil end
-			pieces[#pieces + 1] = text:sub(pos, stop)
-			pos = stop + 1
-		until pos > #text or #pieces > n
-		if #pieces <= n then return pieces end
-	end
-	return nil
-end
-HB.SplitText = splitText
-
--- Whispers text to one toon in pieces. onFail runs once if any piece fails; onDone
--- runs once when the game has taken every piece.
-local function sendText(target, head, text, onFail, onDone)
-	local pieces = splitText(head, text or "")
-	local failed, left = false, pieces and #pieces or 0
-	local function fail()
-		if failed then return end
-		failed = true
-		if onFail then onFail() end
-	end
-	local function ok()
-		left = left - 1
-		if left == 0 and not failed and onDone then onDone() end
-	end
-	if not pieces then fail() return end
-	for i, p in ipairs(pieces) do whisper(target, head .. "|" .. i .. "|" .. #pieces .. "|" .. p, fail, ok) end
-end
-
-local partial = {}
-local function joinText(key, i, n, piece)
-	i, n = tonumber(i), tonumber(n)
-	if not i or not n or n < 1 or n > MAX_PIECES or i < 1 or i > n then return nil end
-	if n == 1 then return piece end
-	if i == 1 or not partial[key] then partial[key] = {} end
-	partial[key][i] = piece
-	if i < n then return nil end
-	local p = partial[key]
-	partial[key] = nil
-	for j = 1, n do if not p[j] then return nil end end
-	return table.concat(p, "", 1, n)
-end
-
-local lastWhisperer, lastWhisperAt, forwardedTo = nil, 0, nil
-local forwardSeq, armedSeq = 0, 0  -- forwards started / the newest one that reached the leader
-local relayWatch = {}  -- normalized name -> { who, leader, token } while we wait for "not online"
-local notFoundPattern
-
-local function relayTo(who, text, leader)
-	local fn = (C_ChatInfo and C_ChatInfo.SendChatMessage) or SendChatMessage
-	local ok = fn and pcall(fn, text, "WHISPER", nil, who)
-	if not ok then whisper(leader, "K|" .. who .. "|fail") return end
-	local key = HB.Norm(who) or who
-	local w = { who = who, leader = leader }
-	relayWatch[key] = w
-	C_Timer.After(1, function()
-		if relayWatch[key] ~= w then return end
-		relayWatch[key] = nil
-		whisper(leader, "K|" .. who .. "|ok")
-	end)
-end
-
--- CHAT_MSG_SYSTEM: "No player named X is currently playing." right after a relay.
-local function relayNotFound(msg)
-	local name = notFoundPattern and msg:match(notFoundPattern)
-	local w = name and relayWatch[HB.Norm(name) or name]
-	if not w then return false end
-	relayWatch[HB.Norm(name) or name] = nil
-	whisper(w.leader, "K|" .. w.who .. "|fail")
-	return true
-end
-
-function handlers.CHAT_MSG_WHISPER(text, sender, _, _, _, flag)
-	sender = str(sender)
-	local leader = HB.Leader()
-	if not sender or not leader or not IsInGroup() or HB.IAmLeader() then return end
-	if HB.IsLeaderName(sender) then
-		-- the leader answers a forwarded whisper by whispering this toon
-		if not HB.db.relayReplies or not lastWhisperer or GetTime() - lastWhisperAt > RELAY_WINDOW then return end
-		if HB.Norm(sender) ~= HB.Norm(forwardedTo) then return end  -- forwarded to a previous leader
-		if secret(text) or type(text) ~= "string" then whisper(sender, "K|" .. lastWhisperer .. "|hidden") return end
-		relayTo(lastWhisperer, text, sender)
-		return
-	end
-	if not HB.db.forwardWhispers or isTeamName(sender) then return end
-	-- The direct-reply window opens only once the whole whisper has gone to the leader
-	-- (until then the leader has not seen it), and it runs from the stranger's whisper:
-	-- relaying a reply does not extend it. A forward that finishes after a newer one
-	-- does not take the window back.
-	forwardSeq = forwardSeq + 1
-	local seq, at = forwardSeq, GetTime()
-	local function done()
-		if seq < armedSeq then return end
-		armedSeq = seq
-		lastWhisperer, lastWhisperAt, forwardedTo = sender, at, leader
-	end
-	local flags = (flag == "GM" or flag == "DEV") and "GM" or ""
-	local function failed() print_("|cffff4444could not forward the whisper from " .. shortName(sender) .. " to the leader|r") end
-	if secret(text) or type(text) ~= "string" then
-		sendText(leader, "W|" .. flags .. "H|" .. sender, "", failed, done)
-	else
-		sendText(leader, "W|" .. flags .. "|" .. sender, text, failed, done)
-	end
-end
-
-local function onWhisperForward(sender, msg)
-	if not HB.IAmLeader() then return end
-	local flags, who, i, n, piece = msg:match("^W|([^|]*)|([^|]*)|(%d+)|(%d+)|(.*)$")
-	if not who or who == "" then return end
-	local text = joinText("W" .. sender, i, n, piece)
-	if not text then return end
-	HB.lastRelay = { toon = sender, who = who }
-	local gm = flags:find("GM") and "|cff00ccff<GM>|r " or ""
-	local body = flags:find("H") and "|cff999999(the game hid the text)|r" or text
-	local c = (ChatTypeInfo and ChatTypeInfo.WHISPER) or { r = 1, g = 0.5, b = 1 }
-	DEFAULT_CHAT_FRAME:AddMessage("|cff33ccff[" .. shortName(sender) .. "]|r " .. gm .. shortName(who)
-		.. " whispers: " .. body, c.r, c.g, c.b)
-	HB.PlaySound("whisperIn")
-end
-
-local function onReplyRequest(sender, msg)
-	if not HB.IsLeaderName(sender) then return end
-	local toon, who, i, n, piece = msg:match("^Y|([^|]*)|([^|]*)|(%d+)|(%d+)|(.*)$")
-	if not who or who == "" or HB.Norm(toon) ~= HB.Norm(HB.UnitIdent("player")) then return end
-	local text = joinText("Y" .. sender, i, n, piece)
-	if not text or text == "" then return end
-	if not HB.db.relayReplies then whisper(sender, "K|" .. who .. "|off") return end
-	relayTo(who, text, sender)
-end
-
-local function onRelayResult(sender, who, result)
-	if not HB.IAmLeader() then return end
-	if result == "ok" then
-		print_("|cffff80ffreply passed to " .. shortName(sender) .. " for " .. shortName(who) .. "|r")
-	elseif result == "hidden" then
-		print_("|cffff4444" .. shortName(sender) .. " could not read your reply (hidden by the game); use /hb r|r")
-	elseif result == "off" then
-		print_("|cffff4444" .. shortName(sender) .. " has reply relaying turned off|r")
-	else
-		print_("|cffff4444" .. shortName(sender) .. " could not whisper " .. shortName(who) .. "|r")
-	end
-end
-
-function HB.Reply(text)
-	local lr = HB.lastRelay
-	if not lr then print_("no forwarded whisper to reply to") return end
-	if not text or text == "" then
-		print_("/hb r <text> replies to " .. shortName(lr.who) .. " via " .. shortName(lr.toon))
-		return
-	end
-	sendText(lr.toon, "Y|" .. lr.toon .. "|" .. lr.who, text, function()
-		print_("|cffff4444could not send your reply to " .. shortName(lr.toon) .. " (too long, or the message failed)|r")
-	end)
+	send(focusMsg())
 end
 
 local lastQuery = 0
@@ -885,23 +455,26 @@ local function queryFollowStates()
 	if not IsInGroup() or GetTime() - lastQuery < 3 then return end
 	lastQuery = GetTime()
 	send("F|?")
-	if not HB.IAmLeader() then send(myFollowMsg(true), "f") end
-	send(focusMsg(), "T")
-	sendStats()
+	send("D|?") -- ask the real leader for the shared follow mode
+	send("Q|?") -- ask whether the leader enabled quest sharing
+	send("V|?") -- ask whether the leader enabled automatic trade
+	if not HB.IAmLeader() then send(myFollowMsg(true)) end
+	setFocus(HB.UnitIdent("player"), myFocusName())
+	send(focusMsg())
 end
 
--- F|? from each toon that logs in or joins: one answer per second at most, so a
--- whole team reloading at once stays under the send allowance.
-local answerPending = false
-local function answerQuery()
-	if answerPending then return end
-	answerPending = true
-	C_Timer.After(1, function()
-		answerPending = false
-		if not HB.IAmLeader() then send(myFollowMsg(true), "f") end
-		send(focusMsg(), "T")
-		sendStats()
-	end)
+function HB.SetFollowMode(mode)
+	if mode ~= "direct" and mode ~= "dungeon" then return false end
+	if not HB.IAmLeader() or not HB.GroupLeader() then
+		print_("Only the current WoW party leader can set the team's follow mode.")
+		return false
+	end
+	HB.db.followMode = mode
+	send("D|" .. mode)
+	if HB.OnFollowStateChanged then HB.OnFollowStateChanged() end
+	if HB.RefreshControls then HB.RefreshControls() end
+	print_("Follow mode: " .. mode .. ". This is monitoring only; use your existing /follow macros.")
+	return true
 end
 
 function handlers.ADDON_LOADED(name)
@@ -916,6 +489,12 @@ function handlers.ADDON_LOADED(name)
 	for k, v in pairs(DEFAULTS.sounds) do
 		if HaploBoxDB.sounds[k] == nil then HaploBoxDB.sounds[k] = v end
 	end
+    -- SavedVariables upgrades must gain newly supported team-class buffs
+    -- without overwriting any of the player's existing watch preferences.
+    HaploBoxDB.requiredBuffs=HaploBoxDB.requiredBuffs or {}
+    for k,v in pairs(DEFAULTS.requiredBuffs) do
+        if HaploBoxDB.requiredBuffs[k]==nil then HaploBoxDB.requiredBuffs[k]=v end
+    end
 	HB.db = HaploBoxDB
 	C_ChatInfo.RegisterAddonMessagePrefix(PREFIX)
 	shareErrorPatterns = {}
@@ -925,19 +504,20 @@ function handlers.ADDON_LOADED(name)
 			shareErrorPatterns[#shareErrorPatterns + 1] = { formatToPattern(fmt), QUEST_SHARE_HARMLESS[g] }
 		end
 	end
-	if type(ERR_CHAT_PLAYER_NOT_FOUND_S) == "string" then notFoundPattern = formatToPattern(ERR_CHAT_PLAYER_NOT_FOUND_S) end
 	if HB.CreateOptions then HB.CreateOptions() end
+    if C_Timer and C_Timer.NewTicker then
+        C_Timer.NewTicker(12,function()
+            if HB.db and IsInGroup and IsInGroup() and HB.IAmLeader() then queryFollowStates() end
+        end)
+    end
 end
 
 function handlers.PLAYER_ENTERING_WORLD()
 	C_Timer.After(3, queryFollowStates)
-	updateMyStats()
+	if HB.OnGroupLeaderChanged then HB.OnGroupLeaderChanged() end
 end
 
 function handlers.PLAYER_LOGIN()
-	C_Timer.After(2, HB.ApplyRoles)
-	HB.ApplyQuestTracker()
-	C_Timer.After(3, HB.ApplyQuestTracker)  -- some clients build the tracker late
 	local leader = HB.Leader()
 	if leader then
 		print_(VERSION .. " loaded. Leader: |cffffff00" .. leader .. "|r" .. (HB.IAmLeader() and " (you)" or ""))
@@ -950,7 +530,12 @@ function handlers.AUTOFOLLOW_BEGIN(name)
 	followEndPending = nil
 	name = str(name)
 	-- a refresh of the same follow is not news; a switch to another target is
-	if lastFollowAction == "BEGIN" and HB.Norm(name) == HB.Norm(myFollowTarget) then return end
+    if lastFollowAction == "BEGIN" and HB.Norm(name) == HB.Norm(myFollowTarget) then
+        -- A repeated /follow also repairs lost leader-side status messages.
+        -- No sound or duplicate alert is generated for a same-target refresh.
+        send(myFollowMsg(true))
+        return
+    end
 	local wasFollowing = lastFollowAction == "BEGIN"
 	lastFollowAction, myFollowTarget = "BEGIN", name
 	setFollowState(HB.UnitIdent("player"), "S", name)
@@ -962,7 +547,7 @@ function handlers.AUTOFOLLOW_END()
 	-- WoW fires END followed by BEGIN when following is refreshed: wait before reporting.
 	local token = {}
 	followEndPending = token
-	C_Timer.After(0.3, function()
+	C_Timer.After(0.65, function()
 		if followEndPending ~= token then return end
 		followEndPending = nil
 		lastFollowAction, myFollowTarget = "END", nil
@@ -973,7 +558,7 @@ function handlers.AUTOFOLLOW_END()
 end
 
 function handlers.PARTY_INVITE_REQUEST(inviter)
-	if not HB.db.autoAcceptInvite or not HB.IsLeaderName(inviter) then return end
+	if not HB.db.autoAcceptInvite or not (HB.IsKnownTeam and HB.IsKnownTeam(inviter)) then return end
 	AcceptGroup()
 	HB.PlaySound("inviteAccept")
 	C_Timer.After(0.1, function()
@@ -982,32 +567,17 @@ function handlers.PARTY_INVITE_REQUEST(inviter)
 	end)
 end
 
-local ffaGroupSize = 0
+function handlers.PLAYER_REGEN_ENABLED()
+    if C_Timer and C_Timer.After then C_Timer.After(0.6, queryFollowStates) end
+end
+
 function handlers.GROUP_ROSTER_UPDATE()
-	-- Only when someone joins: setting the loot method fires GROUP_ROSTER_UPDATE again,
-	-- and every roster update resets other addons' party state.
-	if not IsInGroup() then
-		HB.wasLeaderPresent = nil  -- a later group starts without a leader to wait for
-		dropQueued(true, false)    -- group messages queued for the group we left
-	end
-	local size = IsInGroup() and GetNumGroupMembers() or 0
-	local grew = size > ffaGroupSize
-	ffaGroupSize = size
-	if grew then
-		C_Timer.After(2, queryFollowStates)
-		C_Timer.After(1.5, HB.ApplyRoles)
-	end
-	if grew and HB.db.autoFFA and HB.IAmLeader() and IsInGroup() and HB.IsFFA() ~= true then
-		C_Timer.After(1, function() HB.SetFFA(true) end)
-	end
-	if HB.db.autoLeaveWithLeader and not HB.IAmLeader() and IsInGroup() and HB.Leader() then
-		local present = inGroup(HB.Leader())
-		if HB.wasLeaderPresent and not present then
-			print_("leader left the group, leaving too")
-			C_PartyInfo.LeaveParty()
-		end
-		HB.wasLeaderPresent = present
-	end
+	if HB.OnGroupLeaderChanged then HB.OnGroupLeaderChanged() end
+	-- Leadership and team membership change independently of party size.
+	C_Timer.After(1, queryFollowStates)
+	if HB.CheckAutoLoot then HB.CheckAutoLoot() end
+	if HB.RefreshControls then HB.RefreshControls() end
+
 end
 
 local function questFromPlayer()
@@ -1015,71 +585,117 @@ local function questFromPlayer()
 end
 
 function handlers.QUEST_DETAIL()
+    if not HB.db.questEnabled or not IsInGroup() then return end
 	if not questFromPlayer() then return end
 	-- Quests shared by a player are never shared back.
 	local id = GetQuestID and GetQuestID()
 	if id and id > 0 then suppressShareQuest, suppressUntil = id, GetTime() + 5 end
-	-- only quests from the team; a quest from anyone else stays open to decide
-	if HB.db.autoAcceptShared and isTeamName(HB.UnitIdent("questnpc")) then
+	if HB.db.autoAcceptShared then
 		AcceptQuest()
 		HideUIPanel(QuestFrame)
 	end
 end
 
+-- WoW can additionally confirm a group member's escort/party-start quest
+-- without a normal QUEST_DETAIL dialog. Only opt-in members auto-confirm.
+function handlers.QUEST_CONFIRM_ACCEPT()
+    if HB.db.questEnabled and HB.db.autoAcceptShared and IsInGroup() and ConfirmAcceptQuest then
+        pcall(ConfirmAcceptQuest)
+    end
+end
+
+-- Only the actual leader initiates a share. Receiving clients may accept
+-- a game-provided share, but never push that quest back to the party.
+local recentlyPushed = {}
 function handlers.QUEST_ACCEPTED(a, b)
-	-- Classic sends (questLogIndex, questID), newer clients only (questID).
-	local questID = b or a
-	local mode = HB.db.autoShareQuests
-	if mode == "off" or (mode == "leader" and not HB.IAmLeader()) or not IsInGroup() then return end
-	if questID and questID == suppressShareQuest and GetTime() < suppressUntil then return end
-	debug("QUEST_ACCEPTED " .. tostring(a) .. " " .. tostring(b) .. ", sharing")
-	C_Timer.After(0.5, function() HB.ShareQuest(b and a or nil, questID, true) end)
+    local questID = b or a
+    if not (HB.db.questEnabled and HB.IAmLeader() and IsInGroup()) then return end
+    if questID and questID == suppressShareQuest and GetTime() < suppressUntil then return end
+    if type(questID)~="number" or secret(questID) or questID<=0 then return end
+    if recentlyPushed[questID] and GetTime()-recentlyPushed[questID]<15 then return end
+    recentlyPushed[questID] = GetTime()
+    C_Timer.After(0.6, function()
+        if HB.db.questEnabled and HB.IAmLeader() and IsInGroup() then
+            HB.ShareQuest(nil,questID,true)
+        end
+    end)
 end
 
 local function questTitle(questID, index)
-	if questID and C_QuestLog and C_QuestLog.GetTitleForQuestID then
-		local ok, t = pcall(C_QuestLog.GetTitleForQuestID, questID)
-		if ok and t then return t end
-	end
-	if index and GetQuestLogTitle then
-		local t = GetQuestLogTitle(index)
-		if t then return t end
-	end
-	return "quest " .. tostring(questID or index)
+    if questID and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+        local ok, t = pcall(C_QuestLog.GetTitleForQuestID, questID)
+        if ok and t and not secret(t) then return t end
+    end
+    if index and GetQuestLogTitle then
+        local ok,t=pcall(GetQuestLogTitle,index)
+        if ok and t and not secret(t) then return t end
+    end
+    return "quest " .. tostring(questID or index)
 end
 
--- Share one quest with the party. Tries the modern API, then the log-index API.
--- retry: try once more a second later (the quest log can lag behind QUEST_ACCEPTED).
-function HB.ShareQuest(index, questID, retry)
-	if not IsInGroup() then return end
-	if questID and not index and C_QuestLog and C_QuestLog.GetLogIndexForQuestID then
-		local ok, i = pcall(C_QuestLog.GetLogIndexForQuestID, questID)
-		if ok and i and i > 0 then index = i end
-	end
-	local pushed = false
-	if questID and C_QuestLog and C_QuestLog.IsPushableQuest and C_QuestLog.IsPushableQuest(questID) then
-		if C_QuestLog.SetSelectedQuest then C_QuestLog.SetSelectedQuest(questID) end
-		QuestLogPushQuest()
-		pushed = true
-	elseif index and SelectQuestLogEntry and GetQuestLogPushable then
-		SelectQuestLogEntry(index)
-		if GetQuestLogPushable() then
-			QuestLogPushQuest(index)
-			pushed = true
-		end
-	end
-	if pushed then
-		print_("shared: " .. questTitle(questID, index))
-	elseif retry then
-		C_Timer.After(1, function() HB.ShareQuest(index, questID, false) end)
-	else
-		print_("|cffffaa00not shareable:|r " .. questTitle(questID, index))
-	end
+-- WoW Forever QuestLogPushQuest() sends the CURRENTLY SELECTED quest. The
+-- old code could print success even when it never selected a valid entry.
+local function selectedQuestIndex(questID)
+    if not questID then return nil end
+    if C_QuestLog and C_QuestLog.GetLogIndexForQuestID then
+        local ok,index=pcall(C_QuestLog.GetLogIndexForQuestID,questID)
+        if ok and type(index)=="number" and not secret(index) and index>0 then return index end
+    end
+    local total = C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries()
+        or (GetNumQuestLogEntries and GetNumQuestLogEntries()) or 0
+    if type(total)~="number" or secret(total) then return nil end
+    for i=1,math.min(total,500) do
+        if C_QuestLog and C_QuestLog.GetInfo then
+            local ok,info=pcall(C_QuestLog.GetInfo,i)
+            if ok and info and info.questID==questID and not info.isHeader then return i end
+        elseif GetQuestLogTitle then
+            local ok,_,_,_,isHeader,_,_,_,id=pcall(GetQuestLogTitle,i)
+            if ok and not isHeader and id==questID then return i end
+        end
+    end
+end
+function HB.ShareQuest(index,questID,retry)
+    if not IsInGroup() or not HB.IAmLeader() then return false end
+    if not QuestLogPushQuest then return false end
+    if questID and (type(questID)~="number" or secret(questID)) then return false end
+    index = (questID and selectedQuestIndex(questID)) or index
+    local canPush=false
+    if questID and C_QuestLog and C_QuestLog.IsPushableQuest then
+        local ok,pushable=pcall(C_QuestLog.IsPushableQuest,questID)
+        canPush=ok and pushable==true
+    end
+    if not canPush and index and SelectQuestLogEntry and GetQuestLogPushable then
+        local ok=pcall(SelectQuestLogEntry,index)
+        if ok then local valid,answer=pcall(GetQuestLogPushable);canPush=valid and not not answer end
+    end
+    if canPush then
+        -- Prefer the modern questID selector; use the legacy index selector
+        -- on Forever builds that expose it. Both push functions take NO args.
+        local selected=false
+        if questID and C_QuestLog and C_QuestLog.SetSelectedQuest then
+            selected=pcall(C_QuestLog.SetSelectedQuest,questID)
+        end
+        if not selected and index and SelectQuestLogEntry then
+            selected=pcall(SelectQuestLogEntry,index)
+        end
+        if selected then
+            local ok,err=pcall(QuestLogPushQuest)
+            if ok then print_("share requested: "..questTitle(questID,index));return true end
+            print_("|cffffaa00share call failed:|r "..tostring(err))
+        end
+    end
+    if retry then
+        C_Timer.After(0.9,function()
+            if HB.db.questEnabled and HB.IAmLeader() then HB.ShareQuest(nil,questID,false) end
+        end)
+    else
+        print_("|cffffaa00not shareable / not found:|r "..questTitle(questID,index))
+    end
+    return false
 end
 
 function handlers.CHAT_MSG_SYSTEM(msg)
-	if secret(msg) or type(msg) ~= "string" then return end
-	if relayNotFound(msg) or not HB.db.shareErrorAlert then return end
+	if not HB.db.shareErrorAlert or secret(msg) or type(msg) ~= "string" then return end
 	for _, p in ipairs(shareErrorPatterns) do
 		local who = msg:match(p[1])
 		if who then
@@ -1106,262 +722,95 @@ function handlers.UI_ERROR_MESSAGE(_, msg)
 	end
 end
 
--- ---------------------------------------------------------------- flights
--- When the leader takes a flight, it sends the destination name ("P|<name>").
--- A follower flies there as soon as its own flight map is open: right away when it
--- already is, or when it opens within PENDING_FLIGHT seconds. Names are sent instead
--- of node indexes, because the index list differs per toon (known flight paths).
-local PENDING_FLIGHT = 120
-local pendingFlight, pendingFlightUntil
-local taxiNames = {}  -- node index -> name, from the open flight map
-
-local function taxiNodes()
-	local list = {}
-	if NumTaxiNodes and TaxiNodeName then
-		for i = 1, NumTaxiNodes() do
-			local name = TaxiNodeName(i)
-			local kind = TaxiNodeGetType and TaxiNodeGetType(i)
-			if str(name) then list[#list + 1] = { index = i, name = name, ok = kind == nil or kind == "REACHABLE" } end
-		end
-	end
-	if #list == 0 and C_TaxiMap and C_TaxiMap.GetAllTaxiNodes and GetTaxiMapID then
-		local ok, nodes = pcall(C_TaxiMap.GetAllTaxiNodes, GetTaxiMapID())
-		if ok and type(nodes) == "table" then
-			local reachable = Enum and Enum.FlightPathState and Enum.FlightPathState.Reachable
-			for _, n in ipairs(nodes) do
-				if str(n.name) and n.slotIndex then
-					list[#list + 1] = { index = n.slotIndex, name = n.name, ok = reachable == nil or n.state == reachable }
-				end
-			end
-		end
-	end
-	return list
-end
-
-local function tryPendingFlight()
-	if not pendingFlight then return end
-	if GetTime() > pendingFlightUntil then pendingFlight = nil return end
-	if UnitOnTaxi and UnitOnTaxi("player") then pendingFlight = nil return end
-	local nodes = taxiNodes()
-	if #nodes == 0 then return end  -- flight map not open yet
-	local want = pendingFlight
-	pendingFlight = nil
-	for _, n in ipairs(nodes) do
-		if n.name == want then
-			if n.ok then
-				print_("flying with the leader to |cffffff00" .. want .. "|r")
-				TakeTaxiNode(n.index)
-			else
-				print_("|cffffaa00can't fly to " .. want .. ":|r not reachable from here")
-			end
-			return
-		end
-	end
-	print_("|cffffaa00can't fly to " .. want .. ":|r flight path not known")
-end
-
-function handlers.TAXIMAP_OPENED()
-	wipe(taxiNames)
-	for _, n in ipairs(taxiNodes()) do taxiNames[n.index] = n.name end
-	if pendingFlight then C_Timer.After(0.2, tryPendingFlight) end
-end
-
-local function onLeaderFlight(sender, dest)
-	if not HB.db.followFlights or not HB.IsLeaderName(sender) or not str(dest) then return end
-	pendingFlight, pendingFlightUntil = dest, GetTime() + PENDING_FLIGHT
-	debug("leader flies to " .. dest)
-	tryPendingFlight()
-end
-
-if TakeTaxiNode then
-	hooksecurefunc("TakeTaxiNode", function(index)
-		if not HB.db or not HB.IAmLeader() then return end
-		local name = taxiNames[index] or (TaxiNodeName and TaxiNodeName(index))
-		if str(name) then send("P|" .. name:gsub("|", "")) end
-	end)
-end
-
--- ---------------------------------------------------------------- protocol
--- Every addon message is <kind>|<fields>. The table says who sends each kind to whom,
--- and whom a receiver accepts it from ("team": a name in this toon's team list,
--- "leader": this toon's stored leader).
---   kind  direction            fields                                  accepted from
---   M     leader -> group      M|<leader>|<name>=<role>;...            see onTeamMessage
---   R     toon -> group        R|<role>|<name>                         team, naming itself
---   F     toon -> group        F|S|<target>, F|X: follow changes;      team
---                              F|? asks all; F|s|<target>, F|x answer
---   T     toon -> group        T|<focus name> (empty: no focus)        team
---   S     toon -> group        S|lvl|xp|xpMax|rested|copper|free|slots team
---   E     follower -> group    E|<error code> (see ERRORS)             team
---   P     leader -> group      P|<flight destination name>             leader
---   W     follower -> leader   W|<flags>|<from>|<i>|<n>|<text>         team
---   Y     leader -> toon       Y|<toon>|<to>|<i>|<n>|<text>            leader
---   K     toon -> leader       K|<to>|ok|fail|hidden|off               team
--- Group kinds count only on the group channel. W, Y and K go out as addon whispers
--- (0.9.0 and later); they are also taken from the group channel, where older
--- versions send them. Anything else (older HELLO messages included) is dropped.
-local POLICY = {
-	M = "offer", R = "team", F = "team", T = "team", S = "team", E = "team",
-	P = "leader", W = "team", Y = "leader", K = "team",
-}
-local WHISPER_KINDS = { W = true, Y = true, K = true }
-local GROUP_CHANNELS = { PARTY = true, RAID = true, INSTANCE_CHAT = true }
-
-local function accepted(kind, channel, sender)
-	local policy = POLICY[kind]
-	if not policy then return false end
-	if not GROUP_CHANNELS[channel] and not (channel == "WHISPER" and WHISPER_KINDS[kind]) then return false end
-	if policy == "leader" then return HB.IsLeaderName(sender) end
-	if policy == "team" then return isTeamName(sender) end
-	return true  -- "offer": onTeamMessage checks the sender itself and may ask for /hb accept
-end
-
-function handlers.CHAT_MSG_ADDON(prefix, msg, channel, sender)
-	if prefix ~= PREFIX or secret(msg) or secret(sender) or secret(channel) or type(msg) ~= "string" then return end
+function handlers.CHAT_MSG_ADDON(prefix, msg, _, sender)
+	if prefix ~= PREFIX or secret(msg) or secret(sender) then return end
 	if HB.Norm(sender) == HB.Norm(HB.UnitIdent("player")) then return end
-	local kind = msg:match("^([^|]*)")
-	if not accepted(kind, channel, sender) then
-		debug("ignored " .. kind:sub(1, 8) .. " from " .. tostring(sender) .. " (" .. tostring(channel) .. ")")
+	local kind, code, arg = strsplit("|", msg)
+	if kind == "F" and code == "?" then
+		if not HB.IAmLeader() then send(myFollowMsg(true)) end
+		setFocus(HB.UnitIdent("player"), myFocusName())
+		send(focusMsg())
 		return
 	end
-	-- whisper messages carry free text (which may contain "|"), so they are matched whole
-	if kind == "W" then onWhisperForward(sender, msg) return end
-	if kind == "Y" then onReplyRequest(sender, msg) return end
-	if kind == "S" then onStats(sender, select(2, strsplit("|", msg))) return end
-	if kind == "P" then onLeaderFlight(sender, msg:sub(3)) return end
-	local _, code, arg = strsplit("|", msg)
-	if kind == "K" then onRelayResult(sender, code, arg) return end
+    if kind == "Y" then
+        if HB.ReceivePulse then HB.ReceivePulse(sender,code,arg) end
+        return
+    end
+	if kind == "Q" then
+		if code == "?" then
+			if HB.IAmLeader() then send("Q|" .. (HB.db.questEnabled and "1" or "0")) end
+		elseif (code == "0" or code == "1") and HB.Norm(sender) == HB.Norm(HB.GroupLeader()) then
+			if HB.ApplyQuestEnabled then HB.ApplyQuestEnabled(code == "1", false) end
+		end
+		return
+	end
+    if kind == "B" then
+        -- Only the actual party leader may synchronize required-buff rules.
+        if HB.Norm(sender)~=HB.Norm(HB.GroupLeader()) then return end
+        local valid={xp=true,food=true,camp=true,mark=true,thorns=true,intellect=true,fortitude=true,blessing=true}
+        if valid[code] and (arg=="0" or arg=="1") then
+            HB.db.requiredBuffs=HB.db.requiredBuffs or {}
+            HB.db.requiredBuffs[code]=(arg=="1")
+            if HB.RefreshPartyFrame then HB.RefreshPartyFrame() end
+        end
+        return
+    end
+	if kind == "V" then
+		if code == "?" then
+			if HB.IAmLeader() then send("V|" .. (HB.db.tradeEnabled and "1" or "0")) end
+		elseif (code == "0" or code == "1") and HB.Norm(sender) == HB.Norm(HB.GroupLeader()) then
+			HB.db.tradeEnabled = code == "1"
+			if HB.RefreshControls then HB.RefreshControls() end
+		end
+		return
+	end
+	if kind == "H" then
+		if code == "me" and HB.IsGroupMember and HB.IsGroupMember(sender) then
+			setRole(sender, "healer")
+			refreshTeam()
+		end
+		return
+	end
+	if kind == "D" then
+		if code == "?" then
+			if HB.IAmLeader() then send("D|" .. (HB.db.followMode or "direct")) end
+		elseif (code == "direct" or code == "dungeon") and HB.Norm(sender) == HB.Norm(HB.GroupLeader()) then
+			HB.db.followMode = code
+			if HB.OnFollowStateChanged then HB.OnFollowStateChanged() end
+		end
+		return
+	end
 	if kind == "M" then onTeamMessage(sender, code, arg) return end
 	if kind == "R" then onRoleMessage(sender, code, arg) return end
-	if kind == "T" then setFocus(sender, code ~= "" and code or nil) return end
-	if kind == "F" and code == "?" then answerQuery() return end
+	if kind == "T" then
+		setFocus(sender, code ~= "" and code or nil)
+		return
+	end
 	if kind == "F" and (code == "s" or code == "x") then  -- state report, not a change: no alert
 		setFollowState(sender, code:upper(), arg)
 		return
 	end
-	if kind == "F" and (code == "S" or code == "X") then
-		setFollowState(sender, code, arg)
-		if not HB.IAmLeader() then return end
+	if kind == "F" and (code == "S" or code == "X") then setFollowState(sender, code, arg) end
+	if kind == "F" and HB.IAmLeader() then
 		if code == "X" then
 			HB.PlaySound("leaderAlert")
 			leaderAlert(shortName(sender) .. " stopped following!")
-		elseif HB.db.alertOnFollowStart then
+		elseif code == "S" and HB.db.alertOnFollowStart then
 			leaderAlert(shortName(sender) .. " is following", { r = 0.2, g = 1, b = 0.2 })
 		end
 	elseif kind == "E" and HB.IAmLeader() and HB.db.showRelayedErrors then
 		print_("|cffffaa00" .. shortName(sender) .. ":|r " .. (ERROR_TEXT[code] or code or "?"))
-	end
-end
-
--- ---------------------------------------------------------------- quest tracker
--- Hides Blizzard's quest tracker. On WoW Forever the objective tracker shows itself
--- again on updates, so an OnShow hook hides it each time. A protected tracker can only
--- be hidden or shown out of combat; that waits for PLAYER_REGEN_ENABLED. Never calls
--- the tracker's Update(): on Forever that runs Blizzard's layout and taints it.
-local trackerHooked, trackerHidden = false, false
-local function questTracker()
-	return ObjectiveTrackerFrame or WatchFrame or QuestWatchFrame
-end
-
-function HB.ApplyQuestTracker()
-	local t = questTracker()
-	if not t then return end
-	local hide = HB.db.hideQuestTracker and true or false
-	if not hide and not trackerHidden then return end  -- never touch a tracker we did not hide
-	if InCombatLockdown() and t.IsProtected and t:IsProtected() then
-		f:RegisterEvent("PLAYER_REGEN_ENABLED")
-		return
-	end
-	if hide and not trackerHooked then
-		t:HookScript("OnShow", function()
-			if HB.db.hideQuestTracker then HB.ApplyQuestTracker() end
-		end)
-		trackerHooked = true
-	end
-	if hide then
-		if t:IsShown() then t:Hide() end
-		trackerHidden = true
-	else
-		t:Show()
-		trackerHidden = false
-	end
-end
-
--- ---------------------------------------------------------------- team offer popup
--- A team offer from a new leader shows an Accept / Decline popup on this toon, after
--- combat if it arrives in combat. /hb accept and the key binding do the same.
-local OFFER_POPUP = "HAPLOBOX_TEAM_OFFER"
-local offerAfterCombat = false
-
-function HB.ShowTeamOffer()
-	local leader, names = HB.PendingTeamText()
-	if not leader or not (StaticPopupDialogs and StaticPopup_Show) then return end
-	if InCombatLockdown() then
-		offerAfterCombat = true
-		f:RegisterEvent("PLAYER_REGEN_ENABLED")
-		return
-	end
-	offerAfterCombat = false
-	StaticPopupDialogs[OFFER_POPUP] = StaticPopupDialogs[OFFER_POPUP] or {
-		text = "HaploBox: %s wants to lead your team (%s).",
-		button1 = ACCEPT or "Accept",
-		button2 = DECLINE or "Decline",
-		OnAccept = function() HB.AcceptTeam() end,
-		OnCancel = function(_, _, reason)
-			if reason == "clicked" then HB.DeclineTeam() end  -- not when another popup replaces it
-		end,
-		timeout = 0, whileDead = true, hideOnEscape = true, preferredIndex = 3,
-	}
-	if StaticPopup_Hide then StaticPopup_Hide(OFFER_POPUP) end  -- a newer offer replaces the shown one
-	StaticPopup_Show(OFFER_POPUP, leader, names)
-end
-
-function HB.HideTeamOffer()
-	offerAfterCombat = false
-	if StaticPopup_Hide then StaticPopup_Hide(OFFER_POPUP) end
-end
-
-function handlers.PLAYER_REGEN_ENABLED()
-	f:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	HB.ApplyQuestTracker()
-	if offerAfterCombat then HB.ShowTeamOffer() end
-end
-
--- Party role icon and group finder roles from my team role.
-function HB.ApplyRoles()
-	if not HB.db.autoPartyRole then return end
-	local role = HB.MyRole()
-	local wanted = GAME_ROLE[role or ""]
-	if not wanted then return end
-	if SetLFGRoles then
-		local leaderFlag = GetLFGRoles and select(1, GetLFGRoles()) or false
-		pcall(SetLFGRoles, leaderFlag, role == "tank", role == "healer", role == "dps")
-	end
-	if IsInGroup() and UnitSetRole then
-		local ok, current = pcall(UnitGroupRolesAssigned or function() end, "player")
-		if not ok or secret(current) or current ~= wanted then
-			local done = pcall(UnitSetRole, "player", wanted)
-			debug("party role " .. wanted .. (done and "" or " failed"))
-		end
-	end
-end
-
-function handlers.ROLE_POLL_BEGIN()
-	if not HB.db.autoPartyRole or not GAME_ROLE[HB.MyRole() or ""] then return end
-	HB.ApplyRoles()
-	if RolePollPopup then
-		C_Timer.After(0.1, function()
-			if StaticPopupSpecial_Hide then pcall(StaticPopupSpecial_Hide, RolePollPopup) else RolePollPopup:Hide() end
-		end)
+	elseif kind == "HELLO" then
+		debug("hello from " .. tostring(sender) .. " " .. tostring(code))
 	end
 end
 
 function handlers.LFG_ROLE_CHECK_SHOW()
 	if not HB.db.autoRoleCheck or not (SetLFGRoles and CompleteLFGRoleCheck) then return end
-	local role = validRole(HB.MyRole())
-	if not role then return end  -- no team role: leave the role check to the player
+	local role = HB.MyRole()
+	if not role then return end
 	local leaderFlag = GetLFGRoles and select(1, GetLFGRoles()) or false
-	SetLFGRoles(leaderFlag, role == "tank", role == "healer", role == "dps")
+	SetLFGRoles(leaderFlag, role == "tank", role == "healer", role == "dps" or role == "damager")
 	CompleteLFGRoleCheck(true)
 	debug("role check answered as " .. role)
 end
@@ -1385,38 +834,36 @@ for event in pairs(handlers) do
 	pcall(f.RegisterEvent, f, event)  -- some events do not exist on every client
 end
 
--- ---------------------------------------------------------------- key bindings
--- Names for the actions in Bindings.xml (Esc > Options > Keybindings > AddOns).
-BINDING_HEADER_HAPLOBOX = "HaploBox"
-BINDING_NAME_HAPLOBOX_LEAD = "Make this toon the leader and send the team"
-BINDING_NAME_HAPLOBOX_ACCEPT = "Accept the team offered by a new leader"
-BINDING_NAME_HAPLOBOX_TARGET_LEADER = "Make my target the leader"
-BINDING_NAME_HAPLOBOX_ROLE_TANK = "My role: tank"
-BINDING_NAME_HAPLOBOX_ROLE_HEALER = "My role: healer"
-BINDING_NAME_HAPLOBOX_ROLE_DPS = "My role: dps"
-
 -- ---------------------------------------------------------------- slash
 local function help()
 	print_("commands:")
 	print_("  /hb status - leader, role and settings")
 	print_("  /hb leader [name] - set the leader (no name: your target)")
-	print_("  /hb accept - accept the team offered by a new leader (or click Accept in the popup)")
 	print_("  /hb team - on the leader, in a party: make this group the team and send it to every toon")
 	print_("  /hb team show - list the team")
-	print_("  /hb role tank|healer|dps - your role (also in the options panel); sent to the group, sets your party role")
+	print_("  /hb role tank|healer|dps - your role (healer: follow arrows, role checks); sent to the group")
 	print_("  /hb ffa - set free-for-all loot (group leader only)")
+	print_("  /hb invite | leave | healer - control-bar actions")
+	print_("  /hb trusted [names] - comma-separated safe team names for invites/loot")
+	print_("  /hb trade rule <itemID> <recipient> | trade rules - explicit trade routing")
+    print_("  /hb buffs - show Buff Watcher requirements; /hb buffs <xp|food|camp|mark|thorns|intellect|fortitude|blessing> on|off")
+    print_("  /hb buffpanel unlock|lock|reset - drag standalone top-right Buff Overview while unlocked")
+    print_("  /hb view main|heal|toggle - local display mode (mini = 5 mouseover HP bars)")
+	print_("  /hb controls - toggle foldout; drag Controls to move whole party; /hb controls reset - reset both")
 	print_("  /hb share - share every quest in your log with the group")
-	print_("  /hb sound <event> <value|off> - " .. "events: followOn followOff leaderAlert shareError inviteAccept whisperIn bagsFull mountOn mountOff")
+	print_("  /hb sound <event> <value|off> - " .. "events: followOn followOff leaderAlert shareError inviteAccept mountOn mountOff")
 	print_("  /hb test <event> - play a sound; /hb test alert - show the leader alert")
 	print_("  /hb frame auto|show|hide - team frame on this toon (auto: only when it is the leader)")
+	print_("  /hb followmode direct|dungeon|status - leader selects direct or healer chain monitoring")
+	print_("  /hb focuscheck - show current focus accuracy for all five characters")
+    print_("  /hb auramode - see whether the 12.1 live-combat aura engine is active")
+    print_("  /hb statusdebug - inspect live mainbar source flags (follow, loot, repair, quest)")
+    print_("  /hb debuffpanel unlock|lock|reset - move mirrored Debuff Overview")
+    print_("  /hb overview buff|debuff on|off - same as Quick Menu checkboxes")
 	print_("  /hb frame lock | unlock - unlocked: drag the bar to move, drag the corner to resize")
-	print_("  /hb frame colors | scale <0.5-2> | solo | reset - class colours, scale, show when solo, reset position and size")
-	print_("  /hb frame xp | gold | bags | buffs - show or hide level and XP, gold, free bag slots, buffs")
-	print_("  /hb r <text> - leader: reply to the last forwarded whisper, through the toon that got it")
-	print_("  /hb tracker - hide or show Blizzard's quest tracker")
+	print_("  /hb frame colors | scale <0.5-2> | solo | reset | order Mael,Lyra,Elya,Nyra,Ayla")
 	print_("  /hb who - show how the game names you and your target")
 	print_("  /hb options - open the options panel; /hb debug - toggle debug output")
-	print_("  Key bindings: Esc > Options > Keybindings > AddOns > HaploBox")
 end
 
 SLASH_HAPLOBOX1, SLASH_HAPLOBOX2 = "/hb", "/haplobox"
@@ -1424,21 +871,108 @@ SlashCmdList.HAPLOBOX = function(input)
 	local cmd, rest = (input or ""):match("^%s*(%S*)%s*(.-)%s*$")
 	cmd = cmd:lower()
 	if cmd == "leader" then
-		HB.SetLeaderName(rest ~= "" and rest or HB.UnitIdent("target"))
-	elseif cmd == "accept" then
-		HB.AcceptTeam()
+		local name = rest ~= "" and rest or HB.UnitIdent("target")
+		if not name then print_("no target and no name given") return end
+		HaploBoxTeam.leader = name
+		print_("leader set to |cffffff00" .. name .. "|r")
 	elseif cmd == "role" then
-		HB.SetMyRole(rest:lower())
+		local r = rest:lower()
+		if r ~= "tank" and r ~= "healer" and r ~= "dps" then print_("role must be tank, healer or dps") return end
+		local me = clean(HB.UnitIdent("player"))
+		setRole(me, r)
+		send("R|" .. r .. "|" .. me)
+		refreshTeam()
+		print_("role set to " .. r .. (IsInGroup() and " (sent to the group)" or ""))
 	elseif cmd == "team" then
 		if rest:lower() == "show" then print_("team: " .. HB.TeamSummary()) return end
 		HB.SetTeamFromGroup()
-	elseif cmd == "r" or cmd == "reply" then
-		HB.Reply(rest)
-	elseif cmd == "tracker" then
-		HB.db.hideQuestTracker = not HB.db.hideQuestTracker
-		HB.ApplyQuestTracker()
-		print_("quest tracker " .. (HB.db.hideQuestTracker and "hidden" or "shown")
-			.. (InCombatLockdown() and " (after combat)" or ""))
+	elseif cmd == "followmode" then
+		local mode = rest:lower()
+		if mode == "direct" or mode == "dungeon" then
+			HB.SetFollowMode(mode)
+		else
+			print_("Follow mode: " .. tostring(HB.db.followMode) .. " (use /hb followmode direct or dungeon)")
+		end
+	elseif cmd == "invite" then
+		if HB.InviteTeam then HB.InviteTeam() end
+	elseif cmd == "leave" then
+		if HB.LeaveTeam then HB.LeaveTeam() end
+	elseif cmd == "healer" then
+		if HB.AssignMyHealer then HB.AssignMyHealer() end
+    elseif cmd == "view" or cmd == "minimode" then
+        local m=rest:lower()
+        if m=="heal" or m=="mini" then
+            if HB.SetMiniHealMode then HB.SetMiniHealMode(true) end
+        elseif m=="main" then
+            if HB.SetMiniHealMode then HB.SetMiniHealMode(false) end
+        elseif m=="toggle" then
+            if HB.SetMiniHealMode then HB.SetMiniHealMode(not HB.db.miniHealMode) end
+        else
+            print_("Local view: "..(HB.db.miniHealMode and "MINI HEAL" or "MAIN").."; use /hb view main|heal|toggle")
+        end
+    elseif cmd == "controls" then
+		if rest:lower() == "reset" then
+			if HB.ResetControlPosition then HB.ResetControlPosition() end
+		else
+			HB.db.controlsOpen = not HB.db.controlsOpen
+			if HB.RefreshControls then HB.RefreshControls() end
+		end
+    elseif cmd == "buffpanel" then
+        local mode=rest:lower()
+        if mode=="unlock" or mode=="lock" then
+            local ok=HB.SetBuffOverviewUnlocked and HB.SetBuffOverviewUnlocked(mode=="unlock")
+            print_(ok and ("Buff Overview "..mode.."ed; "..(mode=="unlock" and "drag MOVE BUFFS above panel" or "saved"))
+                or "Buff Overview: change position out of combat.")
+        elseif mode=="reset" then
+            local ok=HB.ResetBuffOverviewPosition and HB.ResetBuffOverviewPosition()
+            print_(ok and "Buff Overview moved back to upper-right default." or "Reset after combat.")
+        else
+            print_("Use /hb buffpanel unlock|lock|reset (independent of party frame movement)")
+        end
+    elseif cmd == "debuffpanel" then
+        local mode=rest:lower()
+        if mode=="unlock" or mode=="lock" then
+            local ok=HB.SetDebuffOverviewUnlocked and HB.SetDebuffOverviewUnlocked(mode=="unlock")
+            print_(ok and ("Debuff Overview "..mode.."ed") or "Change frame lock after combat.")
+        elseif mode=="reset" then
+            local ok=HB.ResetDebuffOverviewPosition and HB.ResetDebuffOverviewPosition()
+            print_(ok and "Debuff Overview position reset." or "Reset after combat.")
+        else print_("Use /hb debuffpanel unlock|lock|reset") end
+    elseif cmd == "overview" then
+        local kind,value=rest:lower():match("^(%a+)%s+(%a+)$")
+        if (kind=="buff" or kind=="debuff") and (value=="on" or value=="off") then
+            local ok=HB.SetOverviewEnabled and HB.SetOverviewEnabled(kind,value=="on")
+            print_(ok and (kind.." Overview "..value:upper()) or "Change overview after combat.")
+        else print_("Use /hb overview buff|debuff on|off") end
+    elseif cmd == "statusdebug" then
+        if HB.MainBarStatusDiagnostics then HB.MainBarStatusDiagnostics() end
+    elseif cmd == "buffs" then
+        local family,setting=rest:lower():match("^(%a+)%s*(%a*)$")
+        local valid={xp=true,food=true,camp=true,mark=true,thorns=true,intellect=true,fortitude=true,blessing=true}
+        HB.db.requiredBuffs=HB.db.requiredBuffs or {}
+        if not valid[family] then
+            local out={}
+            for _,k in ipairs({"xp","food","camp","mark","thorns","intellect","fortitude","blessing"}) do
+                out[#out+1]=k.."="..(HB.db.requiredBuffs[k] and "ON" or "OFF")
+            end
+            print_("Required buffs: "..table.concat(out,", ")..". Use /hb buffs <xp|food|camp|mark|thorns|intellect|fortitude|blessing> on|off")
+            return
+        end
+        if setting~="on" and setting~="off" then print_("Use /hb buffs "..family.." on|off") return end
+        HB.db.requiredBuffs[family]=setting=="on"
+        if HB.IAmLeader() and IsInGroup() then send("B|"..family.."|"..(setting=="on" and "1" or "0")) end
+        if HB.RefreshPartyFrame then HB.RefreshPartyFrame() end
+        print_("Required buff "..family..": "..setting:upper())
+	elseif cmd == "trusted" then
+		if rest == "" then print_("trusted team: " .. tostring(HB.db.trustedMembers))
+		else HB.db.trustedMembers = rest print_("trusted team now: " .. rest) end
+	elseif cmd == "trade" then
+		if HB.TradeCommand then HB.TradeCommand(rest) end
+	elseif cmd == "focuscheck" then
+		if HB.PrintFocusCheck then HB.PrintFocusCheck() end
+    elseif cmd == "auramode" then
+        print_("Aura renderer: " .. tostring(HB.auraEngine or "not yet initialized") ..
+            ". New Blizzard AuraContainer required for live HoTs/debuffs in protected combat.")
 	elseif cmd == "ffa" then
 		HB.SetFFA(false)
 	elseif cmd == "share" then
@@ -1478,7 +1012,8 @@ SlashCmdList.HAPLOBOX = function(input)
 			print_("test what? alert or a sound event")
 		end
 	elseif cmd == "frame" then
-		local a, b = rest:lower():match("^(%S*)%s*(.-)$")
+		local a, b = rest:match("^(%S*)%s*(.-)$")
+		a = a:lower()
 		local alias = { on = "show", off = "hide", all = "show", leader = "auto" }
 		a = alias[a] or a
 		if a == "auto" or a == "show" or a == "hide" then
@@ -1487,6 +1022,13 @@ SlashCmdList.HAPLOBOX = function(input)
 		elseif a == "scale" and tonumber(b) then
 			HB.db.partyScale = math.min(2, math.max(0.5, tonumber(b)))
 			print_("team frame scale: " .. HB.db.partyScale)
+		elseif a == "order" then
+				if b == "" then
+					print_("preferred order: " .. tostring(HB.db.preferredOrder or "(off)"))
+					return
+				end
+				HB.db.preferredOrder = b:lower() == "off" and "" or b
+				print_("preferred order: " .. (HB.db.preferredOrder ~= "" and HB.db.preferredOrder or "off"))
 		elseif a == "solo" then
 			HB.db.partyFrameSolo = not HB.db.partyFrameSolo
 			print_("team frame when solo: " .. (HB.db.partyFrameSolo and "shown" or "hidden"))
@@ -1495,15 +1037,11 @@ SlashCmdList.HAPLOBOX = function(input)
 		elseif a == "colors" or a == "colours" then
 			HB.db.teamClassColors = not HB.db.teamClassColors
 			print_("team frame class colours: " .. (HB.db.teamClassColors and "on" or "off"))
-		elseif a == "xp" or a == "gold" or a == "bags" or a == "buffs" then
-			local key = ({ xp = "teamShowXP", gold = "teamShowGold", bags = "teamShowBags", buffs = "teamShowBuffs" })[a]
-			HB.db[key] = not HB.db[key]
-			print_("team frame " .. a .. ": " .. (HB.db[key] and "shown" or "hidden"))
 		elseif a == "reset" then
 			if HB.ResetPartyPosition then HB.ResetPartyPosition() end
 		else
 			print_("team frame on this toon: " .. tostring(HB.db.teamFrame) .. ", scale " .. tostring(HB.db.partyScale)
-				.. ". Use /hb frame auto|show|hide|lock|unlock|colors|xp|gold|bags|buffs|scale <n>|solo|reset")
+				.. ". Use /hb frame auto|show|hide|lock|unlock|colors|scale <n>|solo|reset|order <names|off>")
 			return
 		end
 		if HB.LayoutPartyFrame then HB.LayoutPartyFrame() end
@@ -1511,10 +1049,8 @@ SlashCmdList.HAPLOBOX = function(input)
 		print_("you: " .. tostring(HB.UnitIdent("player")) .. "  target: " .. tostring(HB.UnitIdent("target"))
 			.. "  realm: " .. tostring(myRealm))
 	elseif cmd == "status" then
-		local ffa = HB.IsFFA()
-		local loot = ffa == true and "free for all" or ffa == false and "not free for all" or "unknown"
 		print_("leader: " .. tostring(HB.Leader()) .. (HB.IAmLeader() and " (you)" or "")
-			.. "  role: " .. tostring(HB.MyRole()) .. "  loot: " .. (IsInGroup() and loot or "not in a group"))
+			.. "  role: " .. tostring(HB.MyRole()) .. "  loot: " .. tostring(GetLootMethod and GetLootMethod()))
 	elseif cmd == "options" or cmd == "config" then
 		if HB.OpenOptions then HB.OpenOptions() end
 	elseif cmd == "debug" then

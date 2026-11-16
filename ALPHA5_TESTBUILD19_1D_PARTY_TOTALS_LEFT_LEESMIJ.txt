@@ -1,0 +1,25 @@
+HaploBox Alpha5 — TB19.1d / Party Totals left-aligned / TESTBUILD
+15 november 2026
+
+Basis: volledige TB19.1c Full UI FIX (alle functies behouden).
+
+ENIGE FUNCTIONELE WIJZIGING: bestaande lichtgrijze 24px Party Frames-dragheader.
+Totale BAGS begint LINKS (+8 UI-punten) en de driecijferige free-slotswaarde
+(rechts uitgelijnd, 31px) volgt op het icoon. Daarna volgt TEAM GOLD/SILVER/
+COPPER met het reeds gebruikte grotere 13pt font en vaste muntkolommen.
+Rechts blijft de Quick Settings-tandwielknop op zijn oude plek; tussen de
+resources en het tandwiel blijft het sleepgebied. Alleen bij extreem smalle
+partyframes is een minimum headerbreedte van 265 UI-punten nodig, zonder
+individuele partyframes of secure anchors te veranderen.
+
+Behoud: bagkleuren (>50% groen, 20-50% geel, <20% rood), onbekend '?' bij
+onvolledige/stale 5-client-sync, BUFF/DEBUFF vierkante nummertegels, Buff-divider
+en saved dragpos, minimap-toolbar-docking en 38px schermbrede HaploBar.
+NIET GEWIJZIGD: party rows, Auras, HaploBar, Focus/Follow, HoTs of combat
+secure healing. Geen extra onderste resources-balk.
+
+Live HERTEST: /reload op vijf clients; BAGS->GOLD vanaf links, tandwiel rechts
+klikbaar, middendeel van 24px header versleepbaar, 7/27/127 bagwaarden,
+goudgetallen en munticonen, '?' bij incomplete data, UI scale en combat.
+Vervolgens de resterende TB19.1c minimap- en buffherchecks.
+Dit is een TESTBUILD, geen ingame goedgekeurde release.

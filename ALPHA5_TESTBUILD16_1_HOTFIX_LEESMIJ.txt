@@ -1,0 +1,37 @@
+JCDRbox / HaploBox - Alpha 5 TB16.1 HOTFIX: FOLLOWER HEAL SIDE MARGINS
+15 November 2026 — OFFLINE TEST CANDIDATE, NOT LIVE CONFIRMED
+
+BASED ON: TB16 (Buff/Debuff, Focus/Follow, Heal), unchanged except the
+MiniHeal.lua horizontal layout and the TOC version.
+
+CHANGE
+- Follower Heal UI is a little narrower at BOTH edges of a mini client.
+- Left/right screen inset is now approximately 10% of the UI width,
+  bounded to 36..80 WoW UI units per side (was approximately 9 units).
+- Five healing slots stay in ONE centered horizontal row.
+- The entire row retains EXACTLY the current tile HEIGHT and BOTTOM=42.
+- MAIN/HEAL switch, top area / Buff Overview hiding, independent Quick
+  Settings, secure heal buttons, keybinding, Auras, Follow and combat logic
+  are unchanged.
+
+OUT OF COMBAT CHECK (BEFORE NEXT DUNGEON)
+1. Install with all WoW clients CLOSED; backup current HaploBox and
+   the saved variables. Extract into Interface/AddOns/HaploBox.
+2. On all FOUR mini follower windows: enter HEAL mode, check both side
+   margins and confirm bag/micro-menu items can be clicked at both edges.
+3. Toggle MAIN -> HEAL -> MAIN, make sure the Buff Overview clears out
+   of the top area while in HEAL view, then comes back as expected.
+4. Return to MAIN and check the Buff Overview 1..5, stacks, missing
+   buff behavior and the Blizzard-original ON/OFF restoration OOC.
+5. Test /reload. Leave the remaining previously recorded UI polish bugs
+   for the planned later build (class badge borders, buff icon size,
+   panel drag grip, Camp Benefits stacks and buff three-zone ordering).
+
+COMBAT RUN (NEXT DUNGEON)
+- Apply a few Rejuvenation and Regrowth casts to different team members.
+- Observe new/renewed/expired HoT icons and other buffs IN COMBAT.
+- Check debuff updates and whether no WoW errors/protected-action
+  failures occur. Report character, exact symptom, screenshot if needed.
+- Do not switch secure Heal view in combat; this remains OOC only.
+
+SAFE ROLLBACK: TB16 ZIP, or TB15/TB13 for combat-aura issues.

@@ -1,0 +1,89 @@
+JCDRbox / HaploBox - Alpha 5 TESTBUILD 16
+15 November 2026 | OFFLINE TEST CANDIDATE — NOT VERIFIED IN WORLD OF WARCRAFT
+
+SOURCE / BACKUP
+- Built directly from the locally mounted original TB15 ZIP, without editing the baseline.
+- TB15 rollback: JCDRbox_HaploBox_Alpha5_Testbuild15_FiveRowBuffOverview.zip
+- TB13 remains your known-good combat-aura safety rollback.
+- Install folder MUST remain Interface/AddOns/HaploBox.
+
+NEW IN THIS TEST BUILD
+1. Integrated Focus/Follow column on each character row:
+   - Entire column is as high as the single character frame (name through XP).
+   - Focus is the upper 1/3; Follow is the lower 2/3.
+   - No gap between them or the character frame; one gold border surrounds all.
+   - Focus/Target pictograms are larger; Follow mouse click and state behavior retained.
+2. HoTs: two rows of aura icons alongside Focus, combined height equal to Focus.
+   - The native engine still owns live Rejuvenation/Regrowth/combat aura updates.
+   - Max 16 icons, arranged 8 per row where the native flow layout supports it.
+3. DEBUFF OVERVIEW: new, separate five-character pane with 1–5 labels on LEFT,
+   debuff icons growing LEFT TO RIGHT, mirrored from Buff Overview.
+   - Default OFF until enabled explicitly from Quick Menu. Move via unlock grip.
+   - Debuff layout is five rows; auto-collapsing empty rows is not included.
+4. QUICK MENU: one 'Buff / Debuff Overview' section, with independent ON/OFF
+   buttons and an independent UNLOCK / LOCK FRAME button beside each one.
+   - Popup is wider; the Controlbar's original anchor is NOT moved.
+   - Buff Overview defaults ON (preserving prior TB15); Debuff Overview OFF.
+   - When an overview is shown, its matching original Blizzard player aura
+     bar is faded out and made non-mouse-interactive OUT OF COMBAT. When OFF,
+     original alpha/mouse flags are restored. Nothing is changed in combat.
+   - On a client where Blizzard's debuffs are descendants of BuffFrame,
+     the native BuffFrame is intentionally NOT hidden rather than losing both.
+   - These Blizzard API interactions need live validation on the actual client.
+5. BUFF OVERVIEW: class-coloured circular number badges 1–5, white numbers;
+   Blizzard-style pale gold timers; native stack label allows 1+ if available.
+   - The EXTERNAL BUFF split into three independently filtered native groups
+     remains OPEN: current native combat container keeps its proven ordering.
+     It is not safe to fake this with Lua aura reads during combat.
+6. FOLLOWER HEAL UI: height unchanged; entire row moved upward (bottom inset
+   from 8 to 42 UI units) to clear the native WoW Character / Micro Menu.
+   - Bind 'Toggle Follower Heal UI' in WoW Key Bindings > JCDRbox.
+   - No default shortcut is assigned. Secure view switches remain OOC only.
+7. SHARE UI: leader now also transmits normalized Buff Overview position in
+   separate AUR packet; followers accept only the actual leader while trusted.
+8. MAIN BAR: added /hb statusdebug to inspect ACTUAL local follow-mode, loot,
+   auto-repair and quest source values. We have not yet identified which exact
+   status the user observed as wrong, so NO guesswork changes to follow chain.
+   Note: TB15 already refreshed Controlbar every 0.5 seconds; stale values
+   cannot be presumed to result from missing refresh. A concrete live example
+   remains essential to finish the underlying status bug.
+
+SAFETY
+- TB13/TB15 aura detection, Missing Buff computation, combat aura protection
+  and secure Follow/healing behavior were not rewritten.
+- Quick toggles and frame movement are refused during combat, not executed on
+  protected Blizzard frames then. Changes can be made after leaving combat.
+- Original Blizzard auras are faded/disabled only while corresponding custom
+  overview is genuinely visible; all changes are reversible outside combat.
+- Blizzard layout API quirks may prevent fading on certain Forever clients;
+  check OFF restoration carefully BEFORE using in dangerous combat.
+
+INSTALL AND TEST
+1. Exit ALL WoW clients, back up AddOns/HaploBox and SavedVariables.
+2. Extract the ZIP into Interface/AddOns. Confirm 'HaploBox' is the folder name.
+3. Outside combat, inspect each Focus/Follow framed character row; verify gold
+   border, 1/3:2/3 heights, enlarged pictograms, still-clickable Follow.
+4. Try Quick Menu > Buff / Debuff Overview; toggle each ON/OFF individually;
+   confirm original Blizzard buffs/debuffs hide and restore separately.
+5. Unlock each panel; drag via MOVE BUFFS / MOVE DEBUFFS; lock again; /reload.
+6. Check all five badges 1–5 and correct class colours; debuffs on the left.
+7. On each mini follower client, verify WoW Character/Micro Menu is not
+   obstructed; set a keybind for JCDRbox Heal mode; confirm MAIN/HEAL toggle.
+8. Share UI from Mael; verify Buff Overview position on four followers.
+9. Run /hb auramode then TEST REJUVENATION + REGROWTH on multiple chars;
+   refresh/expire in combat, plus debuffs; check live icon updates are intact.
+10. Run /hb statusdebug when a mainbar indicator disagrees with reality and
+    report: icon, actual state, shown state, affected client, time of change.
+
+HELPFUL COMMANDS
+/hb buffpanel unlock|lock|reset
+/hb debuffpanel unlock|lock|reset
+/hb overview buff on|off
+/hb overview debuff on|off
+/hb statusdebug
+/hb auramode
+/hb view main|heal|toggle
+
+OFFLINE VERIFICATION STATUS: 17 Lua files syntax-checked by Lua 5.4 parser;
+ZIP CRC and source file structure checked. No client-side API or combat
+behavior can be confirmed without a live WoW test.
