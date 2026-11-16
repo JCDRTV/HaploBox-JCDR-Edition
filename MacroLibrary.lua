@@ -1,20 +1,21 @@
--- JCDR Edition / TB19.1m MVP: local multibox macro controls and a tiny class library.
--- This panel NEVER casts, follows, trades or modifies somebody else's macro.
--- F3 Assist Focus and F5/F6 focus keys are legacy user bindings, NOT managed here:
--- BOX ON spell macros assist party1 directly; Blizzard Focus remains untouched.
+-- JCDR Edition / TB19.1m MVP: Smart Follow and BOX-aware Druid spell presets.
+-- This panel NEVER casts, follows or trades, nor modifies somebody else's macro.
+-- F3/F5/F6/NUM1 are legacy bindings, NOT modified here.
+-- BOX ON spell macros assist/heal party1 directly; Blizzard Focus remains untouched.
 -- Blizzard actions still require the user's real keypress/click, and writes stay OOC.
 local HB=HaploBox
 local panel, rows, tabs, notice, page, pending = nil, {}, {}, nil, "box", nil
 
 local BOX={
-    {id="follow", name="HB Smart Follow", title="F1  Smart Follow", key="F1", detail="Direct/Dungeon via BOX mode"},
-    {id="trade", name="HB Trade Leader", title="NUM1  Trade with Mael", key="NUMPAD1", body="#showtooltip\n/run InitiateTrade(\"party1\")"},
+    {id="follow", name="HB Smart Follow", title="F1 - Smart Follow", key="F1"},
 }
-local CLASS={
+-- Small proof-of-concept collection. More classes/spells only after real tests.
+-- BOX ON: assist Mael for DPS, heal Mael for party1. BOX OFF: ordinary /cast.
+local SMART={
     DRUID={
-        {id="motw", name="HB Mark Wild", title="Mark of the Wild - mouseover", body="#showtooltip Mark of the Wild\n/cast [@mouseover,help,nodead][@player] Mark of the Wild"},
-        {id="thorns", name="HB Thorns", title="Thorns - mouseover", body="#showtooltip Thorns\n/cast [@mouseover,help,nodead][@player] Thorns"},
-        {id="rejuv", name="HB Rejuv", title="Rejuvenation - mouseover", body="#showtooltip Rejuvenation\n/cast [@mouseover,help,nodead][help,nodead][@player] Rejuvenation"},
+        {id="wrath", name="HB Wrath", title="Wrath - DPS (assist Mael)", spell="Wrath", kind="assist"},
+        {id="moonfire", name="HB Moonfire", title="Moonfire - DPS (assist Mael)", spell="Moonfire", kind="assist"},
+        {id="rejuvenation", name="HB Rejuvenation", title="Rejuvenation - heal Mael", spell="Rejuvenation", kind="party1"},
     },
 }
 local function say(message)
@@ -28,12 +29,12 @@ local function myClass()
     return code
 end
 function HB.MacroLibraryEntries(section)
-    if section=="class" then return CLASS[myClass()] or {} end
+    if section=="spells" then return SMART[myClass()] or {} end
     return BOX
 end
 local function preset(id)
     for _,row in ipairs(BOX) do if row.id==id then return row end end
-    for _,row in ipairs(CLASS[myClass()] or {}) do
+    for _,row in ipairs(SMART[myClass()] or {}) do
         if row.id==id then return row end
     end
     return nil
@@ -54,12 +55,19 @@ local function ownedMatch(entry)
         return not not (key and HB.db and HB.db.smartFollowOwners
             and HB.db.smartFollowOwners[key]),index
     end
+    local key=HB.UnitIdent and HB.UnitIdent("player")
+    key=key and HB.Norm and HB.Norm(key)
+    local list=key and HB.db and HB.db.boxMacros and HB.db.boxMacros[key]
+    local managed=list and list[entry.name]
+    if not managed then return false,index end
+    local expected=managed.applied=="on" and managed.onBody or managed.offBody
+    if managed.applied=="legacy" then expected=managed.legacyBody end
     local ok,body=pcall(GetMacroBody,index)
-    return ok and body==entry.body,index
+    return ok and body==expected,index
 end
 function HB.EnsureMacroPreset(id)
     local entry=preset(id)
-    if not entry then say("Macro not available for this class.") return false end
+    if not entry then say("Macro not available in this test menu.") return false end
     if inCombat() then say("Create macros after combat.") return false end
     if entry.id=="follow" then
         if not HB.PrepareSmartFollow or not HB.PrepareSmartFollow() then
@@ -70,18 +78,21 @@ function HB.EnsureMacroPreset(id)
     end
     local own,index=ownedMatch(entry)
     if index then
-        if not own then say("Macro "..entry.name.." already exists with different text; not overwritten.") return false end
+        if not own then
+            say(entry.name.." exists but is not an unchanged HaploBox-managed macro. Not overwritten.")
+            return false
+        end
         say(entry.name.." already exists; no changes made.")
         return true
     end
-    if not CreateMacro then say("Blizzard CreateMacro API unavailable.") return false end
-    if #entry.name>16 or #entry.body>255 then say("Macro too long.") return false end
-    local ok,created=pcall(CreateMacro,entry.name,"INV_MISC_QUESTIONMARK",entry.body,true)
-    local valid=ownedMatch(entry)
-    if not ok or not created or not valid then
-        say("Could not create macro; check character macro limits.") return false
+    if not HB.AddBoxSpell then say("BOX spell support not loaded.") return false end
+    local result=HB.AddBoxSpell(entry.spell,entry.kind)
+    local nowOwned=ownedMatch(entry)
+    if not result or not nowOwned then
+        say("Could not create "..entry.name.."; inspect Blizzard macro slots.")
+        return false
     end
-    say(entry.name.." created as a Blizzard character macro.")
+    say(entry.name.." created. BOX ON/OFF switches its body outside combat.")
     return true
 end
 function HB.BindMacroPreset(id,confirm)
@@ -145,7 +156,7 @@ local function refresh()
     pending=nil
     local entries=HB.MacroLibraryEntries(page)
     tabs.box:SetEnabled(page~="box")
-    tabs.class:SetEnabled(page~="class")
+    tabs.spells:SetEnabled(page~="spells")
     for i,r in ipairs(rows) do
         local e=entries[i]
         if e then
@@ -163,12 +174,12 @@ local function refresh()
             r.frame:Hide()
         end
     end
-    if page=="class" then
+    if page=="spells" then
         local token=myClass() or "UNKNOWN"
-        notice:SetText(#entries==0 and ("Nog geen testmacro's voor "..token..".") or
-            "Class library ("..token.."): maak een Blizzard-macro, pak hem op en plaats hem op je skillbalk.")
+        notice:SetText(#entries==0 and ("Nog geen slimme spells voor "..token..".") or
+            "Slimme spells: BOX ON = assist/heal Mael; BOX OFF = gewoon casten. Maak + Pak op.")
     else
-        notice:SetText("F1 Smart Follow + NUM1 Trade. BOX ON handles spell assist; F3/F5/F6 stay in WoW, not HB.")
+        notice:SetText("F1 volgt volgens Direct/Dungeon en is actief bij BOX ON. Toets vervangen alleen na akkoord.")
     end
 end
 local function createPanel()
@@ -190,7 +201,7 @@ local function createPanel()
     heading:SetText("HaploBox - JCDR Edition | Macro Menu (TEST)")
     button(panel,"X",30,22,514,-8,function()panel:Hide()end)
     tabs.box=button(panel,"Multibox",124,26,16,-48,function()page="box";refresh()end)
-    tabs.class=button(panel,"Class macros",124,26,146,-48,function()page="class";refresh()end)
+    tabs.spells=button(panel,"Slimme spells",144,26,146,-48,function()page="spells";refresh()end)
     local l=makeText(panel)
     l:SetPoint("TOPLEFT",panel,"TOPLEFT",18,-89)
     l:SetText("Functie / macro")
@@ -229,7 +240,7 @@ local function createPanel()
     notice:SetTextColor(0.94,0.78,0.47)
     local foot=makeText(panel)
     foot:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",16,11)
-    foot:SetText("Alleen deze client. Party-sync en volledige class library volgen later.")
+    foot:SetText("Testversie: alleen lokale macro's. Geen Share-to-Party of automatische casts.")
     foot:SetTextColor(0.64,0.70,0.78)
     panel:Hide()
 end
