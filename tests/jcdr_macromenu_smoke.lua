@@ -41,10 +41,11 @@ HB.AddBoxSpell=function(spell,kind)
     assert(not combat)
     local name="HB "..spell
     if ids[name] then return false end
-    local off="#showtooltip "..spell.."\n/cast "..spell
+    local off=kind=="heal" and ("#showtooltip "..spell.."\n/cast [mod:shift,@player][@mouseover,help,nodead][] "..spell) or ("#showtooltip "..spell.."\n/cast "..spell)
     local on=kind=="assist" and
         ("#showtooltip "..spell.."\n/assist party1\n/cast "..spell) or
-        ("#showtooltip "..spell.."\n/cast [@party1] "..spell)
+        (kind=="heal" and ("#showtooltip "..spell.."\n/cast [mod:shift,@player][@mouseover,help,nodead][@party1,help,nodead] "..spell) or
+        ("#showtooltip "..spell.."\n/cast [@party1] "..spell))
     local id=CreateMacro(name,"INV_MISC_QUESTIONMARK",off,true)
     HB.db.boxMacros.lyra=HB.db.boxMacros.lyra or {}
     HB.db.boxMacros.lyra[name]={offBody=off,onBody=on,applied="off"}
@@ -62,7 +63,8 @@ assert(macros["HB Wrath"]=="#showtooltip Wrath\n/cast Wrath")
 assert(HB.db.boxMacros.lyra["HB Wrath"].onBody:find("/assist party1",1,true))
 assert(HB.EnsureMacroPreset("moonfire"))
 assert(HB.EnsureMacroPreset("rejuvenation"))
-assert(HB.db.boxMacros.lyra["HB Rejuvenation"].onBody:find("[@party1]",1,true))
+assert(HB.db.boxMacros.lyra["HB Rejuvenation"].onBody:find("[mod:shift,@player][@mouseover,help,nodead][@party1,help,nodead]",1,true))
+assert(HB.db.boxMacros.lyra["HB Rejuvenation"].offBody:find("[mod:shift,@player][@mouseover,help,nodead][]",1,true))
 assert(HB.PickupMacroPreset("wrath"))
 assert(picked==ids["HB Wrath"])
 assert(HB.EnsureMacroPreset("follow"))
