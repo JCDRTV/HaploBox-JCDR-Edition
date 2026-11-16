@@ -9,7 +9,7 @@ TESTSCOPE — precies twee onderdelen:
    Huidige BOX-mode implementatie schakelt Smart Follow uit als BOX OFF staat.
 2) SLIMME SPELL MACRO'S: klein Druid-voorbeeld uit de bestaande BoxMode-code.
    Wrath en Moonfire: BOX ON = /assist party1 + /cast; BOX OFF = /cast.
-   Rejuvenation: BOX ON = /cast [@party1], BOX OFF = normale /cast.
+   Rejuvenation: BOX ON = Shift: jezelf, mouseover: vriendelijke speler,\n   anders party1 (ongeacht geselecteerd target). BOX OFF = Shift: jezelf,\n   mouseover: vriendelijke speler, anders normale Blizzard target-cast.\n   Het gaat om unit-ID party1, niet om een vaste characternaam.
    Party1 is de WoW-unitreferentie, NIET een vastgelegde characternaam. Ook
    wanneer iemand anders die positie inneemt, gebruiken de macros party1.
    Elke testmacro wordt aangemaakt in de eigen Blizzard-macroslots, kan uit
