@@ -108,8 +108,8 @@ function HB.BindMacroPreset(id,confirm)
         if not SetBindingMacro then say("Blizzard SetBindingMacro API unavailable.") return false end
         ok,result=pcall(SetBindingMacro,entry.key,entry.name)
         if ok and result then
-            local saved=pcall(SaveBindings,GetCurrentBindingSet())
-            if not saved then ok=false end
+            local savedOK,savedResult=pcall(SaveBindings,GetCurrentBindingSet())
+            if not savedOK or savedResult==false then ok=false end
         end
     end
     if not ok or not result then say("Could not bind "..entry.key..".") return false end
@@ -157,6 +157,7 @@ local function refresh()
             r.create:SetText(index and own and "Klaar" or "Maak")
             r.create:SetEnabled(not (index and own))
             r.bind:SetShown(not not e.key)
+            r.bind:SetText("Toets")
             r.pick:SetEnabled(own and not not index)
         else
             r.preset=nil
