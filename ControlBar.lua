@@ -302,6 +302,9 @@ function HB.AttachControlBar(parent)
     mkButton(20,"SMART FOLLOW F1",function()
         if HB.InstallSmartFollowBinding then HB.InstallSmartFollowBinding(false) end
     end)
+    mkButton(21,"MACRO MENU",function()
+        if HB.OpenMacroMenu then HB.OpenMacroMenu() end
+    end)
     mkButton(1,"DIRECT",function() HB.SetFollowMode("direct") end)
     mkButton(2,"DUNGEON",function() HB.SetFollowMode("dungeon") end)
     mkButton(3,"HEALER",function() HB.AssignMyHealer() end)
@@ -414,7 +417,7 @@ function HB.UpdateControlSize(parent)
     local bw=math.floor((menuW-14)/2)
     -- Reuse every existing action, but group them by purpose.
     local sections={
-        {"BOX MODE",{19,20}},
+        {"BOX MODE",{19,20,21}},
         {"Follow Mode",{1,2}},
         {"Roles",{3,13}},
         {"Party Control",{5,7,8,4}},
@@ -476,6 +479,7 @@ function HB.RefreshControls()
     buttons[19].label:SetText(HB.db.boxMode and "BOX ON" or "BOX OFF")
     color(buttons[19],HB.db.boxMode and GREEN or OFF)
     color(buttons[20],OFF)
+    color(buttons[21],OFF)
     color(buttons[1],mode=="direct" and GREEN or OFF)
     color(buttons[2],mode=="dungeon" and GREEN or OFF)
     color(buttons[3],HB.MyRole and HB.MyRole()=="healer" and GREEN or OFF)
