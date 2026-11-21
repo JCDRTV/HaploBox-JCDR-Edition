@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20",
+  "version": "HF26.20.1",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20_Total_UI_Sync_Foundation_TEST.zip",
-  "sha256": "64e6a4c135fd2e9858c65794b91110367a37e73fc54d843015da9a3039faf666",
-  "notes": "HF26.20 Total UI Sync FOUNDATION TEST: ingame leader preview+confirm, existing ACK/CRC HaploBox shared UI/anchor sync, optional guarded Blizzard UI CVar subset and local undo. Outside addon Windows Companion separate test ZIP for explicitly selected non-HaploBox SavedVariables (WoW closed); full Blizzard Edit Mode and arbitrary addon config sync NOT YET VALIDATED. HF26.19.4 combat and 19.3 buffs preserved. 31 Lua syntax + targeted mocks PASS. Ingame/Windows tests open."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.1_SmartFollow_F1_Camera_TEST.zip",
+  "sha256": "d36a2bafe1afcd7ac2917473ea5cba534bb3f3fc8a9b633f9cb158bb8efb3b8d",
+  "notes": "HF26.20.1 Smart Follow F1 camera reset TEST: existing /follow partyX unchanged, adds camera callback to same F1 macro for followers with explicit saved view 5 (/hb followcam save confirm); Mael untouched. 31 Lua syntax and 39 behavior assertions PASS. Warning: native SaveView(5) overwrites slot 5 on that follower, custom saved views can change automatic camera following. HF26.20 Total UI Sync, combat toggle and solo buffs preserved. INGAME TEST OPEN."
 }
