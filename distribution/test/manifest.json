@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.4",
+  "version": "HF26.20.5",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.4_Leader_Switch_Camera_Calibration_TEST.zip",
-  "sha256": "e845db20585ea24a2c215a59e52653d3056a0f23c7b584ac08844e22ccb16a37",
-  "notes": "HF26.20.4 Leader-switch follower-camera calibration: any character, including current party leader or solo, can explicitly save native Blizzard camera view slot 5 using /hb followcam save confirm. Existing F1 Smart Follow only calls SetView(5) when that client is currently a grouped BOX-ON follower; never on current leader. The actual leader switching is handled by existing roster update F1 macro reconciliation; follow targets, bindings and all other addons untouched. Lua syntax 31/31, 11 role-change behavior cases, ZIP CRC PASS; INGAME TEST OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.5_Baganator_PartyPawn_Hover_Stability_TEST.zip",
+  "sha256": "60534eec18bb028319df0d763c0d0e20b3ea5db9661db7da3b4ce1d139301a57",
+  "notes": "HF26.20.5 Baganator ALT Party Pawn tooltip flicker TEST: eliminate repetitive GameTooltip:Show on each Pawn reply and OnHide timer-resync loop; keep same-item results when Baganator rebuilds while ALT held; only ALT-down schedules two bounded checks, canceled on release. Prefer visible GameTooltip over Baganator ItemID field interpreted as AtlasLoot. Approved five rows, dice/arrow/% alignment, macros, camera, Mini buffs, Total UI Sync unchanged. Offline 31 Lua syntax, 33 behavior assertions including 20 Baganator rebuilds, ZIP CRC PASS. INGAME TEST OPEN."
 }
