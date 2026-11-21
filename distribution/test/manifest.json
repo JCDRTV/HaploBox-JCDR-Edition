@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.19.1",
+  "version": "HF26.19.2",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.19.1_PartyHP_BuffLayout_AltHover_Hotfix.zip",
-  "sha256": "a8f55a5e0dfde23d9353e24d58b935277aa02432f0dd8559899d06a2daa762c5",
-  "notes": "HF26.19.1 Party HP + Buff Layout + Baganator ALT Hover HOTFIX - OFFLINE PASS / INGAME TEST OPEN. Party numbers => actual HP, buffs 27px/8pt timers, no buff number badges, grip bottom-left; deferred ALT tooltip refresh."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.19.2_BuffOverview_Recovery.zip",
+  "sha256": "8b0e9ccfab9aa4286112d92d2a5a8ff8823c44c682d5438725e5af2c54a66523",
+  "notes": "HF26.19.2 Buff Overview RECOVERY - OFFLINE PASS / INGAME TEST OPEN. Auras.lua restored exactly to HF26.19 because HF26.19.1 buff panel disappeared in game; old numbered badges/timers temporarily restored. Party HP/ALT and Dungeon Advisor preserved. Combat UI toggle fix NOT included."
 }
