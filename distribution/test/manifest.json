@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.3",
+  "version": "HF26.20.4",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.3_Mini_Buff_Visibility_TEST.zip",
-  "sha256": "c95a26d334c2ab0a6f8ea9955fa77f4bceec17e7cd7f77addfb0c77e2a568942",
-  "notes": "HF26.20.3 Main/Mini Buff Visibility TEST: restore Buff Overview hidden in Mini UI even after solo independence from Party Frames; Main still shows solo / full team when Buffs ON. In combat the existing toggle hides ordinary Buff Overview parent best-effort without protected layout; secure operations deferred. HF26.20.2 F1 camera, Smart Follow, native Blizzard BuffFrame suppression and total UI sync unchanged. 31 Lua syntax, 56 dynamic behavior mocks, ZIP CRC PASS; INGAME OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.4_Leader_Switch_Camera_Calibration_TEST.zip",
+  "sha256": "e845db20585ea24a2c215a59e52653d3056a0f23c7b584ac08844e22ccb16a37",
+  "notes": "HF26.20.4 Leader-switch follower-camera calibration: any character, including current party leader or solo, can explicitly save native Blizzard camera view slot 5 using /hb followcam save confirm. Existing F1 Smart Follow only calls SetView(5) when that client is currently a grouped BOX-ON follower; never on current leader. The actual leader switching is handled by existing roster update F1 macro reconciliation; follow targets, bindings and all other addons untouched. Lua syntax 31/31, 11 role-change behavior cases, ZIP CRC PASS; INGAME TEST OPEN."
 }
