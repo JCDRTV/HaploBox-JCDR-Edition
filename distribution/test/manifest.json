@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.17",
+  "version": "HF26.18",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.17_DungeonAdvisor_V1.zip",
-  "sha256": "dc26ff0c5f4229b620d55a02937488a2182a4814c8536b1b3ea882dcc5b0f6ff",
-  "notes": "HF26.17 Dungeon Advisor V1 - testbuild, nog niet ingame goedgekeurd."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.18_DynamicDungeonScan.zip",
+  "sha256": "51c4ef62ad92f05249f4573544b8b9c7bcc0249ac70c21b590a49ce126a35d37",
+  "notes": "HF26.18 Dynamic Dungeon Scan - OFFLINE PASS / INGAME TEST OPEN. Solo/partial Team A, all dungeon levels, bounded item requests."
 }
