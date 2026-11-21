@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.2",
+  "version": "HF26.20.3",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.2_F1_Camera_Only_TEST.zip",
-  "sha256": "10ea0ffda5b4ad746f5f62dac865aef36dd19c3bbcf25280e7a04b31bf8f8fd9",
-  "notes": "HF26.20.2 F1 CAMERA ONLY: Main/Mini UI no longer adjusts follower camera pitch, zoom or tracking; no automatic camera restoration when toggling. Existing F1 Smart Follow /follow routing and stored follower view 5 calibration retained; one-time legacy mini-camera tracking preference restore if previous snapshot exists. 31 Lua parse, 60 behavior assertions, ZIP CRC pass, 107 existing files unchanged. HF26.20.1 total UI sync/camera F1, HF26.19 buffs/combat preserved. INGAME TEST OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.3_Mini_Buff_Visibility_TEST.zip",
+  "sha256": "c95a26d334c2ab0a6f8ea9955fa77f4bceec17e7cd7f77addfb0c77e2a568942",
+  "notes": "HF26.20.3 Main/Mini Buff Visibility TEST: restore Buff Overview hidden in Mini UI even after solo independence from Party Frames; Main still shows solo / full team when Buffs ON. In combat the existing toggle hides ordinary Buff Overview parent best-effort without protected layout; secure operations deferred. HF26.20.2 F1 camera, Smart Follow, native Blizzard BuffFrame suppression and total UI sync unchanged. 31 Lua syntax, 56 dynamic behavior mocks, ZIP CRC PASS; INGAME OPEN."
 }
