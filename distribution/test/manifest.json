@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.1",
+  "version": "HF26.20.2",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.1_SmartFollow_F1_Camera_TEST.zip",
-  "sha256": "d36a2bafe1afcd7ac2917473ea5cba534bb3f3fc8a9b633f9cb158bb8efb3b8d",
-  "notes": "HF26.20.1 Smart Follow F1 camera reset TEST: existing /follow partyX unchanged, adds camera callback to same F1 macro for followers with explicit saved view 5 (/hb followcam save confirm); Mael untouched. 31 Lua syntax and 39 behavior assertions PASS. Warning: native SaveView(5) overwrites slot 5 on that follower, custom saved views can change automatic camera following. HF26.20 Total UI Sync, combat toggle and solo buffs preserved. INGAME TEST OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.2_F1_Camera_Only_TEST.zip",
+  "sha256": "10ea0ffda5b4ad746f5f62dac865aef36dd19c3bbcf25280e7a04b31bf8f8fd9",
+  "notes": "HF26.20.2 F1 CAMERA ONLY: Main/Mini UI no longer adjusts follower camera pitch, zoom or tracking; no automatic camera restoration when toggling. Existing F1 Smart Follow /follow routing and stored follower view 5 calibration retained; one-time legacy mini-camera tracking preference restore if previous snapshot exists. 31 Lua parse, 60 behavior assertions, ZIP CRC pass, 107 existing files unchanged. HF26.20.1 total UI sync/camera F1, HF26.19 buffs/combat preserved. INGAME TEST OPEN."
 }
