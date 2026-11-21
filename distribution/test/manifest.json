@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.8",
+  "version": "HF26.20.9",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.8_Forever_Baganator_PartyPawn_TEST.zip",
-  "sha256": "dc0a0c86a84346bc4967d0d620102dc2784413a4060d4b78ba74f69b61568b5c",
-  "notes": "HF26.20.8 Forever Baganator Party Pawn ALT tooltip FIX TEST. Root: old OnTooltipSetItem handler unsupported by WoW Forever modern UI; previous registration returned early so OnShow and OnHide hooks never installed. Register TooltipDataProcessor.AddTooltipPostCall(Item) independently; preserve classic fallback and OnShow/OnHide despite legacy hook fail. Resolve Baganator pooled button.BGR.itemLink/itemID via tooltip owner or current mouse focus; ALT before/after hover supported. No repeated Show on each Baganator rebuild; keep five approved Pawn columns. 31 Lua syntax + 63 modern/legacy behavior checks PASS. Original 114 files byte-identical; Mini tooltip hide, own castbar, Smart Follow, camera, buffs, Total UI Sync untouched. INGAME TEST OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.9_Strict_Mini_Tooltip_Hide_TEST.zip",
+  "sha256": "1158863ed45585b58e409b79f7c344286f084210ba9ed593adbb0ab19f6f22b5",
+  "notes": "HF26.20.9 STRICT MINI TOOLTIP HIDE TEST: native GameTooltip and ShoppingTooltip1/2 can have alpha reset by Blizzard/addons after OnShow, so HF26.20.7 OnShow+1s fade was insufficient. Reassert alpha=0 while Mini using guarded secure SetAlpha post-hook and OnUpdate fallback only when shown; preserve exact original alpha on Main. Never Hide/Show, never scan frames; clicked ItemRefTooltip intentionally exempt. Adds /hbtooltipdiag to identify missing/third-party tooltip frames. HF26.20.8 modern Baganator Party Pawn, HF26.20.6 castbar, F1 camera/buffs unchanged. 31 Lua syntax + 77 runtime tooltip assertions + 119 ZIP CRC pass. Ingame test open."
 }
