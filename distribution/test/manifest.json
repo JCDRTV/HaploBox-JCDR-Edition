@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.19.3",
+  "version": "HF26.19.4",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.19.3_SoloBuffCompactNativeHide.zip",
-  "sha256": "6a773d2655b43ff2b00221b03d98c5bf34f057420c06ac3f79f714916e000549",
-  "notes": "HF26.19.3 Buff Overview solo-independent, no numbered badges, bottom-left grip after last visible row, 27px icons, 8pt timers; Blizzard BuffFrame hidden only while HaploBox Buff Overview is on and actually visible (OOC, combat deferred), restored when off. Offline Lua compile, CRC, dynamic mock PASS; INGAME TEST OPEN. Combat Main/Mini UI toggle fix not included."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.19.4_CombatMainMiniToggle.zip",
+  "sha256": "b61b3dd5a0cae3598e9e54a30a66af02503ed8393a3d3a835652335c0c567ac5",
+  "notes": "HF26.19.4 Main/Mini UI toggle usable during combat: restore suppressed Blizzard HUD immediately if permitted; secure frames and settings finish on PLAYER_REGEN_ENABLED. No extra hotkey. HF26.19.3 solo buff compact and Blizzard buff hide preserved. 30 Lua syntax, 27 behavior mocks and ZIP CRC PASS. INGAME TEST OPEN."
 }
