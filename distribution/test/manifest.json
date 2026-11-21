@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.9",
+  "version": "HF26.20.10",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.9_Strict_Mini_Tooltip_Hide_TEST.zip",
-  "sha256": "1158863ed45585b58e409b79f7c344286f084210ba9ed593adbb0ab19f6f22b5",
-  "notes": "HF26.20.9 STRICT MINI TOOLTIP HIDE TEST: native GameTooltip and ShoppingTooltip1/2 can have alpha reset by Blizzard/addons after OnShow, so HF26.20.7 OnShow+1s fade was insufficient. Reassert alpha=0 while Mini using guarded secure SetAlpha post-hook and OnUpdate fallback only when shown; preserve exact original alpha on Main. Never Hide/Show, never scan frames; clicked ItemRefTooltip intentionally exempt. Adds /hbtooltipdiag to identify missing/third-party tooltip frames. HF26.20.8 modern Baganator Party Pawn, HF26.20.6 castbar, F1 camera/buffs unchanged. 31 Lua syntax + 77 runtime tooltip assertions + 119 ZIP CRC pass. Ingame test open."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.10_Mini_Tooltip_Leave_Fade_TEST.zip",
+  "sha256": "a4ab7c96e31dcb05018cacf3b45e860cef030658e15753d7d4713a93fbc9290a",
+  "notes": "HF26.20.10 Mini tooltip hover-leave transition TEST. User reproduced: tooltip hidden while hovering mob but appears after leaving. Native tooltip FadeOut can make stale tooltip visible despite SetAlpha(0). In Mini ONLY, bounded native GameTooltip/ShoppingTooltip1/2 are closed via guarded Hide during OnShow, OnUpdate, and after FadeOut when supported; preserves earlier alpha fallback. In Main, no Hide and normal Baganator/Party Pawn hover unaffected. ItemRefTooltip exempt, player's native castbar stays. Added /hbtooltipdiag hides/fadeEvents. 31 Lua syntax, 174 native tooltip simulated behavior assertions including 25 hover-leave cycles x 3 frames, ZIP CRC pass. Ingame open."
 }
