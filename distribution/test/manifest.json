@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.19",
+  "version": "HF26.19.1",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.19_ScanControlsNeedPriority.zip",
-  "sha256": "965cf2c9b934281667a8dda3f4d0cea50de4e60977e7202bbc6a200c85dfd800",
-  "notes": "HF26.19 Scan Controls + Need Priority Diagnostics - OFFLINE PASS / INGAME TEST OPEN. Two explicit scan scopes, provisional Pawn rankings, Blizzard role icons, cursor-only item tooltip, one Need winner or diagnostic, character-level loot count."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.19.1_PartyHP_BuffLayout_AltHover_Hotfix.zip",
+  "sha256": "a8f55a5e0dfde23d9353e24d58b935277aa02432f0dd8559899d06a2daa762c5",
+  "notes": "HF26.19.1 Party HP + Buff Layout + Baganator ALT Hover HOTFIX - OFFLINE PASS / INGAME TEST OPEN. Party numbers => actual HP, buffs 27px/8pt timers, no buff number badges, grip bottom-left; deferred ALT tooltip refresh."
 }
