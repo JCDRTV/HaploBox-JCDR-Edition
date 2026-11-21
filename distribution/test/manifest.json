@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.7",
+  "version": "HF26.20.8",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.7_Mini_Tooltip_Hide_TEST.zip",
-  "sha256": "61e19f0c946eb12a690f78421e130b197842dc68ca8fb4934a7a83a0cd1db784",
-  "notes": "HF26.20.7 Mini UI Mouseover Tooltip Hide TEST: fade native GameTooltip and ShoppingTooltip1/2 to alpha=0 while Mini UI, restoring their exact original alpha in Main UI. Hook OnShow only without Hide/Show to avoid Baganator Pawn flicker. Click-open ItemRefTooltip unaffected. Mini own castbar stays visible, native HUD/Party Pawn/Smart Follow camera/Total UI Sync unchanged. Offline 31 Lua syntax, 64 tooltip behavior assertions, 18 native castbar checks, ZIP CRC PASS. Ingame test OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.8_Forever_Baganator_PartyPawn_TEST.zip",
+  "sha256": "dc0a0c86a84346bc4967d0d620102dc2784413a4060d4b78ba74f69b61568b5c",
+  "notes": "HF26.20.8 Forever Baganator Party Pawn ALT tooltip FIX TEST. Root: old OnTooltipSetItem handler unsupported by WoW Forever modern UI; previous registration returned early so OnShow and OnHide hooks never installed. Register TooltipDataProcessor.AddTooltipPostCall(Item) independently; preserve classic fallback and OnShow/OnHide despite legacy hook fail. Resolve Baganator pooled button.BGR.itemLink/itemID via tooltip owner or current mouse focus; ALT before/after hover supported. No repeated Show on each Baganator rebuild; keep five approved Pawn columns. 31 Lua syntax + 63 modern/legacy behavior checks PASS. Original 114 files byte-identical; Mini tooltip hide, own castbar, Smart Follow, camera, buffs, Total UI Sync untouched. INGAME TEST OPEN."
 }
