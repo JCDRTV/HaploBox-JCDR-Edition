@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.20",
+  "version": "HF26.20.21",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.20_Serial_Pawn_Network_TEST.zip",
-  "sha256": "ff1a442890ff3e76c48a4b38e285ad6b601a696efb53e17006a8af8afefc20bf",
-  "notes": "HF26.20.20 TEST: serial, addressed initial Pawn scan requests per follower, rather than one broadcast triggering simultaneous four-way replies. First wave spaced 0.24s per item/follower pair. Preserves two bounded targeted retry rounds for missing replies. /hblootnet diag now includes first-wave per-selected-scan addressed send totals and five-member response coverage; followers report addressed/broadcast/ignored-other-target Q counts. Existing official Pawn score handling, missing-answer CHECK, manual VERIFY WEAPON PAIR, run-guide narrow UI and Stealth/Normal timer untouched. Only LootPlanner.lua, .toc/version history and new README modified from HF26.20.19. Offline checks PASS: 31 Lua syntax, targeted simulated request/reply-loss recoveries, remaining genuinely missing remains CHECK, timer regression, ZIP CRC, unchanged-file comparison. Ingame acceptance OPEN; slower first-wave scan expected (~29s for 30 items x 4 followers). No auto updater/background checks."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.21_Pawn_Transport_Pacing_TEST.zip",
+  "sha256": "01bd4b0c87bccb78c3522dcdb0b7ae2a7d88970d99c2ee63a5f9d62609240be6",
+  "notes": "HF26.20.21 controlled transport-pacing TEST from HF26.20.20. Ingame diagnostic: Mael accepted 120 initial addressed Q and 142 retry attempts, but Lyra received only 76 initial Q (19 addressed +57 for others) and sent 19/19 replies. All four followers 19/30, Mael 76 applied, 44 NO_REPLY. Hypothesis is shared PARTY channel throttling/loss, not proved. Request interval is conservatively raised from 0.24s to 0.90s for ALL addressed initial and retry Q (about 2 minutes for Wailing Caverns initial 120 Q). Mael /hblootnet diag prints request interval. Preserves two finite retry rounds, strict NO_REPLY CHECK and VERIFY WEAPON PAIR, official Pawn scores, compact Dungeon Run Guide and persistent Stealth/Normal Run Timer, macros/Mini/Party Pawn. Only LootPlanner.lua, TOC/version history and new README changed from HF26.20.20. Offline: 31 Lua syntax, targeted request/reply-loss and pacing behavior regression, Run Timer regression, ZIP CRC and protected-file comparison PASS. Ingame acceptance OPEN; no automatic updates."
 }
