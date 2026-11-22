@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.19",
+  "version": "HF26.20.20",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.19_Score_Reply_Retry_TEST.zip",
-  "sha256": "7b7d0fe8f79f299ada96e5358bc30e6a6f7afd866da0b08f4b52a832afe54245",
-  "notes": "HF26.20.19 targeted Score Confidence response-retry TEST, based on HF26.20.18. Official Pawn UI percentages >300% no longer force VERIFY SCORE, but 10000% empty-slot sentinel remains unverified; 1H/2H manual weapon pair review preserved. Dungeon on-demand scan spaces requests by 0.22 s, waits 1.8 s between batches, and retries every still-missing item/follower pair up to two finite rounds (instead of first 12 only). /hblootnet diag reports applied/duplicate/old-scan/unexpected/late-cache reply counts and selected scan retry stats. No missing response is accepted as OK. Only LootPlanner.lua, TOC, version history and new readme differ from HF26.20.18. Offline: 31 Lua syntax PASS; targeted 48+ missing reply simulation PASS; existing Stealth/Normal timer regression PASS; ZIP integrity and changed-file comparison PASS. Ingame acceptance OPEN. Mini UI, MiniHeal, Smart Follow/F1, Party Pawn ALT hover and Professions tooltip, Macro Menu, Quick Menu, bindings and run timer untouched."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.20_Serial_Pawn_Network_TEST.zip",
+  "sha256": "ff1a442890ff3e76c48a4b38e285ad6b601a696efb53e17006a8af8afefc20bf",
+  "notes": "HF26.20.20 TEST: serial, addressed initial Pawn scan requests per follower, rather than one broadcast triggering simultaneous four-way replies. First wave spaced 0.24s per item/follower pair. Preserves two bounded targeted retry rounds for missing replies. /hblootnet diag now includes first-wave per-selected-scan addressed send totals and five-member response coverage; followers report addressed/broadcast/ignored-other-target Q counts. Existing official Pawn score handling, missing-answer CHECK, manual VERIFY WEAPON PAIR, run-guide narrow UI and Stealth/Normal timer untouched. Only LootPlanner.lua, .toc/version history and new README modified from HF26.20.19. Offline checks PASS: 31 Lua syntax, targeted simulated request/reply-loss recoveries, remaining genuinely missing remains CHECK, timer regression, ZIP CRC, unchanged-file comparison. Ingame acceptance OPEN; slower first-wave scan expected (~29s for 30 items x 4 followers). No auto updater/background checks."
 }
