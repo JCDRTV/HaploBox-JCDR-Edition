@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.22",
+  "version": "HF26.20.23",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.22_Weapon_Set_Manager_Comparator_TEST.zip",
-  "sha256": "95fc77b19ce8c43c51332eaa667b24890b9edb33c5f7559994ebf0824f31972f",
-  "notes": "HF26.20.22 Weapon Set Manager + Comparator TEST. Native Blizzard CharacterFrame receives optional HB SETS sidecar (without editing CharacterFrame files). On each Druid independently select and LOCK exactly owned 2H and 1H+held-offhand item links from equipped/bags; exact variant locked, not bag slot; safe drag selection; manual UPDATE SET suggestions only on physically carried upgrades. Missing references and invalid scores remain CHECK; locks persist in character-keyed SavedVariables, a changed lock invalidates scans. Pawn-weighted raw scores compare complete locked sets on each Druid's own scale; 2H and 1H upgrade % labeled separately, hover shows comparison versus other locked set and states stat-only, not validated proc/DPS performance. Legacy NEEDPAIR/CHECK retained until both sets ready. Existing 0.90s transport pacing and strict NO_REPLY auditing preserved. Only NEW WeaponSets.lua, LootPlanner.lua, TOC/version history and new README differ from HF26.20.21. Offline 32 Lua compile, locked-set behavior + integration, network regression, timer regression, ZIP CRC, SHA-256 and protected files byte comparisons PASS; ingame acceptance OPEN. Distribution remains via manual HaploBox UPDATE without background checks."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.23_Weapon_Sets_UI_Style_TEST.zip",
+  "sha256": "fe9df27745f6c86401d0c4b32ba87827ce30e2b762ceb5b274e0fc07ab5d3167",
+  "notes": "HF26.20.23 Weapon Sets visual hotfix TEST based on HF26.20.22. HB SETS toggle anchored outside native Blizzard CharacterFrame, with adjacent right-docked sidecar (left fallback and screen clamp), rather than over equipment/stats. Sidecar uses shared HaploBox dark charcoal/gold MenuStyle.Window/Button, compact blue selection buttons and green LOCKED/READY, red missing indicators. Late MenuStyle initialization handled safely on PLAYER_LOGIN/ADDON_LOADED. Weapon-set persistence/identity/comparison unchanged. Exactly WeaponSets.lua, TOC, version history, new README modified. Offline PASS: 32 Lua syntax, weapon lock + complete Pawn comparator, network pacing and loss-recovery regression, Stealth/Normal Run Timer regression, ZIP CRC, SHA-256, protected modules unchanged. Ingame visual and lock acceptance OPEN. Manual HaploBox UPDATE only; no background checks."
 }
