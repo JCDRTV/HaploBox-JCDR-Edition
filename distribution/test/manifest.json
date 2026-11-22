@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.14",
+  "version": "HF26.20.16",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.14_Run_Guide_Score_Confidence_TEST.zip",
-  "sha256": "b48f1d43e91fb8092a468bbda2031d26ff4ca8cea17a14758e462871dc11ee86",
-  "notes": "HF26.20.14 Dungeon Run Guide Score Confidence TEST. Per-boss five-Druid exact response audit (all item IDs; verified numeric source; missing/cache/empty table/extreme percentage/NEW unknown not 0); existing large planner logic unchanged; Run Guide bypasses heuristic role-fit veto to show actual per-character Pawn upgrade; amber CHECK for partial and green OK only if boss score coverage resolved. /hbrunaudit prints reasons. During-scan gear changes invalidate scan irreversibly until explicit rescan; no follower 2-second invalidation throttle. Only LootPlanner.lua + TOC/version history + new README changed; MiniHeal, MiniCamera, Smart Follow, LootHover/Party Pawn and tooltip adapters untouched byte-for-byte. Offline: 31 Lua syntax, 22 Lua behavior assertions, ZIP CRC, changed-file comparison PASS. Ingame full reliability still OPEN; Pawn scale quality and Forever actual drops cannot be certified by offline tests."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.16_Macro_Target_Sync_Hotfix_TEST.zip",
+  "sha256": "e680ca4c4b298f0ad2288b4e17edecad2e71448ba7552bbfe293494a0b6998ae",
+  "notes": "HF26.20.16 Smart Spell target/profile & pickup hotfix TEST. Supersedes unshipped HF26.20.15 pickup-only prototype. Explicit Macro Menu click adopts ONLY exact canonical generated Smart Spell text for same name/spell/kind and synchronizes to current BOX ON/OFF/leader, so follower ON uses /assist party1 before /cast. Fresh macros are created in correct profile. Nonstandard/user-edited/imported macros are never overwritten; no automatic casts. Only BoxMode.lua, MacroLibrary.lua, TOC/version history, and new hotfix README changed against HF26.20.14. Offline Lua 31 syntax, targeted Lua behavior tests, ZIP integrity, source comparison PASS. Ingame acceptance OPEN. No Dungeon Run Guide scoring/UI or Mini UI/Smart Follow/F1 changes."
 }
