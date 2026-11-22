@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.16",
+  "version": "HF26.20.17",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.16_Macro_Target_Sync_Hotfix_TEST.zip",
-  "sha256": "e680ca4c4b298f0ad2288b4e17edecad2e71448ba7552bbfe293494a0b6998ae",
-  "notes": "HF26.20.16 Smart Spell target/profile & pickup hotfix TEST. Supersedes unshipped HF26.20.15 pickup-only prototype. Explicit Macro Menu click adopts ONLY exact canonical generated Smart Spell text for same name/spell/kind and synchronizes to current BOX ON/OFF/leader, so follower ON uses /assist party1 before /cast. Fresh macros are created in correct profile. Nonstandard/user-edited/imported macros are never overwritten; no automatic casts. Only BoxMode.lua, MacroLibrary.lua, TOC/version history, and new hotfix README changed against HF26.20.14. Offline Lua 31 syntax, targeted Lua behavior tests, ZIP integrity, source comparison PASS. Ingame acceptance OPEN. No Dungeon Run Guide scoring/UI or Mini UI/Smart Follow/F1 changes."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.17_Druid_Active_Spells_30_TEST.zip",
+  "sha256": "32f91776fcad890fbf17aceb16c4c0e58c67dda4fb451717396ec3fe7f0effe0",
+  "notes": "HF26.20.17 Druid Smart Spells level 1-30 active-only TEST. Fourteen active WoW Forever abilities added after lv20, including Ferocious Bite lv24, optional talents Insect Swarm/Lacerate lv25, Nature Swiftness lv30. Passive Omen of Clarity and any client-flagged passive spellbook entry filtered from displayed menu and preset creation. Existing macros/registry never removed by visibility filter. Existing spellbook-known gating, BOX ON/OFF generated macro profiles, and intentional hardware-click-only pickup preserved. Only MacroLibrary.lua, TOC, history and readme differ from HF26.20.16. All 31 Lua files compile; new targeted Lua behavior tests and HF26.20.16 regression tests PASS; ZIP CRC and changed-file comparison PASS. Ingame acceptance OPEN. Dungeon Run Guide and protected subsystems unchanged."
 }
