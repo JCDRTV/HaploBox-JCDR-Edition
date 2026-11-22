@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.10",
+  "version": "HF26.20.11",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.10_Mini_Tooltip_Leave_Fade_TEST.zip",
-  "sha256": "a4ab7c96e31dcb05018cacf3b45e860cef030658e15753d7d4713a93fbc9290a",
-  "notes": "HF26.20.10 Mini tooltip hover-leave transition TEST. User reproduced: tooltip hidden while hovering mob but appears after leaving. Native tooltip FadeOut can make stale tooltip visible despite SetAlpha(0). In Mini ONLY, bounded native GameTooltip/ShoppingTooltip1/2 are closed via guarded Hide during OnShow, OnUpdate, and after FadeOut when supported; preserves earlier alpha fallback. In Main, no Hide and normal Baganator/Party Pawn hover unaffected. ItemRefTooltip exempt, player's native castbar stays. Added /hbtooltipdiag hides/fadeEvents. 31 Lua syntax, 174 native tooltip simulated behavior assertions including 25 hover-leave cycles x 3 frames, ZIP CRC pass. Ingame open."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.11_Professions_Party_Pawn_TEST.zip",
+  "sha256": "13089c9e162968b12f98a259a20709adf2027c33fbf1117ea79c430ea950ae7f",
+  "notes": "HF26.20.11 Party Pawn in Professions. Selected crafted-item recipe now shows compact addon-owned five-client Pawn panel alongside modern ProfessionsFrame and legacy TradeSkill/Craft frames; reused approved HBHV15 live score requests, aligned Pawn arrows and Need dice. Main ALT item hover unchanged; profession panel yields to ALT-hover and returns on ALT release. Mini strict native mob tooltip hide unchanged; separate panel only while profession is open and output item selected. Non-item spells excluded, /hbprofdiag added. Smart Follow and Mini camera untouched. Offline 31 Lua syntax, mock profession panel selection/update/close/reopen test, ZIP CRC passed; ingame testing pending."
 }
