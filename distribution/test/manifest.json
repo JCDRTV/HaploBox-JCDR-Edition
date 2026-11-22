@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.12",
+  "version": "HF26.20.13",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.12_Professions_Tooltip_Only_TEST.zip",
-  "sha256": "82f1590adcf7f69009333fc10005dab55772d103c326168613391003ee668ba8",
-  "notes": "HF26.20.12 Party Pawn original Blizzard professions tooltip ONLY. Removes HF26.20.11 addon-owned profession panel/observer. Party Pawn appends five-Druid score rows inside Blizzard GameTooltip when hovering an actual item in ProfessionsFrame / TradeSkillFrame / CraftFrame. Modern TooltipDataProcessor + secure tooltip setter + classic item hooks; selected crafted-item fallback only for output icon, not reagents. Profession hover without ALT; ALT bag/AtlasLoot unchanged. Only LootHover.lua logic changed. MiniHeal.lua, MiniCamera.lua, Smart Follow, native tooltip hiding, UI modes unchanged byte-for-byte. Offline: 31 Lua syntax, modern/classic/reagent/non-item/fallback/ALT bag/network reply mock tests, zip CRC passed. In-game TEST OPEN. /hbprofdiag diagnostics."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.13_Dungeon_Run_Guide_TEST.zip",
+  "sha256": "3092c427c9457bcf6774b315fb69b1077426dc847847f86006d1066cf0dc207c",
+  "notes": "HF26.20.13 Dungeon Run Guide V1. Small draggable separate overlay opened with /hbrun or RUN GUIDE in Haplo Loot planner. Choose dungeon, WC approximate route boss order (other dungeons AtlasLoot encounter order), collapse/expand boss and show verified NOW Pawn upgrades by character, manual persistent boss checkmarks/reset, optional future-level gear, original GameTooltip item-icon hover. Focused SCAN THIS DUNGEON reuses existing HBLP26 party query and AtlasLoot boss source with one target; no invented scores, unknown/stale data flagged, no trash/quests/vendor drops or actual-drop tracking. Change only LootPlanner.lua, TOC/version metadata and added README. MiniHeal/MiniCamera/BoxMode/LootHover/Smart Follow unmodified byte-for-byte. Offline: 31 Lua parse, 2 mocked functional test suites (WC routing/choose/check/persist, single dungeon scan, Pawn +25%, gear-change stale/reset), ZIP CRC and source diff PASS. Ingame TEST OPEN."
 }
