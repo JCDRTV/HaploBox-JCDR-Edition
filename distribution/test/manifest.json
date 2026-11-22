@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.17",
+  "version": "HF26.20.18",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.17_Druid_Active_Spells_30_TEST.zip",
-  "sha256": "32f91776fcad890fbf17aceb16c4c0e58c67dda4fb451717396ec3fe7f0effe0",
-  "notes": "HF26.20.17 Druid Smart Spells level 1-30 active-only TEST. Fourteen active WoW Forever abilities added after lv20, including Ferocious Bite lv24, optional talents Insect Swarm/Lacerate lv25, Nature Swiftness lv30. Passive Omen of Clarity and any client-flagged passive spellbook entry filtered from displayed menu and preset creation. Existing macros/registry never removed by visibility filter. Existing spellbook-known gating, BOX ON/OFF generated macro profiles, and intentional hardware-click-only pickup preserved. Only MacroLibrary.lua, TOC, history and readme differ from HF26.20.16. All 31 Lua files compile; new targeted Lua behavior tests and HF26.20.16 regression tests PASS; ZIP CRC and changed-file comparison PASS. Ingame acceptance OPEN. Dungeon Run Guide and protected subsystems unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.18_Dungeon_Run_Guide_2_TEST.zip",
+  "sha256": "014e76acd374386164065350807417834fa795aec80f007c5fe6a3b8c56f1655",
+  "notes": "HF26.20.18 Dungeon Run Guide 2.0 TEST. Compact 344px right-side guide collapsible to a 32px draggable titlebar; STEALTH/NORMAL manual run timing; START/PAUSE/RESUME/FINISH/CANCEL, header timer and pause controls while collapsed, locally persisted active vs total time (includes pauses), 120-run SavedVariables history and per-dungeon best via RUNS. Timer survives hidden UI and /reload using epoch; no background updater, network or new scanner. Show Pawn % rounded to integer; precise scores/Score Confidence checks unchanged. Only LootPlanner.lua, toc/version history and new README differ from HF26.20.17; all other modules protected. Offline: 31 Lua syntax PASS, comprehensive mock manual run/pause/reload/history/collapse assertions PASS, ZIP integrity and exact changed-files check PASS. Ingame acceptance OPEN."
 }
