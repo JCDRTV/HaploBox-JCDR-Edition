@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.11",
+  "version": "HF26.20.12",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.11_Professions_Party_Pawn_TEST.zip",
-  "sha256": "13089c9e162968b12f98a259a20709adf2027c33fbf1117ea79c430ea950ae7f",
-  "notes": "HF26.20.11 Party Pawn in Professions. Selected crafted-item recipe now shows compact addon-owned five-client Pawn panel alongside modern ProfessionsFrame and legacy TradeSkill/Craft frames; reused approved HBHV15 live score requests, aligned Pawn arrows and Need dice. Main ALT item hover unchanged; profession panel yields to ALT-hover and returns on ALT release. Mini strict native mob tooltip hide unchanged; separate panel only while profession is open and output item selected. Non-item spells excluded, /hbprofdiag added. Smart Follow and Mini camera untouched. Offline 31 Lua syntax, mock profession panel selection/update/close/reopen test, ZIP CRC passed; ingame testing pending."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.12_Professions_Tooltip_Only_TEST.zip",
+  "sha256": "82f1590adcf7f69009333fc10005dab55772d103c326168613391003ee668ba8",
+  "notes": "HF26.20.12 Party Pawn original Blizzard professions tooltip ONLY. Removes HF26.20.11 addon-owned profession panel/observer. Party Pawn appends five-Druid score rows inside Blizzard GameTooltip when hovering an actual item in ProfessionsFrame / TradeSkillFrame / CraftFrame. Modern TooltipDataProcessor + secure tooltip setter + classic item hooks; selected crafted-item fallback only for output icon, not reagents. Profession hover without ALT; ALT bag/AtlasLoot unchanged. Only LootHover.lua logic changed. MiniHeal.lua, MiniCamera.lua, Smart Follow, native tooltip hiding, UI modes unchanged byte-for-byte. Offline: 31 Lua syntax, modern/classic/reagent/non-item/fallback/ALT bag/network reply mock tests, zip CRC passed. In-game TEST OPEN. /hbprofdiag diagnostics."
 }
