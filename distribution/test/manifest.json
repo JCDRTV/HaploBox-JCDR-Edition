@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.18",
+  "version": "HF26.20.19",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.18_Dungeon_Run_Guide_2_TEST.zip",
-  "sha256": "014e76acd374386164065350807417834fa795aec80f007c5fe6a3b8c56f1655",
-  "notes": "HF26.20.18 Dungeon Run Guide 2.0 TEST. Compact 344px right-side guide collapsible to a 32px draggable titlebar; STEALTH/NORMAL manual run timing; START/PAUSE/RESUME/FINISH/CANCEL, header timer and pause controls while collapsed, locally persisted active vs total time (includes pauses), 120-run SavedVariables history and per-dungeon best via RUNS. Timer survives hidden UI and /reload using epoch; no background updater, network or new scanner. Show Pawn % rounded to integer; precise scores/Score Confidence checks unchanged. Only LootPlanner.lua, toc/version history and new README differ from HF26.20.17; all other modules protected. Offline: 31 Lua syntax PASS, comprehensive mock manual run/pause/reload/history/collapse assertions PASS, ZIP integrity and exact changed-files check PASS. Ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.19_Score_Reply_Retry_TEST.zip",
+  "sha256": "7b7d0fe8f79f299ada96e5358bc30e6a6f7afd866da0b08f4b52a832afe54245",
+  "notes": "HF26.20.19 targeted Score Confidence response-retry TEST, based on HF26.20.18. Official Pawn UI percentages >300% no longer force VERIFY SCORE, but 10000% empty-slot sentinel remains unverified; 1H/2H manual weapon pair review preserved. Dungeon on-demand scan spaces requests by 0.22 s, waits 1.8 s between batches, and retries every still-missing item/follower pair up to two finite rounds (instead of first 12 only). /hblootnet diag reports applied/duplicate/old-scan/unexpected/late-cache reply counts and selected scan retry stats. No missing response is accepted as OK. Only LootPlanner.lua, TOC, version history and new readme differ from HF26.20.18. Offline: 31 Lua syntax PASS; targeted 48+ missing reply simulation PASS; existing Stealth/Normal timer regression PASS; ZIP integrity and changed-file comparison PASS. Ingame acceptance OPEN. Mini UI, MiniHeal, Smart Follow/F1, Party Pawn ALT hover and Professions tooltip, Macro Menu, Quick Menu, bindings and run timer untouched."
 }
