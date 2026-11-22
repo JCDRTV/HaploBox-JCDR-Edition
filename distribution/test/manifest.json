@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.23",
+  "version": "HF26.20.24",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.23_Weapon_Sets_UI_Style_TEST.zip",
-  "sha256": "fe9df27745f6c86401d0c4b32ba87827ce30e2b762ceb5b274e0fc07ab5d3167",
-  "notes": "HF26.20.23 Weapon Sets visual hotfix TEST based on HF26.20.22. HB SETS toggle anchored outside native Blizzard CharacterFrame, with adjacent right-docked sidecar (left fallback and screen clamp), rather than over equipment/stats. Sidecar uses shared HaploBox dark charcoal/gold MenuStyle.Window/Button, compact blue selection buttons and green LOCKED/READY, red missing indicators. Late MenuStyle initialization handled safely on PLAYER_LOGIN/ADDON_LOADED. Weapon-set persistence/identity/comparison unchanged. Exactly WeaponSets.lua, TOC, version history, new README modified. Offline PASS: 32 Lua syntax, weapon lock + complete Pawn comparator, network pacing and loss-recovery regression, Stealth/Normal Run Timer regression, ZIP CRC, SHA-256, protected modules unchanged. Ingame visual and lock acceptance OPEN. Manual HaploBox UPDATE only; no background checks."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.24_Weapon_Sets_Reposition_TEST.zip",
+  "sha256": "7d22c71623378369ef10802da8a3b099549f6e4968e07606382f32e061c60ca0",
+  "notes": "HF26.20.24 Weapon Sets CharacterFrame lower-left toggle placement TEST. Per user screenshot the HB SETS button is now anchored INSIDE native CharacterFrame bottom-left unused space, 10px from left and 12px above bottom, size 92x24. The detailed HB Weapon Sets sidecar remains hidden until clicked and docks outside to right, falling back left when needed. Shared HaploBox styling and manual 2H/1H+off-hand set locks unchanged. Only WeaponSets.lua, TOC/version history and new README changed versus HF26.20.23. Offline: 32 Lua syntax PASS; UI anchor/open-close/right-left docking PASS; exact set locks and Pawn comparator PASS; 0.90s network pacing and reply regression PASS; Dungeon Run Stealth/Normal timer PASS; source diff, ZIP CRC and SHA-256 PASS. Ingame visual acceptance OPEN. No other protected modules touched; manual HaploBox UPDATE only."
 }
