@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.24",
+  "version": "HF26.20.25",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.24_Weapon_Sets_Reposition_TEST.zip",
-  "sha256": "7d22c71623378369ef10802da8a3b099549f6e4968e07606382f32e061c60ca0",
-  "notes": "HF26.20.24 Weapon Sets CharacterFrame lower-left toggle placement TEST. Per user screenshot the HB SETS button is now anchored INSIDE native CharacterFrame bottom-left unused space, 10px from left and 12px above bottom, size 92x24. The detailed HB Weapon Sets sidecar remains hidden until clicked and docks outside to right, falling back left when needed. Shared HaploBox styling and manual 2H/1H+off-hand set locks unchanged. Only WeaponSets.lua, TOC/version history and new README changed versus HF26.20.23. Offline: 32 Lua syntax PASS; UI anchor/open-close/right-left docking PASS; exact set locks and Pawn comparator PASS; 0.90s network pacing and reply regression PASS; Dungeon Run Stealth/Normal timer PASS; source diff, ZIP CRC and SHA-256 PASS. Ingame visual acceptance OPEN. No other protected modules touched; manual HaploBox UPDATE only."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.25_Offline_Whisper_Guard_TEST.zip",
+  "sha256": "0d1f2c5ce52c238dfc6fca6b80bd441b68e9b6b20b3e6f055909bf3746d048b2",
+  "notes": "HF26.20.25 Offline Whisper Guard TEST, built on HF26.20.24. Observed repeated Blizzard 'No player named Nyra/Ayla Ashgrove currently playing' when offline even after BOX OFF. Alpha4 periodically sends party status information via WHISPER independently of BOX targeting. Party roster can keep offline UnitExists values; previous Alpha4/Sync.lua did not gate WHISPER on UnitIsConnected. Adds fail-closed currently-online party member check to sendRaw for all Alpha4 add-on WHISPER packets; online team sync and subsequent reconnection still work, offline recipients silently skipped; no background update checks. Changes: Alpha4/Sync.lua, TOC, HF_VERSION_HISTORY.txt and new test readme ONLY versus HF26.20.24. Offline checks PASS: 32 Lua syntax, routed WHISPER behavior online/offline/reconnected/untrusted/invalid-data/connection-API-missing, ZIP CRC and protected-module byte-comparison. Ingame accept OPEN: with Nyra/Ayla offline and BOX OFF check chat for >1 minute; verify online member data still updates, then reconnect and observe normal delivery. Does not change BoxMode macro toggles, Smart Follow/F1, Mini UI, Party Pawn, LootPlanner, WeaponSets or Run Timer."
 }
