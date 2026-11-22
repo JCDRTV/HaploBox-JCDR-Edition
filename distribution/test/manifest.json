@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.13",
+  "version": "HF26.20.14",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.13_Dungeon_Run_Guide_TEST.zip",
-  "sha256": "3092c427c9457bcf6774b315fb69b1077426dc847847f86006d1066cf0dc207c",
-  "notes": "HF26.20.13 Dungeon Run Guide V1. Small draggable separate overlay opened with /hbrun or RUN GUIDE in Haplo Loot planner. Choose dungeon, WC approximate route boss order (other dungeons AtlasLoot encounter order), collapse/expand boss and show verified NOW Pawn upgrades by character, manual persistent boss checkmarks/reset, optional future-level gear, original GameTooltip item-icon hover. Focused SCAN THIS DUNGEON reuses existing HBLP26 party query and AtlasLoot boss source with one target; no invented scores, unknown/stale data flagged, no trash/quests/vendor drops or actual-drop tracking. Change only LootPlanner.lua, TOC/version metadata and added README. MiniHeal/MiniCamera/BoxMode/LootHover/Smart Follow unmodified byte-for-byte. Offline: 31 Lua parse, 2 mocked functional test suites (WC routing/choose/check/persist, single dungeon scan, Pawn +25%, gear-change stale/reset), ZIP CRC and source diff PASS. Ingame TEST OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.14_Run_Guide_Score_Confidence_TEST.zip",
+  "sha256": "b48f1d43e91fb8092a468bbda2031d26ff4ca8cea17a14758e462871dc11ee86",
+  "notes": "HF26.20.14 Dungeon Run Guide Score Confidence TEST. Per-boss five-Druid exact response audit (all item IDs; verified numeric source; missing/cache/empty table/extreme percentage/NEW unknown not 0); existing large planner logic unchanged; Run Guide bypasses heuristic role-fit veto to show actual per-character Pawn upgrade; amber CHECK for partial and green OK only if boss score coverage resolved. /hbrunaudit prints reasons. During-scan gear changes invalidate scan irreversibly until explicit rescan; no follower 2-second invalidation throttle. Only LootPlanner.lua + TOC/version history + new README changed; MiniHeal, MiniCamera, Smart Follow, LootHover/Party Pawn and tooltip adapters untouched byte-for-byte. Offline: 31 Lua syntax, 22 Lua behavior assertions, ZIP CRC, changed-file comparison PASS. Ingame full reliability still OPEN; Pawn scale quality and Forever actual drops cannot be certified by offline tests."
 }
