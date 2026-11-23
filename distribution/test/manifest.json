@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.45",
+  "version": "HF26.20.46",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.45_Profession_Guide_Fase1_TEST.zip",
-  "sha256": "23746d6cf57b03c508435f366d371ef31fefc9fc240497b0eeaf00e1be5763ea",
-  "notes": "HF26.20.45 Profession Guide Phase 1 TEST built strictly from the verified HF26.20.44 packaged TEST ZIP. Adds integrated Profession Advisor main window, compact Profession Run, nine profession tiles, individual skill scan and party skill sync. Existing HaploBox, Dungeon Advisor, Dungeon Run, Party Pawn, Weapon Sets, Baganator integration and macros preserved byte-identically; only parent TOC metadata/load list changes and three ProfessionGuide Lua files added. Verified leveling recipes, material counts, party bags/banks and BS/LW/ENG/TAIL/ALCH NEED indicators are intentionally not active in Phase 1. Offline archive checks PASS. Manual HaploBox UPDATE (existing one-click updater) only. INGAME ACCEPTANCE OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.46_Profession_Guide_QuickMenu_TEST.zip",
+  "sha256": "ce2f136cbb6c16261eb818a20c7950a9f6efb1b509d8162c261112646e9c300d",
+  "notes": "HF26.20.46 TEST hotfix built exclusively from SHA-verified HF26.20.45 complete Profession Guide TEST release. Adds Profession Guide in Quick Menu > MENUS with OPEN button (native menu index 32, existing Profession Advisor main screen). Preserves all previous Quick Menu choices and actions. Updates row count 12 to 13. All files except HaploBox/ControlBar.lua are byte-identical to HF26.20.45. Existing Dungeon Advisor/Run, Party Pawn, Baganator, Weapon Sets, Macros, Profession Guide files, saved variables and party sync are untouched. Archive CRC / manifest SHA-256 verified offline. Manual HaploBox UPDATE only. INGAME ACCEPTANCE OPEN."
 }
