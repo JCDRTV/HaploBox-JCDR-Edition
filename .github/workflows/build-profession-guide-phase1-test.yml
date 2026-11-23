@@ -1,0 +1,39 @@
+name: Package Profession Guide Phase 1 (TEST)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - distribution/profession-guide/HaploBox_Profession_Guide_Fase1_TEST.zip
+      - distribution/profession-guide/build_phase1.py
+      - .github/workflows/build-profession-guide-phase1-test.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profession-guide-phase1-test
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build from the complete, SHA-verified current TEST release
+        run: python distribution/profession-guide/build_phase1.py
+      - name: Publish bundled TEST ZIP and new manifest
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/manifest.json distribution/test/HaploBox_HF26.20.45_Profession_Guide_Fase1_TEST.zip
+          if ! git diff --cached --quiet; then
+            git commit -m 'HF26.20.45 TEST: integrated Profession Guide Phase 1'
+            git push origin HEAD:main
+          fi
