@@ -4,23 +4,30 @@
 
 ## Eerste installatie
 
-1. Download [HaploBox Manual Updater](test/HaploBox_Manual_Updater_D_FOREVER_TEST.zip) en pak de ZIP uit.
+1. Download [HaploBox Manual Updater](test/HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip) en pak de ZIP uit.
 2. Start één keer INSTALL.cmd. De installer herkent D:\World of Warcraft\_forever_\Interface\AddOns.
 3. Een bureaubladsnelkoppeling **HaploBox UPDATE** wordt gemaakt.
 4. Klik de snelkoppeling om de nieuwe TEST-release op te halen.
 5. **Sluit WoW volledig af en start alle vijf clients opnieuw** na een update die een nieuwe module toevoegt.
 
+
+## Belangrijke updater-reparatie (HF26.20.48)
+
+De oorspronkelijke TEST-updater (D_FOREVER) accepteert uitsluitend twee onderdelen in het versienummer. Onze drieledige HF26.20.48 wordt daardoor geweigerd. De pakketversies 20.45–47 hadden bovendien geen overeenkomende `## Version` in `HaploBox.toc`, terwijl het Windows-programma dat verplicht controleert. HF26.20.48 herstelt het TOC-veld; de complete overige addonbestanden zijn ongewijzigd gebleven.
+
+**Eenmalig nodig als je nog de oorspronkelijke updater gebruikt:** download [VERSION HOTFIX Updater](test/HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip), pak uit en start `INSTALL.cmd`. De installer vernieuwt je bestaande updater-snelkoppeling en blijft dezelfde AddOns-map gebruiken. Doe daarna met WoW gesloten **HaploBox UPDATE** om de herstelde HF26.20.48 op te halen. De lokale log staat op `%LOCALAPPDATA%\HaploBoxUpdater\updater.log`; `STATUS.cmd` toont de laatste regels.
+
 ## Huidige TEST-versie
 
-- **HF26.20.47 – Profession Guide Quick Menu TEST** (nog niet ingame goedgekeurd)
-- [Volledige TEST-release](test/HaploBox_HF26.20.47_Profession_Guide_QuickMenu_TEST.zip)
+- **HF26.20.48 – Profession Guide Updater Fix TEST** (nog niet ingame goedgekeurd)
+- [Volledige TEST-release](test/HaploBox_HF26.20.48_Profession_Guide_Updater_Fix_TEST.zip)
 - [TEST manifest](test/manifest.json)
-- [Installatie-updater](test/HaploBox_Manual_Updater_D_FOREVER_TEST.zip)
+- [Installatie-updater](test/HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip)
 - Backups/logs: %LOCALAPPDATA%\HaploBoxUpdater
 
 De updater leest het TEST-manifest alleen bij een klik, controleert de SHA-256, maakt een backup en installeert de volledige HaploBox-map. De gebruikersinstellingen in WTF/SavedVariables blijven behouden.
 
-### Wat is toegevoegd in HF26.20.45 en HF26.20.47?
+### Wat is toegevoegd in HF26.20.45–48?
 
 Deze build is opgebouwd uit de **volledige HF26.20.44 release**, niet de oudere bronbestanden in de repository-root. Onder HaploBox/ProfessionGuide zijn uitsluitend Data.lua, Core.lua en UI.lua toegevoegd. In HaploBox.toc is de module geladen en HaploBoxProfessionDB als SavedVariables opgenomen. De hotfixes HF26.20.46–47 veranderen ten opzichte van HF26.20.45 uitsluitend HaploBox/ControlBar.lua om de Quick Menu-knop toe te voegen en **Profession Guide bovenaan MENUS** te zetten; alle overige verpakte addonbestanden blijven inhoudelijk gelijk.
 
@@ -31,6 +38,6 @@ Deze build is opgebouwd uit de **volledige HF26.20.44 release**, niet de oudere 
 ## Belangrijk
 
 - TEST en STABLE zijn gescheiden; er is geen automatische promotie.
-- Er is nog **geen** ingame-goedkeuring voor HF26.20.47.
+- Er is nog **geen** ingame-goedkeuring voor HF26.20.48.
 - De repository-root bevat oudere broncode; gebruik de volledige release-ZIP in distribution/test.
 - Bron, standalone test-archief en gecontroleerde package-builder staan in [distribution/profession-guide](profession-guide/).
