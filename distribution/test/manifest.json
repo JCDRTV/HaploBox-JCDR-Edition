@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.47",
+  "version": "HF26.20.48",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.47_Profession_Guide_Visible_Menu_TEST.zip",
-  "sha256": "947967ae8eda5f46286d4a8b0e58d9eb45c211e3c110797cc0bd747b7bed71a8",
-  "notes": "HF26.20.47 TEST visibility hotfix built strictly from SHA-verified HF26.20.46: Profession Guide is now the FIRST row in Quick Menu > MENUS so it cannot be missed below other menu buttons. Existing OPEN handler (index 32) and Profession Advisor main screen validated in package. All other menu entries retain their index, actions and order. Only packaged HaploBox/ControlBar.lua differs from HF26.20.46; all other files byte-identical. Offline integrity/CRC passed. Manual HaploBox UPDATE; close and restart WoW clients. INGAME ACCEPTANCE OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.48_Profession_Guide_Updater_Fix_TEST.zip",
+  "sha256": "838569730e831604585032735f140a77822d268acbb37928d813341751b9af6e",
+  "notes": "HF26.20.48 TEST corrects mismatched packaged HaploBox.toc version. The manual Windows updater rejects archive versions not printed in the TOC. HF26.20.47 had wrong TOC version. With the VERSION_HOTFIX Windows updater this release is installable. Original two-component-only updater requires one-time reinstall from HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip. Only packaged HaploBox.toc differs from HF26.20.47; all other files are byte-identical. Profession Guide is first in Quick Menu > MENUS. Offline acceptance checks passed. INGAME ACCEPTANCE OPEN."
 }
