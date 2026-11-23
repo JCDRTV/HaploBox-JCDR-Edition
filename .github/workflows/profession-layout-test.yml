@@ -1,0 +1,81 @@
+name: Publish Profession Advisor visual refresh TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - distribution/profession-guide/build_layout.py
+      - .github/workflows/profession-layout-test.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profession-advisor-layout-test
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build from checksum-verified HF26.20.48
+        run: python distribution/profession-guide/build_layout.py
+      - name: Validate new Lua UI syntax
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1 >/dev/null
+          luac5.1 -p /tmp/haplobox_profession_ui.lua
+          echo "PASS: Profession UI Lua 5.1 syntax"
+      - name: Publish complete TEST ZIP and manifest
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/manifest.json distribution/test/HaploBox_HF26.20.49_Profession_Advisor_Layout_TEST.zip
+          if ! git diff --cached --quiet; then
+            git commit -m 'HF26.20.49 TEST: Profession Advisor Dungeon-style layout'
+            git push origin HEAD:main
+          fi
+
+  windows-updater:
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Check installation with actual Windows updater
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'haplobox-visual-test'
+          $addons = Join-Path $root 'WoW\Interface\AddOns'
+          $up = Join-Path $root 'HaploBoxUpdater'
+          $src = Join-Path $root 'source'
+          New-Item -ItemType Directory -Force -Path $addons,$up,$src | Out-Null
+          $env:LOCALAPPDATA = $root
+          Expand-Archive -LiteralPath 'distribution/test/HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip' -DestinationPath $src -Force
+          Copy-Item (Join-Path $src 'HaploBox-Updater.ps1') (Join-Path $up 'HaploBox-Updater.ps1')
+          [ordered]@{
+            addons_path = $addons
+            channel = 'test'
+            manifest_url = 'https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/manifest.json'
+          } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $up 'config.json') -Encoding UTF8
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $up 'HaploBox-Updater.ps1')
+          if ($LASTEXITCODE -ne 0) {
+            Get-Content -LiteralPath (Join-Path $up 'updater.log') -Tail 20
+            throw "Windows updater failed: $LASTEXITCODE"
+          }
+          $state = Get-Content -LiteralPath (Join-Path $up 'state.json') -Raw | ConvertFrom-Json
+          if ($state.version -ne 'HF26.20.49') { throw "Unexpected installed version: $($state.version)" }
+          $toc = Get-Content -LiteralPath (Join-Path $addons 'HaploBox\HaploBox.toc') -Raw
+          if (-not $toc.Contains('HF26.20.49')) { throw 'TOC version mismatch' }
+          $ui = Get-Content -LiteralPath (Join-Path $addons 'HaploBox\ProfessionGuide\UI.lua') -Raw
+          if (-not $ui.Contains('PARTY SKILLS","large",C.gold')) { throw 'New layout not installed' }
+          Write-Host 'PASS: real Windows updater installed the new Profession Advisor layout'
