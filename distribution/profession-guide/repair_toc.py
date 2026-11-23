@@ -65,7 +65,8 @@ with ZipFile(test/"HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip") as updater:
     code=updater.read("HaploBox-Updater.ps1").decode("utf-8-sig")
     line=next(s for s in code.splitlines() if "$version -notmatch" in s)
     assert r"(\.[0-9]{1,3})?" in line
-    assert NEW in fixed.read("HaploBox/HaploBox.toc").decode("utf-8-sig")
+    with ZipFile(out) as verified:
+        assert NEW in verified.read("HaploBox/HaploBox.toc").decode("utf-8-sig")
     print("PASS: corrected Windows updater accepts 3-component version syntax")
 
 m.update(
