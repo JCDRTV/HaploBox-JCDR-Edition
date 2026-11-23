@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.30",
+  "version": "HF26.20.31",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.30_Resizable_Dungeon_Windows_TEST.zip",
-  "sha256": "6ad22e0d5a9e9b300571bf67c04ad8e430712914c9106954811264e715bacfec",
-  "notes": "HF26.20.30 RESIZABLE DUNGEON WINDOWS TEST, built strictly from HF26.20.29. Both Dungeon Run Guide and Dungeon Advisor / BiS gain separate visible bottom-right resize grips; independent width/height persisted via lootPlanner SavedVariables. Run Guide: resize 470x405 minimum, adaptive fixed item/character/Pawn-arrow/right-aligned % columns, scalable row page size/dungeon chooser and collapsed-title timer. Advisor: resize 820x475 minimum, left farm-dungeon column and right item rows reflow, page sizes based on height; status text/footer/pagers anchored to bottom. No changes to Pawn batch protocol, scan pacing, cache, scoring, class roster, filters, weapon set locks, team UI, or timer logic. Only LootPlanner.lua, HaploBox.toc, HF_VERSION_HISTORY.txt and new test README differ from HF26.20.29: 136 baseline files byte-identical. 32 Lua syntax checks, Lua mocked UI independent resize/persistence/pagination, ZIP CRC/SHA256 PASS. Ingame acceptance OPEN: test dragging both corners on Mael, smaller/larger lists, /reload persistence, timer, % alignment. Manual HaploBox UPDATE only."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.31_Compact_Run_Width_TEST.zip",
+  "sha256": "14d1243ae183345d0390bf033ecbeb4fd1bf002eb5f9f5b3d2ce85c10e538c08",
+  "notes": "HF26.20.31 Compact Run Width TEST built STRICTLY on HF26.20.30. Dungeon Run Guide minimum width lowered from 470 to 350 px (unchanged default 548); responsive header/timer display, item/Druid/Pawn-arrow/percent columns, and boss CHECK/status column resized without overlaps. Run Guide size saved across /reload. Dungeon Advisor remains independently resizable at prior settings. No changes to Batched Pawn network protocol, scans, rankings, boss filters, run timer behavior, Character Weapon Sets, Quick Menu or macros. Only LootPlanner.lua, HaploBox.toc, version history and new README differ; 137 baseline files byte-identical. All 32 Lua files compiled offline; geometry assertions at 350,360,370,400,449,450,470,548,750px PASS; ZIP CRC and SHA-256 PASS. Ingame acceptance OPEN. Manual HaploBox UPDATE only, no background updates."
 }
