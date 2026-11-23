@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.48",
+  "version": "HF26.20.49",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.48_Profession_Guide_Updater_Fix_TEST.zip",
-  "sha256": "838569730e831604585032735f140a77822d268acbb37928d813341751b9af6e",
-  "notes": "HF26.20.48 TEST corrects mismatched packaged HaploBox.toc version. The manual Windows updater rejects archive versions not printed in the TOC. HF26.20.47 had wrong TOC version. With the VERSION_HOTFIX Windows updater this release is installable. Original two-component-only updater requires one-time reinstall from HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip. Only packaged HaploBox.toc differs from HF26.20.47; all other files are byte-identical. Profession Guide is first in Quick Menu > MENUS. Offline acceptance checks passed. INGAME ACCEPTANCE OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.49_Profession_Advisor_Layout_TEST.zip",
+  "sha256": "e1951da4782ad77bb6ea78804ec16763ba79c6381cc4716b712dd797ecd5ab30",
+  "notes": "HF26.20.49 TEST: Profession Advisor visual layout refresh styled after Dungeon Advisor. Main panel enlarged, gold frame/header, readable headings, 3x3 profession cards, wider party skill rows, blue OPEN and green SCAN buttons. Compact run window receives same trim, gold step headings and aligned controls. No sync, profession data, Dungeon Advisor, BIS, Pawn, Weapon Sets or Quick Menu behavior modified. Only ProfessionGuide/UI.lua plus mandatory TOC version changed. ZIP CRC/SHA256 verified. INGAME VISUAL ACCEPTANCE OPEN."
 }
