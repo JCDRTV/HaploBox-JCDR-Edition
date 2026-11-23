@@ -1,0 +1,73 @@
+name: Repair Profession Guide updater compatibility TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - distribution/profession-guide/repair_toc.py
+      - .github/workflows/repair-profession-guide-updater.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profession-guide-toc-repair-test
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build verified full archive
+        run: python distribution/profession-guide/repair_toc.py
+      - name: Publish ZIP and manifest
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/manifest.json distribution/test/HaploBox_HF26.20.48_Profession_Guide_Updater_Fix_TEST.zip
+          if ! git diff --cached --quiet; then
+            git commit -m 'HF26.20.48 TEST: repair packaged TOC updater version'
+            git push origin HEAD:main
+          fi
+  smoke-windows:
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Exercise actual updater in isolated Windows AddOns folder
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'hb-update-test'
+          $addons = Join-Path $root 'WoW\Interface\AddOns'
+          $up = Join-Path $root 'HaploBoxUpdater'
+          $src = Join-Path $root 'source'
+          New-Item -ItemType Directory -Force -Path $addons,$up,$src | Out-Null
+          $env:LOCALAPPDATA = $root
+          Expand-Archive -LiteralPath 'distribution/test/HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip' -DestinationPath $src -Force
+          Copy-Item (Join-Path $src 'HaploBox-Updater.ps1') (Join-Path $up 'HaploBox-Updater.ps1')
+          [ordered]@{
+            addons_path = $addons
+            channel = 'test'
+            manifest_url = 'https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/manifest.json'
+          } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $up 'config.json') -Encoding UTF8
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $up 'HaploBox-Updater.ps1')
+          if ($LASTEXITCODE -ne 0) {
+            Get-Content -LiteralPath (Join-Path $up 'updater.log') -Tail 25
+            throw "Windows updater failed with exit code $LASTEXITCODE"
+          }
+          $state = Get-Content -LiteralPath (Join-Path $up 'state.json') -Raw | ConvertFrom-Json
+          if ($state.version -ne 'HF26.20.48') { throw "Wrong installed version: $($state.version)" }
+          $toc = Get-Content -LiteralPath (Join-Path $addons 'HaploBox\HaploBox.toc') -Raw
+          if (-not $toc.Contains('HF26.20.48')) { throw 'TOC does not match release' }
+          if (-not (Test-Path -LiteralPath (Join-Path $addons 'HaploBox\ProfessionGuide\UI.lua'))) { throw 'Profession Guide missing' }
+          Write-Host 'PASS: actual Windows updater installed HF26.20.48 in isolated AddOns folder'
