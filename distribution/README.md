@@ -1,25 +1,36 @@
 # HaploBox distribution — TEST (JCDR Edition)
 
-**Alle updates zijn nu handmatig.** Er is geen polling, achtergrondtaak of Windows Taakplanner meer.
+**De Windows-update is op aanvraag:** er is geen polling, automatische achtergrondtaak of Windows Taakplanner. De knop **HaploBox UPDATE** haalt wel in één klik de nieuwste complete TEST-release op.
 
 ## Eerste installatie
 
 1. Download [HaploBox Manual Updater](test/HaploBox_Manual_Updater_D_FOREVER_TEST.zip) en pak de ZIP uit.
-2. Start eenmalig `INSTALL.cmd`. De installer herkent `D:\World of Warcraft\_forever_\Interface\AddOns`.
-3. De installer maakt een desktop-snelkoppeling **HaploBox UPDATE**. Installeren betekent nog **niet** dat een build wordt gedownload.
-4. Klik **HaploBox UPDATE** (of `UPDATE.cmd`) wanneer je de actuele build wilt ophalen.
-5. Doe daarna `/reload` in alle vijf clients (bij sommige addon-structuurwijzigingen eerst volledig herstarten).
+2. Start één keer INSTALL.cmd. De installer herkent D:\World of Warcraft\_forever_\Interface\AddOns.
+3. Een bureaubladsnelkoppeling **HaploBox UPDATE** wordt gemaakt.
+4. Klik de snelkoppeling om de nieuwe TEST-release op te halen.
+5. **Sluit WoW volledig af en start alle vijf clients opnieuw** na een update die een nieuwe module toevoegt.
 
-## Hoe een nieuwe testbuild wordt geleverd
+## Huidige TEST-versie
 
-De ontwikkelaar publiceert een gecontroleerde volledige addon-ZIP en past [manifest.json](test/manifest.json) aan. De updater leest dit manifest **uitsluitend na een klik**. Alleen bij een nieuwe versie downloadt hij het bestand, controleert SHA-256, maakt een lokale backup buiten `Interface\AddOns`, en installeert in de ene gedeelde `HaploBox` map. `WTF/SavedVariables` blijven intact.
+- **HF26.20.45 – Profession Guide Phase 1 TEST** (nog niet ingame goedgekeurd)
+- [Volledige TEST-release](test/HaploBox_HF26.20.45_Profession_Guide_Fase1_TEST.zip)
+- [TEST manifest](test/manifest.json)
+- [Installatie-updater](test/HaploBox_Manual_Updater_D_FOREVER_TEST.zip)
+- Backups/logs: %LOCALAPPDATA%\HaploBoxUpdater
 
-* Huidige TEST-build: **HF26.17 Dungeon Advisor V1**, nog niet ingame goedgekeurd.
-* [Huidige volledige addon-ZIP](test/HaploBox_HF26.17_DungeonAdvisor_V1.zip)
-* [Manual Updater ZIP](test/HaploBox_Manual_Updater_D_FOREVER_TEST.zip)
-* [TEST manifest](test/manifest.json)
-* Backups en logs: `%LOCALAPPDATA%\HaploBoxUpdater`
+De updater leest het TEST-manifest alleen bij een klik, controleert de SHA-256, maakt een backup en installeert de volledige HaploBox-map. De gebruikersinstellingen in WTF/SavedVariables blijven behouden.
 
-Bij installatie van deze handmatige versie wordt een eventueel eerder gemaakte taak **HaploBox Auto Updater TEST** verwijderd. TEST en STABLE zijn gescheiden; er is geen automatische promotie naar STABLE.
+### Wat is toegevoegd in HF26.20.45?
 
-De repository-root bevat een oudere broncodestand. De volledige huidige addon is beschikbaar via de bovenstaande ZIP, niet als vervanging van die rootbestanden.
+Deze build is opgebouwd uit de **volledige HF26.20.44 release**, niet de oudere bronbestanden in de repository-root. Onder HaploBox/ProfessionGuide zijn uitsluitend Data.lua, Core.lua en UI.lua toegevoegd. In HaploBox.toc is de module geladen en HaploBoxProfessionDB als SavedVariables opgenomen. Alle andere bestaande addonbestanden blijven inhoudelijk gelijk.
+
+**Ingame opening:** /hb professions of /hbprof. Profession Advisor (hoofdscherm), compacte Profession Run, negen professions, skillscanner en party-sync zijn inbegrepen.
+
+**Nog niet inbegrepen:** leveling-recepten 1–300, materialen/party-bags/banks, Need-tags BS/LW/ENG/TAIL/ALCH/ENCH en een Quick Menu-knop. Deze functionaliteit blijft bewust uit tot de volgende geteste fases.
+
+## Belangrijk
+
+- TEST en STABLE zijn gescheiden; er is geen automatische promotie.
+- Er is nog **geen** ingame-goedkeuring voor HF26.20.45.
+- De repository-root bevat oudere broncode; gebruik de volledige release-ZIP in distribution/test.
+- Bron, standalone test-archief en gecontroleerde package-builder staan in [distribution/profession-guide](profession-guide/).
