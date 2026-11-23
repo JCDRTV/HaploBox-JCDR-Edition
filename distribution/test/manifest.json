@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.37",
+  "version": "HF26.20.38",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.37_Unique_Role_Priority_Scroll_Special_TEST.zip",
-  "sha256": "b768d5841b4bd7953b6709b57e4a5a7715c56a596977a44dae9df50453f333c8",
-  "notes": "HF26.20.37 TEST built on HF26.20.36 TEST without altering scanner/network/Pawn Forever scales. Dungeon priority deduplicates per unique physical item ID across five Druids and bosses; weighted role priority 3 Tank (Mael), 2 Healer (Lyra), 1 DPS (Elya/Nyra/Ayla) once per unique item. Visible T/H/D counters count distinct item IDs per role; individual wishlist goals and Pawn % remain unchanged. Advisor dungeon list, advisor detail loot, Dungeon Run boss/loot list and Run dungeon chooser gain mouse-wheel + draggable scrollbar. Preserves HF26.20.36 compact coverage summary and hover details, P-rank indicators, narrower footers. Nightskulker Ring (273820) verified special-effect-only NO_ITEM is explicitly SPECIAL/manual review, not 0% or unverified error; unknown items remain UNKNOWN. Special-only no-score no longer blocks boss/dungeon coverage by itself. 32 Lua files syntax PASS; mocked UI module & four scrollbar tests PASS; source exact role priority and known SPECIAL guards PASS; ZIP CRC and 144 unchanged files byte check PASS. Manual HaploBox UPDATE only, ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.38_Role_Icon_Columns_Layout_TEST.zip",
+  "sha256": "02aac2f3c9df4cfbef63fb09c42879a4b3d2ba57453fcf88730747c4283117b4",
+  "notes": "HF26.20.38 TEST built byte-preserving from HF26.20.37. Dungeon Advisor farm-priority headers now show separate native Blizzard Tank, Healer and DPS role icons (no T/H/D text), with each role's distinct item count in its own centered column. UNI and Rank remain independent. Dynamic resize reflows icon/header/count columns and truncates dungeon names as needed; rank stays inside the farm list before the scrollbar even at the 820px minimum Advisor width. No change to role weights, duplicate item-ID handling, individual BiS/Pawn percentages, fast HF26.20.29 scanner, SPECIAL logic, four existing scrollbars, Dungeon Run, Weapon Sets, Party Pawn or any other functional module. Syntax PASS 32 Lua files; mocked role-icons/columns at 7 sizes, Advisor/Run wheels and 4 scrollbars, SPECIAL regression PASS; ZIP integrity and 145 unchanged files byte check PASS. Manual HaploBox UPDATE only. Ingame acceptance OPEN."
 }
