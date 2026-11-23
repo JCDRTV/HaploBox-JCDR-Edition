@@ -1,0 +1,38 @@
+name: Publish Profession Guide Quick Menu TEST Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - distribution/profession-guide/build_quickmenu.py
+      - .github/workflows/profession-quickmenu-hotfix.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profession-quickmenu-hotfix-test
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch verified full archive (Quick Menu only)
+        run: python distribution/profession-guide/build_quickmenu.py
+      - name: Publish TEST ZIP and manifest for the existing updater
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/manifest.json distribution/test/HaploBox_HF26.20.46_Profession_Guide_QuickMenu_TEST.zip
+          if ! git diff --cached --quiet; then
+            git commit -m 'HF26.20.46 TEST: Profession Guide in Quick Menu'
+            git push origin HEAD:main
+          fi
