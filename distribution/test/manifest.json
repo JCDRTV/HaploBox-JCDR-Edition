@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.35",
+  "version": "HF26.20.36",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.35_BiS_Coverage_Missing_MainHand_TEST.zip",
-  "sha256": "607b03b0bb9fa09c8b7e3a7bd7784c3c00a8dd481f648e4ee862050e2d387803",
-  "notes": "HF26.20.35 TEST built from HF26.20.34. Fix incomplete alternative weapon-set comparisons, including Lyra missing Main-Hand, assess verified same-dungeon 1H+Off-Hand pair candidates against strongest locked set, accept level-20+ Forever polearms, and add read-only /hbbiscoverage [name] for post-scan status counts. Coverage counts only Pawn-submitted candidates; prefiltered/unresolved loot and provisional results are not proof of complete BiS coverage. Ring selection limit remains unchanged; automatic BiS item labels are NOT included. Preserve HF26.20.29 fast batch scanner, Pawn Forever scales, Baganator hover bindings, Quick Menu, ALT-hover, macros, and manual updater. Offline syntax/mocks/ZIP integrity checked; INGAME ACCEPTANCE OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.36_Advisor_Readable_Priority_TEST.zip",
+  "sha256": "438ccf2b29b21f7d4904b0dc13b4e278496a3346d3ce4e0e368bcc7d60115cbf",
+  "notes": "HF26.20.36 TEST built strictly from HF26.20.35. Dungeon Advisor selected dungeon and scan coverage now display on two shorter lines; full coverage details available on hover; footer compact on narrow windows. Dungeon farm priority ranks only selected valid BiS targets using bounded average verified Pawn improvement, number of benefited Druids and number of objectives; P1/P2 ranks carry ? when global scan coverage is provisional, with tooltip explaining scores. The previous target-count-only ranking is removed. No changes to Pawn Forever scales, 16-item batched scanner/pacing/communication, weapon-set logic, Unique-Equipped guard, Baganator hover, ALT-hover Party Pawn, Quick Menu, Mini UI, macros, Smart Follow or Dungeon Run. Lua 32/32 syntax PASS; ranking mocks PASS; ZIP CRC and 143 unchanged files byte check PASS. INGAME ACCEPTANCE OPEN. Manual HaploBox UPDATE only."
 }
