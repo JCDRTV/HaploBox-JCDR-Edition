@@ -41,13 +41,16 @@ jobs:
                       output.extend(f'{j+1:05d} {lines[j]}' for j in range(a,b))
           target=Path('distribution/profession-guide/QUICKMENU_INSPECTION.txt')
           target.write_text('\n'.join(output)[:180000],encoding='utf-8')
+          with zipfile.ZipFile(archive) as z:
+              Path('distribution/profession-guide/CONTROLBAR_SOURCE.txt').write_text(
+                  z.read('HaploBox/ControlBar.lua').decode('utf-8-sig'), encoding='utf-8')
           print('Inspected full release:',archive,'hits',len(output))
           PY
       - name: Commit temporary inspection report
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add distribution/profession-guide/QUICKMENU_INSPECTION.txt
+          git add distribution/profession-guide/QUICKMENU_INSPECTION.txt distribution/profession-guide/CONTROLBAR_SOURCE.txt
           if ! git diff --cached --quiet; then
             git commit -m 'Inspect packaged Quick Menu for Profession Guide integration'
             git push origin HEAD:main
