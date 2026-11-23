@@ -56,7 +56,8 @@ with ZipFile(source) as orig, ZipFile(out) as fixed:
     assert changed==["HaploBox/HaploBox.toc"], changed
     assert len([x for x in fixed.namelist() if not x.endswith("/")])>=15
     assert all(x.startswith("HaploBox/") and ".." not in Path(x).parts and len(x)<=240 for x in fixed.namelist())
-    assert NEW in fixed.read("HaploBox/HaploBox.toc").decode("utf-8-sig")
+    with ZipFile(out) as verified:
+        assert NEW in verified.read("HaploBox/HaploBox.toc").decode("utf-8-sig")
     print("PASS: updater ZIP, TOC, CRC, changed-files tests")
 
 # Both old and fixed updater scripts are in repo. The fixed installer supports three-part versions.
