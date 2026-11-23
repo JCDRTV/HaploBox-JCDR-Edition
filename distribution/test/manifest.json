@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.36",
+  "version": "HF26.20.37",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.36_Advisor_Readable_Priority_TEST.zip",
-  "sha256": "438ccf2b29b21f7d4904b0dc13b4e278496a3346d3ce4e0e368bcc7d60115cbf",
-  "notes": "HF26.20.36 TEST built strictly from HF26.20.35. Dungeon Advisor selected dungeon and scan coverage now display on two shorter lines; full coverage details available on hover; footer compact on narrow windows. Dungeon farm priority ranks only selected valid BiS targets using bounded average verified Pawn improvement, number of benefited Druids and number of objectives; P1/P2 ranks carry ? when global scan coverage is provisional, with tooltip explaining scores. The previous target-count-only ranking is removed. No changes to Pawn Forever scales, 16-item batched scanner/pacing/communication, weapon-set logic, Unique-Equipped guard, Baganator hover, ALT-hover Party Pawn, Quick Menu, Mini UI, macros, Smart Follow or Dungeon Run. Lua 32/32 syntax PASS; ranking mocks PASS; ZIP CRC and 143 unchanged files byte check PASS. INGAME ACCEPTANCE OPEN. Manual HaploBox UPDATE only."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.37_Unique_Role_Priority_Scroll_Special_TEST.zip",
+  "sha256": "b768d5841b4bd7953b6709b57e4a5a7715c56a596977a44dae9df50453f333c8",
+  "notes": "HF26.20.37 TEST built on HF26.20.36 TEST without altering scanner/network/Pawn Forever scales. Dungeon priority deduplicates per unique physical item ID across five Druids and bosses; weighted role priority 3 Tank (Mael), 2 Healer (Lyra), 1 DPS (Elya/Nyra/Ayla) once per unique item. Visible T/H/D counters count distinct item IDs per role; individual wishlist goals and Pawn % remain unchanged. Advisor dungeon list, advisor detail loot, Dungeon Run boss/loot list and Run dungeon chooser gain mouse-wheel + draggable scrollbar. Preserves HF26.20.36 compact coverage summary and hover details, P-rank indicators, narrower footers. Nightskulker Ring (273820) verified special-effect-only NO_ITEM is explicitly SPECIAL/manual review, not 0% or unverified error; unknown items remain UNKNOWN. Special-only no-score no longer blocks boss/dungeon coverage by itself. 32 Lua files syntax PASS; mocked UI module & four scrollbar tests PASS; source exact role priority and known SPECIAL guards PASS; ZIP CRC and 144 unchanged files byte check PASS. Manual HaploBox UPDATE only, ingame acceptance OPEN."
 }
