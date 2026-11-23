@@ -1,0 +1,44 @@
+name: Diagnose HaploBox updater failure (read only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/diagnose-haplobox-updater.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect manifest, packaged ZIP and both updater packages
+        run: |
+          python - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          base=Path('distribution/test')
+          m=json.loads((base/'manifest.json').read_text())
+          print('MANIFEST version',m['version'])
+          print('MANIFEST url',m['zip_url'])
+          print('MANIFEST sha',m['sha256'])
+          zipname=m['zip_url'].rsplit('/',1)[-1]
+          package=base/zipname
+          print('PACKAGE exists',package.exists(),'bytes',package.stat().st_size if package.exists() else None)
+          if package.exists():
+              print('PACKAGE sha match',hashlib.sha256(package.read_bytes()).hexdigest()==m['sha256'])
+              with zipfile.ZipFile(package) as z:
+                  print('PACKAGE ZIP CRC error',z.testzip())
+                  print('PACKAGE first paths',z.namelist()[:18])
+                  print('PACKAGE addon toc files',[p for p in z.namelist() if p.endswith('.toc')][:12])
+          for n in ('HaploBox_Manual_Updater_D_FOREVER_TEST.zip','HaploBox_Manual_Updater_VERSION_HOTFIX_TEST.zip'):
+              p=base/n
+              print('\n### UPDATER',n,'bytes',p.stat().st_size)
+              with zipfile.ZipFile(p) as z:
+                  print('FILES',[(x.filename,x.file_size) for x in z.infolist()])
+                  print('CRC issue',z.testzip())
+                  for i in z.infolist():
+                      if i.filename.lower().endswith(('.cmd','.bat','.ps1','.py','.json','.txt')):
+                          data=z.read(i.filename).decode('utf-8-sig','replace')
+                          print('\n---',i.filename,'length',len(data),'---\n',data[:30000])
+          PY
