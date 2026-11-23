@@ -1,0 +1,54 @@
+name: Inspect current TEST Quick Menu integration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/inspect-haplobox-quickmenu.yml
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect current full packaged addon (read-only)
+        run: |
+          python - <<'PY'
+          import json,re,zipfile
+          from pathlib import Path
+          base=Path('distribution/test')
+          m=json.loads((base/'manifest.json').read_text())
+          archive=base/Path(m['zip_url']).name
+          output=[]
+          with zipfile.ZipFile(archive) as z:
+              for name in z.namelist():
+                  if not name.lower().endswith(('.lua','.xml','.toc')):continue
+                  text=z.read(name).decode('utf-8-sig',errors='replace')
+                  lines=text.splitlines()
+                  hits=[i for i,l in enumerate(lines) if re.search(r'quick.?menu|quick.?panel|dungeon advisor|profession.?guide|dungeon run',l,re.I)]
+                  if not hits:continue
+                  output.append(f'FILE {name} LINES {len(lines)} MATCHES {len(hits)}')
+                  intervals=[]
+                  for i in hits:
+                      a,b=max(0,i-14),min(len(lines),i+28)
+                      if intervals and a<=intervals[-1][1]: intervals[-1]=(intervals[-1][0],max(b,intervals[-1][1]))
+                      else:intervals.append((a,b))
+                  for a,b in intervals[:30]:
+                      output.append(f'--- Lines {a+1}-{b} ---')
+                      output.extend(f'{j+1:05d} {lines[j]}' for j in range(a,b))
+          target=Path('distribution/profession-guide/QUICKMENU_INSPECTION.txt')
+          target.write_text('\n'.join(output)[:180000],encoding='utf-8')
+          print('Inspected full release:',archive,'hits',len(output))
+          PY
+      - name: Commit temporary inspection report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/profession-guide/QUICKMENU_INSPECTION.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Inspect packaged Quick Menu for Profession Guide integration'
+            git push origin HEAD:main
+          fi
