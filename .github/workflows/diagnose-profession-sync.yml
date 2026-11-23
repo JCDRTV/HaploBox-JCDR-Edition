@@ -1,0 +1,51 @@
+name: Diagnose Profession Advisor party sync
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/diagnose-profession-sync.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract current built profession sync code and relevant addon interfaces
+        run: |
+          python - <<'PY'
+          import zipfile,json,re
+          from pathlib import Path
+          base=Path('distribution/test')
+          m=json.loads((base/'manifest.json').read_text())
+          path=base/m['zip_url'].split('/')[-1]
+          with zipfile.ZipFile(path) as z:
+              out=[]
+              for name in ('HaploBox/ProfessionGuide/Data.lua','HaploBox/ProfessionGuide/Core.lua','HaploBox/ProfessionGuide/UI.lua','HaploBox/HaploBox.toc'):
+                  value=z.read(name).decode('utf-8-sig','replace')
+                  out.append('=== '+name+' ===\n'+value)
+              for name in z.namelist():
+                  if not name.endswith('.lua') or 'ProfessionGuide' in name: continue
+                  value=z.read(name).decode('utf-8-sig','replace')
+                  lines=value.splitlines()
+                  matches=[i for i,x in enumerate(lines) if re.search('C_ChatInfo|RegisterAddonMessagePrefix|CHAT_MSG_ADDON|SendAddonMessage|RegisterComm|OnAddonMessage|UnitIdent',x,re.I)]
+                  if not matches: continue
+                  snippets=[]
+                  for i in matches[:18]:
+                      a=max(0,i-6);b=min(len(lines),i+11)
+                      snippets.extend('%04d %s'%(j+1,lines[j]) for j in range(a,b))
+                  out.append('=== OTHER '+name+' ===\n'+'\n'.join(snippets))
+          target=Path('distribution/profession-guide/PARTY_SYNC_SOURCE_DIAGNOSTIC.txt')
+          target.write_text('\n\n'.join(out),encoding='utf-8')
+          print('INSPECTED',path,'SIZE',target.stat().st_size)
+          PY
+      - name: Commit temporary diagnostic data for review
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/profession-guide/PARTY_SYNC_SOURCE_DIAGNOSTIC.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'TEMP: capture packaged profession sync diagnostic'
+            git push origin HEAD:main
+          fi
