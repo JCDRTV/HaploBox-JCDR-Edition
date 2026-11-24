@@ -1,21 +1,16 @@
-# HaploBox Profession Guide – Phase 1 TEST
+# HaploBox Profession Guide – TEST / projectoverdracht
 
-This directory contains the stand-alone tested prototype HaploBox_Profession_Guide_Fase1_TEST.zip.
+**Actueel:** HF26.20.49 Profession Advisor Layout TEST (24 november 2026)
 
-## One-click update integration
+- [Projectgeheugen / overdracht](PROJECT_HANDOFF.md) – actuele stand, ontwerpbesluiten, tests, open punten en volgende stappen
+- [Changelog](CHANGELOG.md) – gedateerd wijzigingslog
+- [TEST-manifest](../test/manifest.json) – actuele downloadversie en SHA-256
+- [Distributiehandleiding](../README.md) – installatie en VERSION_HOTFIX-updater
 
-The existing **HaploBox UPDATE** shortcut downloads only the complete HaploBox addon folder; a second companion ZIP would be ignored. The release build script therefore merges three Phase 1 Lua files into the current SHA-256-verified complete TEST ZIP and updates HaploBox.toc. It publishes HF26.20.45 on the existing distribution/test/manifest.json channel.
+## Technische uitgangspunten
 
-Only HaploBox.toc and these newly added files change inside the archive:
+De standalone `HaploBox_Profession_Guide_Fase1_TEST.zip` was uitsluitend het prototype; de bestaande handmatige **HaploBox UPDATE** installeert alléén de **volledige HaploBox-map** uit de actuele `distribution/test`-release. De eerdere releases en scripts in deze map geven de geschiedenis weer. **Voor een volgende wijziging altijd beginnen vanuit de laatst gepubliceerde volledige, checksum-geverifieerde TEST-ZIP**, nooit vanuit de verouderde root van de repository.
 
-- HaploBox/ProfessionGuide/Data.lua
-- HaploBox/ProfessionGuide/Core.lua
-- HaploBox/ProfessionGuide/UI.lua
+HF26.20.49 levert het hoofdscherm, de compacte runinterface, negen profession-categorieën, skillscan, Quick Menu-OPEN en de visueel verbeterde Dungeon Advisor-stijl. De recipe guides, party-bag/bank-voorraad en BS/LW/ENG/TAIL/ALCH NEED-indicatoren zitten er **nog niet** in.
 
-All other files from HF26.20.44 remain byte-identical when extracted. The build refuses to overwrite a newer TEST manifest or a ZIP with mismatched hash.
-
-## Usage
-
-Click the existing Windows **HaploBox UPDATE** shortcut (no background polling). Restart all five WoW clients afterward. Open /hb professions or /hbprof.
-
-Phase 1 does not include recipe routes, bags/banks, or profession NEED tooltip tags. Ingame acceptance remains open.
+**Belangrijk:** GitHub build-/Windows-installatietests zijn geslaagd; **ingame goedkeuring voor HF26.20.49 staat nog open**. Eerst het nieuwe uiterlijk in WoW controleren.
