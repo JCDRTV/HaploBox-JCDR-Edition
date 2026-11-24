@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "channel": "test",
+  "component": "HaploBox Manager",
+  "version": "HM26.1.0",
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/manager/test/HaploBox_Manager_HM26.1.0_TEST.zip",
+  "sha256": "ed6044fb696be5695ad5e40e59da43ca5f2d81797db86eefc8a33ab9a8ee8de6",
+  "bytes": 7621,
+  "offline_file_tests": "9/9 PASS; ZIP CRC PASS",
+  "windows_validation": "OPEN",
+  "addon_version_unchanged": "HF26.20.49",
+  "scope": "Dynamic roster, multi-target preview, allowlisted character layout/keybinds, automatic backup/rollback/restore, existing updater shortcut. Python 3.10+ with Tkinter. No addon SavedVariables adapters or manual backup yet."
+}

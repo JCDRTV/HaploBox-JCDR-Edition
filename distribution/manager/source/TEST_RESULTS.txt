@@ -1,0 +1,14 @@
+test_block_source (test_manager.TestManager.test_block_source) ... ok
+test_block_unknown (test_manager.TestManager.test_block_unknown) ... ok
+test_closed_guard (test_manager.TestManager.test_closed_guard) ... ok
+test_duplicate (test_manager.TestManager.test_duplicate) ... ok
+test_restore_conflict (test_manager.TestManager.test_restore_conflict) ... ok
+test_rollback (test_manager.TestManager.test_rollback) ... ok
+test_scan_copy_restore (test_manager.TestManager.test_scan_copy_restore) ... ok
+test_stale_preview (test_manager.TestManager.test_stale_preview) ... ok
+test_symlink (test_manager.TestManager.test_symlink) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.061s
+
+OK
