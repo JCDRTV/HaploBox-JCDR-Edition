@@ -43,3 +43,8 @@ HF26.20.49 is een uitsluitend visuele update van de Profession Advisor: goudomli
 - Er is nog **geen** ingame-goedkeuring voor HF26.20.49.
 - De repository-root bevat oudere broncode; gebruik de volledige release-ZIP in distribution/test.
 - Bron, standalone test-archief en gecontroleerde package-builder staan in [distribution/profession-guide](profession-guide/).
+
+## Projectoverdracht en ontwikkellog
+
+- [Actueel projectgeheugen / handoff](../docs/HAPLOBOX_PROJECT_HANDOFF.md)
+- [Chronologisch development log](../docs/HAPLOBOX_DEV_LOG.md)
