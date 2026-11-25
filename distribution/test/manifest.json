@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.51",
+  "version": "HF26.20.52",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.51-pawn-warning/distribution/test/HaploBox_HF26.20.51_Pawn_Scale_Warning_TEST.zip",
-  "sha256": "66c91c98cc4844d61d2edd0e631fc04784ae11fedce8aa5403b955d1b3bf0ea6",
-  "notes": "HF26.20.51 TEST: report NOSCALE per character once per scan. No changes to scoring, Pawn settings, transport, macros or timings. Ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.52-pawn-ui-warning/distribution/test/HaploBox_HF26.20.52_Pawn_Advisor_Warning_TEST.zip",
+  "sha256": "05302b530f37adadce20384169cb68e145d04cd021a56dba9bf2dd8c635d79fe",
+  "notes": "HF26.20.52 TEST: Pawn NOSCALE warning below Advisor scan status instead of chat. Warning persists through scan completion; cleared on new scan. No score or protocol changes. Ingame layout acceptance OPEN."
 }
