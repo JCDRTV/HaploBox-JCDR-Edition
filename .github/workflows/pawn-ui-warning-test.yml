@@ -1,0 +1,128 @@
+name: HF26.20.52 Pawn warning in Advisor TEST
+on:
+  push:
+    branches: ['test/hf26.20.52-pawn-ui-warning']
+    paths: ['.github/workflows/pawn-ui-warning-test.yml']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1
+      - name: Build and verify
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, subprocess, tempfile, zipfile
+          root=pathlib.Path('distribution/test')
+          src=root/'HaploBox_HF26.20.51_Pawn_Scale_Warning_TEST.zip'
+          assert hashlib.sha256(src.read_bytes()).hexdigest()=='66c91c98cc4844d61d2edd0e631fc04784ae11fedce8aa5403b955d1b3bf0ea6'
+          dst=root/'HaploBox_HF26.20.52_Pawn_Advisor_Warning_TEST.zip'
+          planner='HaploBox/LootPlanner.lua'
+          toc='HaploBox/HaploBox.toc'
+          helper='''-- UI-only warning; the per-scan evidence is kept even when the window is closed.
+          function HB.DungeonBiSView.PawnScaleWarningText(warned)
+              local missing={}
+              for _,name in ipairs(names) do
+                  if warned and warned[name] then missing[#missing+1]=name end
+              end
+              if #missing==0 then return "" end
+              return "PAWN SCALE WARNING: "..table.concat(missing,", ").."\\nSet the correct spec in /pawn and rescan."
+          end
+          '''
+          with zipfile.ZipFile(src) as z:
+              assert z.testzip() is None
+              old={n:z.read(n) for n in z.namelist()}
+              new=old.copy()
+              s=old[planner]
+              nl=b'\r\n' if b'\r\n' in s else b'\n'
+              def patch(text,a,b):
+                  a=a.encode().replace(b'\n',nl)
+                  b=b.encode().replace(b'\n',nl)
+                  assert text.count(a)==1,repr(a)
+                  return text.replace(a,b,1)
+              s=patch(s,'local function refresh()',
+                  helper+'local function refresh()')
+              s=patch(s,'    for _,b in ipairs({availableScanButton,allScanButton}) do',
+                  '''    local warning=HB.DungeonBiSView.ui and HB.DungeonBiSView.ui.pawnWarning
+              if warning then
+                  local text=HB.DungeonBiSView.PawnScaleWarningText(allScan and allScan.pawnScaleWarned or HB.DungeonBiSView.standalonePawnWarned)
+                  warning:SetText(text)
+                  if text=="" then warning:Hide() else warning:Show() end
+              end
+              for _,b in ipairs({availableScanButton,allScanButton}) do''')
+              s=patch(s,'            say("WARNING - "..name..": no usable Pawn scale (NOSCALE). Check /pawn on "..name.."; enable the matching "..tostring(roles[name] or "role").." scale and rescan.")','            -- Render the collected names in the Advisor, not chat.')
+              s=patch(s,'        HB.DungeonBiSView.WarnPawnScales(job.scan,{})',
+                  '''        HB.DungeonBiSView.standalonePawnWarned={}
+                  HB.DungeonBiSView.WarnPawnScales(job.scan,HB.DungeonBiSView.standalonePawnWarned)''')
+              # Reset fallback on any new explicit scan; the existing fresh allScan table resets its own warnings.
+              s=patch(s,'    local lowest=tonumber(UnitLevel("player")) or 1',
+                  '    HB.DungeonBiSView.standalonePawnWarned=nil\n    local lowest=tonumber(UnitLevel("player")) or 1')
+              s=patch(s,'    statusText:SetTextColor(.99,.86,.53)',
+                  '''    statusText:SetTextColor(.99,.86,.53)
+              ui.pawnWarning=label(frame,"",16,-610,425)
+              ui.pawnWarning:ClearAllPoints()
+              ui.pawnWarning:SetPoint("TOPLEFT",statusText,"TOPLEFT",0,-17)
+              ui.pawnWarning:SetJustifyH("LEFT")
+              ui.pawnWarning:SetJustifyV("TOP")
+              ui.pawnWarning:SetHeight(64)
+              ui.pawnWarning:SetTextColor(1,.54,.19)
+              ui.pawnWarning:Hide()''')
+              s=patch(s,'        bottom(statusText,16,26);statusText:SetWidth(farmWidth)',
+                  '''        bottom(statusText,16,26);statusText:SetWidth(farmWidth)
+                  ui.pawnWarning:SetWidth(farmWidth)''')
+              new[planner]=s
+              assert old[toc].count(b'## Version: HF26.20.51')==1
+              new[toc]=old[toc].replace(b'## Version: HF26.20.51',b'## Version: HF26.20.52',1)
+              with zipfile.ZipFile(dst,'w') as out:
+                  for info in z.infolist(): out.writestr(info,new[info.filename])
+          with zipfile.ZipFile(dst) as z, tempfile.TemporaryDirectory() as tmp:
+              assert z.testzip() is None
+              assert z.namelist()==list(old)
+              assert {n for n in old if z.read(n)!=old[n]}=={planner,toc}
+              for n in z.namelist():
+                  if n.lower().endswith('.lua'):
+                      p=pathlib.Path(tmp)/'check.lua'
+                      p.write_bytes(z.read(n))
+                      subprocess.run(['luac5.1','-p',str(p)],check=True)
+              packed=z.read(planner).decode('utf-8')
+              start=packed.index('function HB.DungeonBiSView.PawnScaleWarningText')
+              end=packed.index('local function refresh()',start)
+              collect=packed.index('function HB.DungeonBiSView.WarnPawnScales')
+              collectend=packed.index('local function finishScan(job)',collect)
+              mock='''local HB={DungeonBiSView={}}
+          local names={"Mael","Lyra","Elya","Nyra","Ayla"}
+          local function scanMembers(s) return s.names end
+          '''
+              checks='''local view=HB.DungeonBiSView
+          local seen={}
+          local scan={names=names,members={[1]={Lyra={status="NOSCALE"},Elya={status="UP"}},[2]={Lyra={status="NOSCALE"},Ayla={status="NOSCALE"}}}}
+          assert(view.PawnScaleWarningText(nil)=="")
+          assert(view.PawnScaleWarningText(seen)=="")
+          view.WarnPawnScales(scan,seen)
+          assert(view.PawnScaleWarningText(seen)=="PAWN SCALE WARNING: Lyra, Ayla\\nSet the correct spec in /pawn and rescan.")
+          view.WarnPawnScales(scan,seen)
+          assert(view.PawnScaleWarningText(seen)=="PAWN SCALE WARNING: Lyra, Ayla\\nSet the correct spec in /pawn and rescan.")
+          scan.stale=true;local fresh={};view.WarnPawnScales(scan,fresh);assert(view.PawnScaleWarningText(fresh)=="")
+          scan.stale=false;scan.invalidated=true;view.WarnPawnScales(scan,fresh);assert(view.PawnScaleWarningText(fresh)=="")
+          scan.invalidated=false;scan.members={[1]={Mael={status="UP"},Lyra={status="NOSTATS"}}};view.WarnPawnScales(scan,fresh);assert(view.PawnScaleWarningText(fresh)=="")
+          assert(view.PawnScaleWarningText({})=="")
+          print("PASS: empty, grouped names, dedupe, stale, invalidation, fresh scan, no chat dependency")
+          '''
+              p=pathlib.Path(tmp)/'mock.lua';p.write_text(mock+packed[start:end]+packed[collect:collectend]+checks)
+              subprocess.run(['lua5.1',str(p)],check=True)
+          manifest=json.loads((root/'manifest.json').read_text())
+          manifest.update(version='HF26.20.52',zip_url='https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.52-pawn-ui-warning/distribution/test/'+dst.name,sha256=hashlib.sha256(dst.read_bytes()).hexdigest(),notes='HF26.20.52 TEST: Pawn NOSCALE warning below Advisor scan status instead of chat. Warning persists through scan completion; cleared on new scan. No score or protocol changes. Ingame layout acceptance OPEN.')
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print('PASS: SHA256, ZIP CRC, exact two-file diff, all Lua syntax, warning mocks')
+          PY
+      - name: Publish on TEST branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/HaploBox_HF26.20.52_Pawn_Advisor_Warning_TEST.zip distribution/test/manifest.json
+          git commit -m 'HF26.20.52 TEST: move Pawn warning into Advisor footer'
+          git push origin HEAD:test/hf26.20.52-pawn-ui-warning
