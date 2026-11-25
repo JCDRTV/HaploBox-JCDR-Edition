@@ -1,6 +1,6 @@
 # HaploBox JCDR Edition — Projectoverdracht
 
-**Bijgewerkt:** 24 november 2026  
+**Bijgewerkt:** 25 november 2026  
 **Project:** World of Warcraft Forever / Classic, multiboxing met HaploBox JCDR Edition  
 **Repository:** https://github.com/JCDRTV/HaploBox-JCDR-Edition  
 **Actuele gepubliceerde TEST:** **HF26.20.49 — Profession Advisor Layout TEST**  
@@ -9,6 +9,15 @@
 **Gedetailleerd changelog:** [HAPLOBOX_DEV_LOG.md](HAPLOBOX_DEV_LOG.md)
 
 > **Belangrijk:** De huidige TEST is HF26.20.49; HF26.20.44 was de laatst besproken Dungeon/Need-dobbelsteenhotfix in de vorige chat. De huidige repository-root bevat verouderde addonbron. Nieuwe hotfixes moeten worden opgebouwd vanaf de **volledige, verifieerbare TEST-ZIP** in `distribution/test`, niet vanaf alleen de rootbestanden.
+
+## 2026-11-25 — Recovery checkpoint (user-confirmed ingame)
+
+- SYN-02: .49 and .50 isolation failed initially; .44 also failed. PING and batched Pawn transport worked. `/hbbiscoverage Lyra` reported 47 NOSCALE out of 48 checked weapon/ring items; one OWNED. User found missing Pawn specialization/scales and confirmed scores worked after configuration.
+- HF26.20.50 isolation branch is diagnostic only, not the next release baseline. Keep .49 ZIP and main TEST manifest unchanged.
+- Smart Follow F1 camera recall worked after `/hb followcam save confirm` on Lyra. Other characters' camera presets not individually confirmed.
+- Macro behavior recovered after manual BOX OFF → ON; root cause of stale macros not established. No code fix claimed.
+- User reports current gameplay working well; .49 is the chosen development baseline, but the installed version at final recovery was not independently read back. Profession UI and Need-dice acceptance remain separately open.
+- Next: P1 clear per-character NOSCALE warning without changing Pawn scoring, transport, macro generation or timers; P2 investigate macro initialization separately.
 
 ## Team A, rollen en platform
 
