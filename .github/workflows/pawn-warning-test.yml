@@ -1,0 +1,111 @@
+name: HF26.20.51 Pawn configuration warning TEST
+on:
+  push:
+    branches: ['test/hf26.20.51-pawn-warning']
+    paths: ['.github/workflows/pawn-warning-test.yml']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1
+      - name: Build and verify
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, subprocess, tempfile, zipfile
+          root=pathlib.Path('distribution/test')
+          src=root/'HaploBox_HF26.20.49_Profession_Advisor_Layout_TEST.zip'
+          assert hashlib.sha256(src.read_bytes()).hexdigest()=='e1951da4782ad77bb6ea78804ec16763ba79c6381cc4716b712dd797ecd5ab30'
+          dst=root/'HaploBox_HF26.20.51_Pawn_Scale_Warning_TEST.zip'
+          planner='HaploBox/LootPlanner.lua'
+          toc='HaploBox/HaploBox.toc'
+          helper='''-- HF26.20.51: report confirmed NOSCALE results once per character per explicit scan.
+          -- Read only: no changes to Pawn, transport, scores, or retries.
+          function HB.DungeonBiSView.WarnPawnScales(scan, warned)
+              if not scan or not scan.members or scan.stale or scan.invalidated then return end
+              local missing={}
+              for _,members in pairs(scan.members) do
+                  for _,name in ipairs(scanMembers(scan)) do
+                      local r=members[name]
+                      if r and r.status=="NOSCALE" then missing[name]=true end
+                  end
+              end
+              for _,name in ipairs(scanMembers(scan)) do
+                  if missing[name] and not warned[name] then
+                      warned[name]=true
+                      say("WARNING - "..name..": no usable Pawn scale (NOSCALE). Check /pawn on "..name.."; enable the matching "..tostring(roles[name] or "role").." scale and rescan.")
+                  end
+              end
+          end
+          '''
+          def patch(data, old, new):
+              assert data.count(old)==1, repr(old)
+              return data.replace(old,new,1)
+          with zipfile.ZipFile(src) as z:
+              assert z.testzip() is None
+              old={n:z.read(n) for n in z.namelist()}
+              new=old.copy()
+              s=old[planner]
+              nl=b'\r\n' if b'\r\n' in s else b'\n'
+              helper_bytes=helper.encode().replace(b'\n',nl)
+              s=patch(s,b'local function finishScan(job)',helper_bytes+b'local function finishScan(job)')
+              anchor=nl.join([b'    local quality=scanState(job.scan)',b'    if allScan and allScan.running then'])
+              insertion=nl.join([b'    local quality=scanState(job.scan)',b'    if allScan and allScan.running then',b'        allScan.pawnScaleWarned=allScan.pawnScaleWarned or {}',b'        HB.DungeonBiSView.WarnPawnScales(job.scan,allScan.pawnScaleWarned)',b'    else',b'        HB.DungeonBiSView.WarnPawnScales(job.scan,{})',b'    end',b'    if allScan and allScan.running then'])
+              s=patch(s,anchor,insertion)
+              new[planner]=s
+              new[toc]=patch(old[toc],b'## Version: HF26.20.49',b'## Version: HF26.20.51')
+              with zipfile.ZipFile(dst,'w') as out:
+                  for info in z.infolist(): out.writestr(info,new[info.filename])
+          with zipfile.ZipFile(dst) as z, tempfile.TemporaryDirectory() as tmp:
+              assert z.testzip() is None
+              assert z.namelist()==list(old)
+              assert {n for n in old if z.read(n)!=old[n]}=={planner,toc}
+              for n in z.namelist():
+                  if n.lower().endswith('.lua'):
+                      p=pathlib.Path(tmp)/'check.lua'
+                      p.write_bytes(z.read(n))
+                      subprocess.run(['luac5.1','-p',str(p)],check=True)
+              # Test the actual inserted helper from the packaged Lua source.
+              packed=z.read(planner).decode('utf-8')
+              start=packed.index('function HB.DungeonBiSView.WarnPawnScales')
+              end=packed.index('local function finishScan(job)',start)
+              mock='''local HB={DungeonBiSView={}}
+          local roles={Mael="feral",Lyra="restoration",Elya="balance"}
+          local function scanMembers(s) return s.names end
+          local log={}
+          local function say(s) log[#log+1]=s end
+          '''
+              checks='''local warn=HB.DungeonBiSView.WarnPawnScales
+          local seen={}
+          local s={names={"Mael","Lyra","Elya"},members={
+              [1]={Mael={status="UP"},Lyra={status="NOSCALE"},Elya={status="UNCACHED"}},
+              [2]={Lyra={status="NOSCALE"},Elya={status="NOSTATS"}}}}
+          warn(s,seen);assert(#log==1 and log[1]:find("Lyra") and log[1]:find("restoration"))
+          warn(s,seen);assert(#log==1)
+          s.members[2].Elya.status="NOSCALE";warn(s,seen)
+          assert(#log==2 and log[2]:find("Elya") and log[2]:find("balance"))
+          warn(s,{});assert(#log==4)
+          s.stale=true;warn(s,{});assert(#log==4)
+          s.stale=false;s.invalidated=true;warn(s,{});assert(#log==4)
+          warn(nil,{});assert(#log==4)
+          warn({names={"Mael"},members={[1]={Mael={status="UP"},Lyra={status="NOSCALE"}}}},{});assert(#log==4)
+          print("PASS: warnings, dedupe, new scan reset, stale/invalidated, no false positive, active participants only")
+          '''
+              p=pathlib.Path(tmp)/'mock.lua';p.write_text(mock+packed[start:end]+checks)
+              subprocess.run(['lua5.1',str(p)],check=True)
+          manifest=json.loads((root/'manifest.json').read_text())
+          manifest.update(version='HF26.20.51',zip_url='https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.51-pawn-warning/distribution/test/'+dst.name,sha256=hashlib.sha256(dst.read_bytes()).hexdigest(),notes='HF26.20.51 TEST: report NOSCALE per character once per scan. No changes to scoring, Pawn settings, transport, macros or timings. Ingame acceptance OPEN.')
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print('PASS: SHA256, ZIP CRC, exact two-file diff, all Lua syntax, warning mocks')
+          PY
+      - name: Publish on TEST branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/HaploBox_HF26.20.51_Pawn_Scale_Warning_TEST.zip distribution/test/manifest.json
+          git commit -m 'HF26.20.51 TEST: per-character Pawn NOSCALE warning'
+          git push origin HEAD:test/hf26.20.51-pawn-warning
