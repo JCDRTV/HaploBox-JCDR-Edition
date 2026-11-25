@@ -32,3 +32,11 @@ Een verschil bij de uitvoering van de concrete spellmacro's, bijvoorbeeld in de 
 5. Alleen een kleine gerichte fix na bewijs; test in-game op alle vijf Druids en houd werkende macro's intact.
 
 **Status:** OPEN / INGAME TEST NODIG. Laatste run afgesloten voor deze diagnose. Geen codewijziging, geen TEST-release en geen ingame PASS voor dit issue.
+
+## 2026-11-25 — P2 OPEN — BOX macro initialization after login/roster sync
+
+- User confirmed macro behavior recovered after BOX OFF → ON. Do not assume the earlier Ayla-specific target issue has the same cause.
+- Inspected the packaged HF26.20.52 BoxMode.lua: PLAYER_LOGIN resets local BOX OFF and restores safe macros, then schedules trusted-team reconciliation. Roster events can trigger a further reconcile and a follower mode request. Matching cached validatedMode can cause a leader command to receive an ACK without rereading macro bodies. autoTeamDone prevents a repeat automatic enable in an unchanged trusted party session (protects deliberate manual OFF).
+- Hypotheses, not ingame proof: startup ordering or a stale validated profile could produce incorrect macro bodies/mode; do not remove intentional manual OFF semantics or touch cast/follow/bindings.
+- Next controlled repro: out of combat, with all five trusted characters grouped and BOX ON, reload one follower; inspect actual BOX state and a failing macro before any OFF/ON toggle. Use /hb box status, /hb box inspect, and the exact macro in /macro. Compare against leader/follower profile. Only make a targeted fix after evidence; preserve working Pawn warning and F1 camera preset.
+- HF26.20.52 Pawn Advisor warning: user responded “top perfect” to the interface placement/release; no separate screenshot or installed-version readback. Main updater remains .49; .52 test branch, offline build PASS; Drive backup and Windows updater test still open.
