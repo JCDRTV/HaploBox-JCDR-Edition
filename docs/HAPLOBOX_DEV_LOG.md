@@ -1,11 +1,20 @@
 # HaploBox JCDR Edition — Development Log
 
-**Bijgewerkt:** 24 november 2026  
+**Bijgewerkt:** 25 november 2026  
 **Actuele TEST op GitHub:** **HF26.20.49** — Profession Advisor Layout TEST  
 **Testmanifest:** [distribution/test/manifest.json](../distribution/test/manifest.json)  
 **Actuele overdracht:** [HAPLOBOX_PROJECT_HANDOFF.md](HAPLOBOX_PROJECT_HANDOFF.md)
 
 > Alle versies hieronder zijn TEST-releases. Offline tests of publicatie zijn **geen** automatische ingame PASS. Latest TEST is de volledige, geverifieerde ZIP uit `distribution/test` (repository-root is ouder).
+
+## 2026-11-25 — Recovery checkpoint (user-confirmed ingame)
+
+- SYN-02: .49 and .50 isolation failed initially; .44 also failed. PING and batched Pawn transport worked. `/hbbiscoverage Lyra` reported 47 NOSCALE out of 48 checked weapon/ring items; one OWNED. User found missing Pawn specialization/scales and confirmed scores worked after configuration.
+- HF26.20.50 isolation branch is diagnostic only, not the next release baseline. Keep .49 ZIP and main TEST manifest unchanged.
+- Smart Follow F1 camera recall worked after `/hb followcam save confirm` on Lyra. Other characters' camera presets not individually confirmed.
+- Macro behavior recovered after manual BOX OFF → ON; root cause of stale macros not established. No code fix claimed.
+- User reports current gameplay working well; .49 is the chosen development baseline, but the installed version at final recovery was not independently read back. Profession UI and Need-dice acceptance remain separately open.
+- Next: P1 clear per-character NOSCALE warning without changing Pawn scoring, transport, macro generation or timers; P2 investigate macro initialization separately.
 
 ## Releases / mijlpalen
 
