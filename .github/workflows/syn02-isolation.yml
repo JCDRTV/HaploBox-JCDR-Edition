@@ -1,0 +1,67 @@
+name: SYN-02 isolation TEST
+on:
+  push:
+    branches: ['test/syn02-hf26.20.50']
+    paths: ['.github/workflows/syn02-isolation.yml']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua syntax checker
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1
+      - name: Build and verify isolated TEST
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, re, subprocess, tempfile, zipfile
+          root=pathlib.Path('distribution/test')
+          src=root/'HaploBox_HF26.20.49_Profession_Advisor_Layout_TEST.zip'
+          assert hashlib.sha256(src.read_bytes()).hexdigest()=='e1951da4782ad77bb6ea78804ec16763ba79c6381cc4716b712dd797ecd5ab30'
+          dst=root/'HaploBox_HF26.20.50_SYN02_Isolation_TEST.zip'
+          core='HaploBox/ProfessionGuide/Core.lua'
+          toc='HaploBox/HaploBox.toc'
+          def replace_once(data,old,new):
+              assert data.count(old)==1, repr(old)
+              return data.replace(old,new,1)
+          with zipfile.ZipFile(src) as zin:
+              assert zin.testzip() is None
+              old={n:zin.read(n) for n in zin.namelist()}
+              new=old.copy()
+              s=old[core]
+              # Keep local scanning, UI and manual sync controls; all PG transport is disabled.
+              s,n=re.subn(rb'local function send\(message\)\r?\n.*?\r?\nend(?=\r?\nfunction PG.Broadcast)',b'local function send(message)\n    -- SYN-02 TEST: Profession Guide network transport disabled.\nend',s,flags=re.S)
+              assert n==1
+              s,n=re.subn(rb'        if C_ChatInfo and type\(C_ChatInfo.RegisterAddonMessagePrefix\).*?\r?\n        end\r?\n',b'        -- SYN-02 TEST: do not register HBPG1.\n',s,flags=re.S)
+              assert n==1
+              s,n=re.subn(rb'events:RegisterEvent\("CHAT_MSG_ADDON"\)\r?\n',b'',s)
+              assert n==1
+              new[core]=s
+              new[toc]=replace_once(old[toc],b'## Version: HF26.20.49',b'## Version: HF26.20.50')
+              with zipfile.ZipFile(dst,'w') as zout:
+                  for info in zin.infolist():
+                      zout.writestr(info,new[info.filename])
+          with zipfile.ZipFile(dst) as z:
+              assert z.testzip() is None
+              assert z.namelist()==list(old)
+              assert {n for n in old if z.read(n)!=old[n]}=={core,toc}
+              with tempfile.TemporaryDirectory() as d:
+                  for n in z.namelist():
+                      if n.lower().endswith('.lua'):
+                          p=pathlib.Path(d)/'check.lua'
+                          p.write_bytes(z.read(n))
+                          subprocess.run(['luac5.1','-p',str(p)],check=True)
+          manifest=json.loads((root/'manifest.json').read_text())
+          manifest.update(version='HF26.20.50',zip_url='https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/syn02-hf26.20.50/distribution/test/'+dst.name,sha256=hashlib.sha256(dst.read_bytes()).hexdigest(),notes='SYN-02 isolation TEST: all Profession Guide network traffic disabled; local scanner and UI preserved. Only PG Core and TOC changed. Ingame acceptance OPEN.')
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print('PASS: baseline SHA256, ZIP CRC, exact two-file diff, Lua 5.1 syntax, TEST manifest')
+          PY
+      - name: Publish on isolated branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add distribution/test/HaploBox_HF26.20.50_SYN02_Isolation_TEST.zip distribution/test/manifest.json
+          git commit -m 'HF26.20.50 SYN-02 isolation TEST'
+          git push origin HEAD:test/syn02-hf26.20.50
