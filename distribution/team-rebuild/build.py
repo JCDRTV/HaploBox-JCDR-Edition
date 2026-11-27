@@ -1,9 +1,10 @@
 """Build phase 1 from the exact .55 package, preserving legacy payloads."""
 import hashlib
+from copy import copy
 import json
 import re
 from pathlib import Path, PurePosixPath
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "distribution/team-rebuild"
@@ -44,9 +45,11 @@ def main():
         with ZipFile(target, "w", compression=ZIP_DEFLATED) as new:
             for info in old.infolist():
                 data = toc.encode("utf-8") if info.filename == toc_name else old.read(info.filename)
-                new.writestr(info, data)
+                new.writestr(copy(info), data)
             for filename in MODULES:
-                new.writestr("HaploBox/" + filename, (SRC / filename).read_bytes())
+                info = ZipInfo("HaploBox/" + filename, date_time=(2026, 11, 27, 0, 0, 0))
+                info.compress_type = ZIP_DEFLATED
+                new.writestr(info, (SRC / filename).read_bytes())
         with ZipFile(target) as new:
             assert new.testzip() is None
             validate_paths(new.namelist())
