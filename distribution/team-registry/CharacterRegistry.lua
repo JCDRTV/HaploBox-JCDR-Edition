@@ -116,7 +116,7 @@ local function refresh()
                 spec,source = liveSpecs[guid].name,liveSpecs[guid].source
             end
             if source then
-                rec.spec,rec.specSource,rec.specUpdated = spec,source,now()
+                rec.spec,rec.specSource,rec.specUpdated = spec,source,(u == "player" and now() or liveSpecs[guid].at)
             end
             db.characters[guid] = rec
             if not online then liveSpecs[guid] = nil end
@@ -181,7 +181,7 @@ local function receive(prefix,msg,channel,sender)
         end
     end
     if found then
-        liveSpecs[found] = {name=name ~= "" and name or nil,source=source}
+        liveSpecs[found] = {name=name ~= "" and name or nil,source=source,at=now()}
         queue(false)
     end
 end
@@ -216,11 +216,17 @@ function R.Diagnose()
 end
 local previous = SlashCmdList.HAPLOBOX
 SlashCmdList.HAPLOBOX = function(input)
-    if (input or ""):match("^%s*registry%s*$") then R.Diagnose() else return previous(input) end
+    if (input or ""):match("^%s*registry%s*$") then R.Diagnose(); return end
+    local cmd = (input or ""):match("^%s*(%S+)")
+    previous(input)
+    if cmd and (cmd:lower()=="role" or cmd:lower()=="team" or cmd:lower()=="leader") then queue(false) end
 end
 local frame = CreateFrame("Frame")
 frame:SetScript("OnEvent",function(_,event,...)
-    if event=="CHAT_MSG_ADDON" then receive(...)
+    if event=="CHAT_MSG_ADDON" then
+        local prefix,msg = ...
+        if prefix == "HaploBox" and str(msg) and (msg:match("^R|") or msg:match("^M|")) then queue(false) end
+        receive(...)
     elseif event=="UNIT_NAME_UPDATE" or event=="UNIT_LEVEL" or event=="UNIT_CONNECTION" then queue(false)
     else queue(event=="PLAYER_LOGIN" or event=="PLAYER_ENTERING_WORLD" or event=="GROUP_ROSTER_UPDATE") end
 end)
@@ -228,6 +234,8 @@ for _,event in ipairs({"PLAYER_LOGIN","PLAYER_ENTERING_WORLD","GROUP_ROSTER_UPDA
     pcall(frame.RegisterEvent,frame,event)
 end
 -- Existing role/team refresh path (including received role messages).
-if hooksecurefunc and type(HB.RefreshTeam) == "function" then
-    hooksecurefunc(HB,"RefreshTeam",function() queue(false) end)
+if hooksecurefunc then
+    for _,name in ipairs({"RefreshTeam","SetMyRoleFromMenu","SetTeamFromGroup","SetRoleLocal"}) do
+        if type(HB[name])=="function" then hooksecurefunc(HB,name,function() queue(false) end) end
+    end
 end
