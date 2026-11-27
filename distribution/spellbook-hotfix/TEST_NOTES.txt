@@ -1,0 +1,9 @@
+HF26.20.55 TEST - Spellbook detection hotfix
+Base: HF26.20.54, SHA-256 verified.
+- Restore compatibility for old Druid presets when spellbook enumeration is unavailable.
+- Scan both legacy and modern C_SpellBook player spellbook APIs.
+- Supplement missing class spells with explicit known-spell API confirmation.
+- Keep all-class rules, original Druid preset identities, macro engine and bindings.
+- Legacy fallback may permit a Druid macro when only the spell database is accessible; the client still decides whether it can cast.
+- Diagnostic: /run print(HaploBox.MacroSpellbookStatus())
+- Archive structural verification and stored payload CRC; runtime and in-game acceptance pending.
