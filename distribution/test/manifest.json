@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.55",
+  "version": "HF26.20.56",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.55-spellbook-hotfix/distribution/test/HaploBox_HF26.20.55_Spellbook_Hotfix_TEST.zip",
-  "sha256": "77a616b84598080938ae73a75d6faadf900b81af007ee89a3c9a60167eae92ef",
-  "notes": "HF26.20.55 TEST: spellbook detection regression hotfix; legacy and modern API support, verified known-spell supplementation and Druid fallback. In-game acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.56-team-management/distribution/test/HaploBox_HF26.20.56_Team_Management_TEST.zip",
+  "sha256": "6f6423339b4f0e0a9fb3c01163c31674948aa7b22b444a3199375ac93d7b964d",
+  "notes": "HF26.20.56 TEST: team management, explicit local trust, 2-5 box, dynamic leader targeting, saved teams, Tank/Healer/DPS role selection. In-game acceptance OPEN."
 }
