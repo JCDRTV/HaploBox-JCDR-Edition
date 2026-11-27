@@ -1,0 +1,9 @@
+HF26.20.54 TEST - All Class Macro Update
+Base: HF26.20.53 Team Registry, SHA-256 verified.
+- Existing Druid preset IDs, names, bodies and bindings retained.
+- Nine class spellbook discovery, active learned spells, rank deduplication.
+- Explicit common class targeting rules; unknown/custom spells default to local cast.
+- Dual-target macro support for Dispel Magic and Holy Shock.
+- Existing explicit creation, pickup, combat locks and ownership checks retained.
+- General tab excluded except explicit class spells; separate pet command bar not included.
+- Archive CRC and unchanged payload checks only; Lua runtime and in-game acceptance pending.

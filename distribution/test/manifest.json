@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.53",
+  "version": "HF26.20.54",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.53-team-registry/distribution/test/HaploBox_HF26.20.53_Team_Registry_TEST.zip",
-  "sha256": "03875f6db54c06251b9e036dec0139d54404596cf98d36fbe602b04c38bb8305",
-  "notes": "TEAM-01 registry foundation. Lua 5.4 stub simulation passed; in-game acceptance OPEN. UI unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.54-all-class-macros/distribution/test/HaploBox_HF26.20.54_All_Class_Macros_TEST.zip",
+  "sha256": "9a43f65b76079cf7a133cd295a3a16fa86ae0ee8b184429ef922f0ddddc1fbce",
+  "notes": "HF26.20.54 TEST: all nine class spellbook discovery, rank deduplication, common targeting rules. Unknown spells use direct casts. In-game acceptance OPEN."
 }
