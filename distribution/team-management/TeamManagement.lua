@@ -187,15 +187,14 @@ function T.IsTrustedPartyMember(name)
     local m=memberByName(name)
     return m~=nil and trusted(m)
 end
--- C_PartyInfo takes a unit token; the legacy global takes a character name.
+-- Resolve the live unit first, then pass the exact character name to the party API.
 -- Only a deliberate local click can promote. Verify via the roster event.
-local oldPromote=HB.PromoteName
 HB.PromoteName=function(name)
     local m=memberByName(name)
     if not m or m.unit=="player" or not HB.IAmLeader() or locked() then return false end
     local fn=C_PartyInfo and C_PartyInfo.PromoteToLeader
     if type(fn)=="function" then
-        local ok,result=pcall(fn,m.unit)
+        local ok,result=pcall(fn,m.name,true)
         if ok and result~=false then
             notice("Requested party leader: "..m.name)
             return true

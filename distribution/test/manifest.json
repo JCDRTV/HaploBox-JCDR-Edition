@@ -4,6 +4,6 @@
   "version": "HF26.20.59",
   "addon_folder": "HaploBox",
   "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.59-macro-profile-hotfix/distribution/test/HaploBox_HF26.20.59_Macro_Profile_Hotfix_TEST.zip",
-  "sha256": "c624dcfc31b59a2c062a0030097a57a9de5771d0a86c81505c027b316cce1fc6",
+  "sha256": "f3039d96c468395525dcba8a0ae14f819b21552db3e63509a67d0ac35403d71e",
   "notes": "HF26.20.59 TEST: macro profile, leader switch, Smart Follow and stable party display order. In-game acceptance OPEN."
 }

@@ -930,6 +930,7 @@ function HB.BoxSyncStatus()
     notify("Macro profile="..profileKey(HB.db and HB.db.boxMode)..
         " | registered="..count.." | assist="..assist)
     notify("Smart Follow: "..tostring(macroBody(FOLLOW_MACRO) or "(missing)"):gsub("\n"," | "))
+    if GetBindingAction then notify("F1 binding: "..tostring(GetBindingAction("F1") or "(unbound)")) end
     if not team then return end
     for _,m in ipairs(team.members or {}) do
         local isLeader=team.leader and m.guid==team.leader.guid

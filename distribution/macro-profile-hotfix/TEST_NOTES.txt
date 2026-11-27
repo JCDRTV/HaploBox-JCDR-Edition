@@ -5,8 +5,8 @@ Base: HF26.20.58 SHA-256 verified.
 - Fix missing trustedLeader function in Macro Sync receiver (still requires local opt-in).
 - Existing owned cast-only macros with explicit assist classification are migrated only after body verification.
 - /hb macrorepair verifies existing canonical presets and recovers missing ownership after explicit click/command; no new macro or binding changes.
-- /hb boxstatus includes macro profile, registered/assist counts and follow body.
+- /hb boxstatus includes macro profile, registered/assist counts, follow body and F1 binding.
 - Display active party leader first on every client, remaining members alphabetically; Team A legacy order retained after leader. Display order does not change actual unit tokens.
-- Leader promotion uses live unit token for C_PartyInfo, legacy fallback on explicit click.
+- Leader promotion resolves live roster identity and uses exact character name with C_PartyInfo.PromoteToLeader(name,true), legacy fallback on explicit click.
 - Team approval remains local and unchanged. Separate approval workflow not included.
 - In-game testing not performed; archive checks only.
