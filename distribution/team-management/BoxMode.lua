@@ -11,7 +11,7 @@ local STALE = 75
 local pendingMode, pendingFollow = nil, false
 -- The last locally verified macro profile. A repeated identical leader sync
 -- needs an ACK, not another complete EditMacro/GetMacroBody/RefreshControls pass.
-local validatedMode = nil
+local validatedMode, validatedProfile = nil, nil
 local lastSentCombat, lastCombatAt = nil, -100
 HB.combatState = HB.combatState or {}
 HB.boxAcks = HB.boxAcks or {}
@@ -144,7 +144,18 @@ local function buildSpell(spell,kind,profile,token)
     return head.."/cast "..spell
 end
 local function desiredProfile(enabled)
-    return (HB.IAmLeader and HB.IAmLeader()) and "leader" or (enabled and "on" or "off")
+    local t=HB.TeamManagement
+    if t and IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
+        local u=t.GetLeaderUnit()
+        if u=="player" then return "leader" end
+        if enabled and t.GetReadySignature() and type(u)=="string" and u:match("^party[1-4]$") then return "on" end
+        return "off"
+    end
+    return "off"
+end
+local function profileKey(enabled)
+    local profile=desiredProfile(enabled)
+    return profile..":"..(profile=="on" and leaderToken() or "-")
 end
 -- Read-only Spellbook tooltip preview. This uses the SAME generator and live
 -- leader/follower profile as the real managed macro, never a static example.
@@ -201,13 +212,16 @@ local function updateMacros(enabled)
             return false,"Macro changed outside HaploBox: "..name.." (not overwritten)"
         else
             local off,on,lead=entry.offBody,entry.onBody,entry.leaderBody
+            local nextKind=entry.kind
+            if not entry.legacyBody and entry.kind=="cast" and HB.GetExplicitMacroKind and
+                HB.GetExplicitMacroKind(entry.spell)=="assist" then nextKind="assist" end
             if not entry.legacyBody and type(entry.spell)=="string" and
                 (entry.kind=="assist" or entry.kind=="party1" or entry.kind=="heal" or entry.kind=="buff" or
                  entry.kind=="cast" or entry.kind=="revive" or entry.kind=="dual" or entry.kind=="boxassist" or
                  entry.kind=="trade" or entry.kind=="role") then
-                off=buildSpell(entry.spell,entry.kind,"off")
-                on=buildSpell(entry.spell,entry.kind,"on")
-                lead=buildSpell(entry.spell,entry.kind,"leader")
+                off=buildSpell(entry.spell,nextKind,"off")
+                on=buildSpell(entry.spell,nextKind,"on")
+                lead=buildSpell(entry.spell,nextKind,"leader")
             elseif entry.legacyBody and type(on)=="string" then
                 on=on:gsub("(/assist )party[1-4]", "%1"..leaderToken(),1)
             end
@@ -215,7 +229,7 @@ local function updateMacros(enabled)
                 (profile=="on" and on) or off
             if type(nextBody)~="string" or #nextBody>255 or
                 (type(on)=="string" and #on>255) then return false,"Invalid managed macro: "..name end
-            edits[#edits+1]={name=name,before=current,after=nextBody,entry=entry,off=off,on=on,lead=lead}
+            edits[#edits+1]={name=name,before=current,after=nextBody,entry=entry,off=off,on=on,lead=lead,kind=nextKind}
         end
     end
     local committed={}
@@ -234,6 +248,7 @@ local function updateMacros(enabled)
     for _,name in ipairs(stale) do list[name]=nil end
     for _,edit in ipairs(edits) do
         edit.entry.applied=profile
+        edit.entry.kind=edit.kind
         edit.entry.offBody,edit.entry.onBody,edit.entry.leaderBody=edit.off,edit.on,edit.lead
     end
     HB.lastBoxMismatch=nil
@@ -277,7 +292,9 @@ function HB.EnsureKnownBoxSpell(name,spell,kind)
     end
     -- If a record exists, it must refer to the same known preset. The macro
     -- itself is checked above so we can recover a missing old registry safely.
-    if record and ((record.spell and record.spell~=spell) or
+    local migrate=record and record.spell==spell and record.kind=="cast" and kind=="assist" and
+        HB.GetExplicitMacroKind and HB.GetExplicitMacroKind(spell)=="assist" and knownBody(record,current)
+    if record and not migrate and ((record.spell and record.spell~=spell) or
                    (record.kind and record.kind~=kind)) then
         return false,"Macro registry mismatch: "..name.."; not overwritten."
     end
@@ -452,20 +469,23 @@ local function followBody()
     local inert="#showtooltip\n/stopmacro"
     if not HB.db or not HB.db.boxMode or not (IsInGroup and IsInGroup()) or
        (IsInRaid and IsInRaid()) then return inert end
-    if HB.IAmLeader and HB.IAmLeader() then return inert end
+    if desiredProfile(true)~="on" then return inert end
     local token=leaderToken()
     if not UnitExists or not UnitExists(token) then return inert end
     if HB.db.followMode=="direct" then return followMacroFor(token) end
-    if HB.db.followMode~="dungeon" or not UnitGroupRolesAssigned then return inert end
-    local me=UnitGroupRolesAssigned("player")
-    if not safe(me) then return inert end
-    if me=="HEALER" then return followMacroFor(token) end
+    if HB.db.followMode~="dungeon" then return followMacroFor(token) end
+    local me=HB.MyRole and HB.MyRole()
+    if me=="healer" then return followMacroFor(token) end
+    if not UnitGroupRolesAssigned then return followMacroFor(token) end
+    local okSelf,native=pcall(UnitGroupRolesAssigned,"player")
+    if okSelf and safe(native) and native=="HEALER" then return followMacroFor(token) end
     local healer,healerCount=nil,0
     for i=1,4 do
         local u="party"..i
         if UnitExists(u) then
             local ok,role=pcall(UnitGroupRolesAssigned,u)
-            if ok and safe(role) and role=="HEALER" then
+            local hbRole=HB.RoleOf and HB.RoleOf(HB.UnitIdent(u))
+            if hbRole=="healer" or (not hbRole and ok and safe(role) and role=="HEALER") then
                 healer=u
                 healerCount=healerCount+1
             end
@@ -554,10 +574,18 @@ local function localApply(enabled,remote)
     end
     HB.db.boxMode=enabled
     validatedMode=enabled
+    validatedProfile=profileKey(enabled)
     lastSyncReason=enabled and "local ON verified" or "local OFF verified"
     HB.boxSyncError=false
     pendingMode=nil
-    HB.PrepareSmartFollow()
+    local followOK=HB.PrepareSmartFollow()
+    if not followOK then
+        lastSyncReason="Smart Follow macro not verified"
+        HB.boxSyncError=true
+        refresh()
+        if remote then ack("E") end
+        return false
+    end
     refresh()
     if remote then ack(enabled and "1" or "0") end
     return true
@@ -654,18 +682,27 @@ function HB.AutoBoxReconcile()
         end
         return false
     end
+    local priorRoster=autoTeamKey and autoTeamKey:match("^(.*)|[^|]+$")
+    local currentRoster=signature:match("^(.*)|[^|]+$")
+    local sameRoster=priorRoster~=nil and priorRoster==currentRoster
     if signature~=autoTeamKey then
         autoTeamKey, autoTeamDone=signature, false
         requestKey=nil;requestSerial=requestSerial+1
+        validatedProfile=nil
     end
     if autoTeamDone then
+        if not locked() and validatedProfile~=profileKey(HB.db.boxMode) then
+            return localApply(HB.db.boxMode==true,not (HB.IAmLeader and HB.IAmLeader()))
+        end
         if HB.PrepareSmartFollow then HB.PrepareSmartFollow() end
         return true
     end
     if locked() then return false end  -- PLAYER_REGEN_ENABLED retries
     local ok
     if HB.IAmLeader and HB.IAmLeader() then
-        ok=HB.SetBoxMode(true)
+        local mode=true
+        if sameRoster then mode=HB.db.boxMode==true end
+        ok=HB.SetBoxMode(mode)
     else
         -- Followers never decide BOX ON independently. Ask the actual leader.
         requestLeader(signature,false)
@@ -749,9 +786,9 @@ function HB.OnBoxMessage(sender,code,arg)
         if wanted and not signature then lastSyncReason="party not ready";ack("E");return end
         requestKey=nil;requestSerial=requestSerial+1
         autoTeamKey=signature
-        if validatedMode==wanted and HB.db and HB.db.boxMode==wanted and pendingMode==nil then
+        if validatedMode==wanted and validatedProfile==profileKey(wanted) and HB.db and HB.db.boxMode==wanted and pendingMode==nil and not HB.boxSyncError then
             autoTeamDone=true
-            ack(code)
+            if HB.PrepareSmartFollow() then ack(code) else ack("E") end
         else
             autoTeamDone=localApply(wanted,true) or pendingMode~=nil
         end
@@ -814,6 +851,7 @@ e:SetScript("OnEvent",HB.Diag.WrapEvent("BoxMode event",function(_,event)
         else
             HB.boxSyncError=false
             validatedMode=false
+            validatedProfile=profileKey(false)
         end
         HB.PrepareSmartFollow()
         if C_Timer and C_Timer.NewTicker then
@@ -854,6 +892,7 @@ e:SetScript("OnEvent",HB.Diag.WrapEvent("BoxMode event",function(_,event)
                 notify("BOX macro restore needs repair: "..tostring(err))
             else
                 validatedMode=HB.db.boxMode
+                validatedProfile=profileKey(HB.db.boxMode)
             end
             if ok and not HB.db.boxMode and not HB.boxSyncError then
                 -- A clean local OFF macro is not proof that the leader has
@@ -868,6 +907,7 @@ e:SetScript("OnEvent",HB.Diag.WrapEvent("BoxMode event",function(_,event)
         HB.PrepareSmartFollow()
         pulseCombat(true)
         scheduleAutoBox(0.8)
+        scheduleAutoBox(2.0)
     else
         HB.PrepareSmartFollow()
     end
@@ -882,6 +922,14 @@ function HB.BoxSyncStatus()
     if HB.lastBoxMismatch and HB.lastBoxMismatch.name then
         notify("Macro mismatch: "..tostring(HB.lastBoxMismatch.name))
     end
+    local count,assist=0,0
+    for _,entry in pairs(registry() or {}) do
+        count=count+1
+        if entry.kind=="assist" then assist=assist+1 end
+    end
+    notify("Macro profile="..profileKey(HB.db and HB.db.boxMode)..
+        " | registered="..count.." | assist="..assist)
+    notify("Smart Follow: "..tostring(macroBody(FOLLOW_MACRO) or "(missing)"):gsub("\n"," | "))
     if not team then return end
     for _,m in ipairs(team.members or {}) do
         local isLeader=team.leader and m.guid==team.leader.guid

@@ -60,9 +60,12 @@ local function party()
             seen[guid]=true
             local m={unit=u,guid=guid,name=name,online=i==0 or yes(api(UnitIsConnected,u))}
             m.native=reverse[api(UnitGroupRolesAssigned,u)]
-            if yes(api(UnitIsGroupLeader,u)) or
-                (not UnitIsGroupLeader and yes(api(UnitIsPartyLeader,u))) or
-                (i==0 and not group) then leader=m end
+            local isLead=api(UnitIsGroupLeader,u)
+            if isLead==nil then isLead=api(UnitIsPartyLeader,u) end
+            if yes(isLead) or (i==0 and not group) then
+                if leader then return members,nil,nil,"pending" end
+                leader=m
+            end
             members[#members+1]=m;ids[#ids+1]=guid
         end
     end
@@ -79,6 +82,53 @@ end
 function T.GetLeaderUnit()
     local _,_,leader=party()
     return leader and leader.unit
+end
+-- Stable DISPLAY order only. Unit tokens are still resolved by live identity.
+-- Preserve the existing Team A order after the leader; other teams sort by name.
+local teamARank={["mael ashgrove"]=1,["lyra ashgrove"]=2,["elya ashgrove"]=3,["nyra ashgrove"]=4,["ayla ashgrove"]=5,
+    mael=1,lyra=2,elya=3,nyra=4,ayla=5}
+local function sortDisplay(members,leader)
+    local allA=#members>0
+    for _,m in ipairs(members) do if not teamARank[norm(m.name)] then allA=false end end
+    table.sort(members,function(a,b)
+        if a.guid==b.guid then return false end
+        if leader and a.guid==leader.guid then return true end
+        if leader and b.guid==leader.guid then return false end
+        local an,bn=norm(a.name) or a.name,norm(b.name) or b.name
+        if allA and teamARank[an]~=teamARank[bn] then return teamARank[an]<teamARank[bn] end
+        if an==bn then return a.guid<b.guid end
+        return an<bn
+    end)
+    return members
+end
+function T.GetDisplayMembers()
+    local members,key,leader,state=party()
+    if state~="party" or not key or not leader then return nil end
+    return sortDisplay(members,leader)
+end
+local oldTeamOrder=HB.TeamOrder
+HB.TeamOrder=function()
+    local members=T.GetDisplayMembers()
+    if members then
+        local out={}
+        for _,m in ipairs(members) do out[#out+1]=m.name end
+        return out
+    end
+    return oldTeamOrder and oldTeamOrder() or {}
+end
+local oldAmLeader,oldGroupLeader=HB.IAmLeader,HB.GroupLeader
+HB.IAmLeader=function()
+    if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
+        return T.GetLeaderUnit()=="player"
+    end
+    return oldAmLeader and oldAmLeader() or false
+end
+HB.GroupLeader=function()
+    if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
+        local _,_,leader=party()
+        return leader and leader.name
+    end
+    return oldGroupLeader and oldGroupLeader()
 end
 function T.GetReadySignature()
     local members,key,leader,state=party()
@@ -136,6 +186,27 @@ end
 function T.IsTrustedPartyMember(name)
     local m=memberByName(name)
     return m~=nil and trusted(m)
+end
+-- C_PartyInfo takes a unit token; the legacy global takes a character name.
+-- Only a deliberate local click can promote. Verify via the roster event.
+local oldPromote=HB.PromoteName
+HB.PromoteName=function(name)
+    local m=memberByName(name)
+    if not m or m.unit=="player" or not HB.IAmLeader() or locked() then return false end
+    local fn=C_PartyInfo and C_PartyInfo.PromoteToLeader
+    if type(fn)=="function" then
+        local ok,result=pcall(fn,m.unit)
+        if ok and result~=false then
+            notice("Requested party leader: "..m.name)
+            return true
+        end
+    end
+    if type(PromoteToLeader)=="function" then
+        local ok,result=pcall(PromoteToLeader,m.name)
+        if ok and result~=false then notice("Requested party leader: "..m.name);return true end
+    end
+    notice("WoW rejected the leader switch. Use the native party menu.")
+    return false
 end
 local function reconcile()
     if HB.AutoBoxReconcile then HB.AutoBoxReconcile() end
@@ -337,7 +408,7 @@ refreshUI=function()
     status:SetText((db.saved[key or ""] and db.saved[key].name or "Active party").."  |  "..approved.."/"..#members.." trusted  |  "..(signature and "READY" or (why or state)))
     if HB.CharacterRegistry then HB.CharacterRegistry.Refresh() end
     local items={}
-    if view=="active" then items=members
+    if view=="active" then items=sortDisplay(members,leader)
     elseif view=="characters" or view=="trusted" then
         local records=HB.CharacterRegistry and HB.CharacterRegistry.GetCharacters() or {}
         local seen={}
@@ -390,6 +461,10 @@ end
 local previous=SlashCmdList.HAPLOBOX
 SlashCmdList.HAPLOBOX=function(input)
     if (input or ""):match("^%s*teammanage%s*$") then HB.OpenTeamManagement();return end
+    if (input or ""):match("^%s*macrorepair%s*$") then
+        if HB.RepairExistingMacroPresets then HB.RepairExistingMacroPresets() end
+        return
+    end
     if (input or ""):match("^%s*boxstatus%s*$") then
         if HB.BoxSyncStatus then HB.BoxSyncStatus() end
         return
@@ -406,6 +481,14 @@ events:SetScript("OnEvent",function(_,event)
         local saved=pendingRole;pendingRole=nil
         local members,key=party()
         if members[1] and members[1].guid==saved.guid and key==saved.key then updateNative(members[1],saved.role,key) end
+    end
+    if event=="PARTY_LEADER_CHANGED" or event=="GROUP_ROSTER_UPDATE" then
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0.8,function()
+                if HB.LayoutPartyFrame then HB.LayoutPartyFrame() end
+                if refreshUI then refreshUI() end
+            end)
+        end
     end
     if refreshUI then refreshUI() end
 end)

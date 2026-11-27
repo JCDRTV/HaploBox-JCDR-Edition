@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.58",
+  "version": "HF26.20.59",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.58-box-sync-hotfix/distribution/test/HaploBox_HF26.20.58_Box_Sync_Hotfix_TEST.zip",
-  "sha256": "f3e2df7c79e35de5f347b3da167aab98c896fb12ac6a9717ba836dd9e923815e",
-  "notes": "HF26.20.58 TEST: leader-authoritative BOX handshake, GUID ACK keys, bounded retries, /hb boxstatus diagnostics. In-game acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.59-macro-profile-hotfix/distribution/test/HaploBox_HF26.20.59_Macro_Profile_Hotfix_TEST.zip",
+  "sha256": "c624dcfc31b59a2c062a0030097a57a9de5771d0a86c81505c027b316cce1fc6",
+  "notes": "HF26.20.59 TEST: macro profile, leader switch, Smart Follow and stable party display order. In-game acceptance OPEN."
 }

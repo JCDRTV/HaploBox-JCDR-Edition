@@ -116,8 +116,19 @@ rules("DRUID","heal","Swiftmend|Nourish|Lifebloom|Wild Growth")
 rules("DRUID","buff","Gift of the Wild|Innervate|Remove Curse|Remove Corruption")
 rules("DRUID","revive","Revive|Rebirth")
 rules("DRUID","cast","Dire Bear Form|Moonkin Form|Tree of Life|Barkskin|Frenzied Regeneration|Frenzied Regeneration (Bear)|Nature's Swiftness|Tiger's Fury")
+local function baseSpellKey(spell)
+    return type(spell)=="string" and spell:lower():gsub("%s*%(rank%s+%d+%)%s*$",""):match("^%s*(.-)%s*$") or nil
+end
+function HB.GetExplicitMacroKind(spell)
+    local class,key=me(),baseSpellKey(spell)
+    if not key then return nil end
+    for _,entry in ipairs(SMART[class] or {}) do
+        if not entry.passive and baseSpellKey(entry.spell)==key then return entry.kind end
+    end
+    return RULES[class] and RULES[class][key]
+end
 local function kindFor(class,key)
-    local rule=RULES[class] and RULES[class][key]
+    local rule=RULES[class] and RULES[class][baseSpellKey(key)]
     if rule then return rule end
     -- Stances, auras, seals, totems, traps, teleports and unknown/custom
     -- spells remain ordinary local casts. Never infer targeting from a name.
@@ -423,6 +434,20 @@ function HB.EnsureMacroPreset(id)
     if not ok then say("Could not create "..entry.name) return false end
     say(entry.name.." created.")
     return true
+end
+-- Explicit repair only: adopt exact canonical existing macros, never create
+-- missing presets, overwrite imports/custom bodies or change bindings.
+function HB.RepairExistingMacroPresets()
+    if locked() then say("Repair macros after combat.");return false end
+    local n,failed=0,0
+    for _,entry in ipairs(activeSpells()) do
+        if entry.spell and macroIndex(entry.name) then
+            local ok,reason=HB.EnsureKnownBoxSpell(entry.name,entry.spell,entry.kind)
+            if ok then n=n+1 else failed=failed+1;say(reason or ("Skipped "..entry.name)) end
+        end
+    end
+    say("Macro repair: "..n.." existing presets verified; "..failed.." protected/failed. No new macros.")
+    return failed==0
 end
 function HB.PickupMacroPreset(id)
     if locked() then say("Pick up macros after combat.") return false end
@@ -959,6 +984,10 @@ function HB.RequestMacroSync()
     HB.macroSyncStatus={sent=n,confirmed={}}
     say("Requested "..n.." managed presets on opted-in followers; wait for ACKs.")
     return true
+end
+local function trustedLeader(sender)
+    local t=HB.TeamManagement
+    return t and t.GetReadySignature()~=nil and t.IsLeaderName(sender) or false
 end
 function HB.OnMacroSyncMessage(sender,code,arg)
     if code=="A" then
