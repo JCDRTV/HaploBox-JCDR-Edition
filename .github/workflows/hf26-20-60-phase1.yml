@@ -1,0 +1,38 @@
+name: HF26.20.60 phase 1 test build
+on:
+  push:
+    branches:
+      - dev/hf26.20.60-team-management-rebuild
+    paths:
+      - 'distribution/team-rebuild/*.lua'
+      - 'distribution/team-rebuild/build.py'
+      - '.github/workflows/hf26-20-60-phase1.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lua 5.1 syntax and model tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1
+          luac5.1 -p distribution/team-rebuild/Planning.lua
+          luac5.1 -p distribution/team-rebuild/PlanningUI.lua
+          lua5.1 distribution/team-rebuild/test_planning.lua
+      - name: Build and verify ZIP
+        run: python3 distribution/team-rebuild/build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HF26.20.60-phase1-verified
+          path: distribution/team-rebuild/output/
+      - name: Save verified candidate to development branch only
+        if: github.ref == 'refs/heads/dev/hf26.20.60-team-management-rebuild'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/team-rebuild/output/
+          git diff --cached --quiet || git commit -m "HF26.20.60: verified phase 1 TEST candidate"
+          git push origin HEAD:dev/hf26.20.60-team-management-rebuild
