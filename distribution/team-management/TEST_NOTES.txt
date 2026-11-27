@@ -1,0 +1,13 @@
+HF26.20.56 TEST - Team Management & Role Selector
+Base: HF26.20.55, SHA-256 verified.
+- Quick Menu > Team Management > Active Team; /hb teammanage.
+- Live 2-5 player party, actual leader, locally approved GUID identities, saved roster names and trusted/known characters.
+- Each client approves its own current party once (two-click confirmation). Trust is never granted by a remote message.
+- Existing legacy trusted names remain recognized; original Team A not deleted.
+- BOX ON requires all local roster members trusted and online; solo, raid, outsider, incomplete party blocked.
+- Smart Follow / Assist / Heal leader token follows actual party leader; owned macro records retain historical body checks.
+- Select Tank/Heal/DPS; leader can request role changes for approved party members; each client sets its own WoW role when possible.
+- Multiple healer roles allowed. If Dungeon Follow cannot identify exactly one healer, follows actual leader.
+- Saved teams are matched to actual roster, not automatic invites. Saved names sync only to locally approved clients; role messages are individual.
+- New team data is per SavedVariables/client, not a global account list. Character Registry supplies displayed class/level/spec.
+- Archive and source checks only. Lua/client API, UI layout and multi-client acceptance not run.
