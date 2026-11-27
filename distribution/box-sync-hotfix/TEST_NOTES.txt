@@ -1,0 +1,10 @@
+HF26.20.58 TEST - BOX Sync hotfix
+Base: HF26.20.57, SHA-256 verified.
+Fix independent follower auto-ON and early OFF replies before leader readiness.
+Followers request the leader's state; bounded request/rebroadcast retries.
+GUID-based ACK keys, current roster API aliases only; ambiguous aliases rejected.
+Locally approved GUID trust survives name formatting differences. No automatic trust.
+Manual refresh uses leader's current mode, does not force ON.
+Diagnostic: /hb boxstatus (local readiness, per-member trust/online/ACK, macro mismatch).
+Team Management, roles and Quick Menu retained. No binding changes.
+Archive integrity and source checks only; in-game/multi-client acceptance pending.

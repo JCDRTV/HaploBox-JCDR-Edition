@@ -18,6 +18,7 @@ local function norm(n) return HB.Norm and HB.Norm(n) end
 local function clean(n)
     return type(n)=="string" and not n:find("[%c|;=]") and n~="" and n or nil
 end
+local function yes(v) return v==true or v==1 end
 local function locked() return InCombatLockdown and InCombatLockdown() end
 local function init()
     if not HB.db then return false end
@@ -43,7 +44,7 @@ local function trusted(m)
     if m.unit=="player" then return true end
     if db.revoked[m.guid] then return false end
     local entry=db.trusted[m.guid]
-    return (type(entry)=="table" and norm(entry.name)==norm(m.name)) or legacyTrusted(m.name)
+    return type(entry)=="table" or legacyTrusted(m.name)
 end
 local function party()
     local members,ids,seen,leader={}, {},{},nil
@@ -57,9 +58,11 @@ local function party()
             local name=clean(api(HB.UnitIdent,u))
             if not guid or not name or seen[guid] then return members,nil,nil,"pending" end
             seen[guid]=true
-            local m={unit=u,guid=guid,name=name,online=i==0 or api(UnitIsConnected,u)==true}
+            local m={unit=u,guid=guid,name=name,online=i==0 or yes(api(UnitIsConnected,u))}
             m.native=reverse[api(UnitGroupRolesAssigned,u)]
-            if api(UnitIsGroupLeader,u)==true or (i==0 and not group) then leader=m end
+            if yes(api(UnitIsGroupLeader,u)) or
+                (not UnitIsGroupLeader and yes(api(UnitIsPartyLeader,u))) or
+                (i==0 and not group) then leader=m end
             members[#members+1]=m;ids[#ids+1]=guid
         end
     end
@@ -93,12 +96,30 @@ local function memberByName(name)
     if not key then return nil end
     local found
     for _,m in ipairs((T.GetActiveTeam()).members) do
-        if norm(m.name)==key then
-            if found then return nil end
+        -- Sender names and displayed names can differ on Forever.
+        -- Match only actual API aliases from the current roster, never a
+        -- guessed first-name prefix. Ambiguous aliases are rejected.
+        local short=api(GetUnitName,m.unit,false)
+        local first,realm=api(UnitName,m.unit)
+        local full,fullRealm=api(UnitFullName,m.unit)
+        local aliases={m.name,short or "",first or "",full or ""}
+        if first and realm and realm~="" then aliases[#aliases+1]=first.."-"..realm end
+        if full and fullRealm and fullRealm~="" then aliases[#aliases+1]=full.."-"..fullRealm end
+        local match=false
+        for _,alias in ipairs(aliases) do if alias~="" and norm(alias)==key then match=true;break end end
+        if match then
+            if found and found.guid~=m.guid then return nil end
             found=m
         end
     end
     return found
+end
+function T.ResolvePartyMember(name)
+    return memberByName(name)
+end
+function T.IsLeaderName(name)
+    local m=memberByName(name)
+    return m~=nil and trusted(m) and T.GetLeaderUnit()==m.unit
 end
 function T.IsTrustedName(name)
     if not init() then return false end
@@ -369,6 +390,10 @@ end
 local previous=SlashCmdList.HAPLOBOX
 SlashCmdList.HAPLOBOX=function(input)
     if (input or ""):match("^%s*teammanage%s*$") then HB.OpenTeamManagement();return end
+    if (input or ""):match("^%s*boxstatus%s*$") then
+        if HB.BoxSyncStatus then HB.BoxSyncStatus() end
+        return
+    end
     previous(input)
 end
 local events=CreateFrame("Frame")

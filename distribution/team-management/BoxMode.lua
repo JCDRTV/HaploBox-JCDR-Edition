@@ -42,11 +42,15 @@ end
 local function teamKey(name)
     local n=norm(name)
     if not n then return nil end
-    if HB.TeamManagement then return n end
+    if HB.TeamManagement then
+        local m=HB.TeamManagement.ResolvePartyMember(name)
+        return m and m.guid or n
+    end
     if trusted(name) then return n:match("^([^ %%-]+)") or n end
     return n
 end
 local function isTeamLeader(name)
+    if HB.TeamManagement then return HB.TeamManagement.IsLeaderName(name) end
     return IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) and
         same(name,HB.GroupLeader and HB.GroupLeader()) and trusted(name)
 end
@@ -519,6 +523,8 @@ local function ack(code)
     send("Z|A|"..code)
 end
 local autoTeamKey, autoTeamDone = nil, false
+local requestKey, requestSerial = nil, 0
+local lastSyncReason = "not started"
 local function readySignature()
     if HB.TeamManagement then return HB.TeamManagement.GetReadySignature() end
     return nil,"pending"
@@ -526,6 +532,7 @@ end
 local function localApply(enabled,remote)
     if enabled and not readySignature() then
         pendingMode=nil
+        lastSyncReason="party not ready"
         if remote then ack("E") end
         notify("Approve the active party in Team Management first.")
         return false
@@ -539,6 +546,7 @@ local function localApply(enabled,remote)
     local ok,err=updateMacros(enabled)
     if not ok then
         validatedMode=nil
+        lastSyncReason=tostring(err)
         HB.boxSyncError=true
         ack("E")
         notify("BOX switch cancelled: "..tostring(err))
@@ -546,6 +554,7 @@ local function localApply(enabled,remote)
     end
     HB.db.boxMode=enabled
     validatedMode=enabled
+    lastSyncReason=enabled and "local ON verified" or "local OFF verified"
     HB.boxSyncError=false
     pendingMode=nil
     HB.PrepareSmartFollow()
@@ -567,27 +576,35 @@ function HB.SetBoxMode(enabled)
     HB.boxAcks={}
     HB.boxSyncError=false
     send("Z|"..(enabled and "1" or "0"))
-    -- Detect old/unreachable followers instead of silently claiming a full sync.
+    -- Bounded retry only for the same roster, leader and requested mode.
     HB.boxSyncSerial=(HB.boxSyncSerial or 0)+1
     local serial=HB.boxSyncSerial
-    if C_Timer and C_Timer.After then C_Timer.After(5,function()
-        if HB.boxSyncSerial~=serial or not HB.IAmLeader or not HB.IAmLeader() then return end
-        local missing={}
-        for i=1,4 do
-            local u="party"..i
-            if UnitExists and UnitExists(u) then
-                local name=HB.UnitIdent(u)
-                if trusted(name) and HB.boxAcks[teamKey(name)]~=(enabled and "1" or "0") then
-                    missing[#missing+1]=tostring(name)
+    local signature=readySignature()
+    local wanted=enabled and "1" or "0"
+    if C_Timer and C_Timer.After and signature then
+        for attempt,delay in ipairs({1.5,4,8}) do
+            local final=attempt==3
+            C_Timer.After(delay,function()
+                if HB.boxSyncSerial~=serial or readySignature()~=signature or
+                   not (HB.IAmLeader and HB.IAmLeader()) or HB.db.boxMode~=enabled then return end
+                local missing={}
+                for i=1,4 do
+                    local u="party"..i
+                    if UnitExists and UnitExists(u) then
+                        local name=HB.UnitIdent(u)
+                        local key=teamKey(name)
+                        if not key or HB.boxAcks[key]~=wanted then missing[#missing+1]=tostring(name or u) end
+                    end
                 end
-            end
+                if #missing==0 then
+                    HB.boxSyncError=false;lastSyncReason="all followers confirmed";refresh()
+                elseif final then
+                    HB.boxSyncError=true;lastSyncReason="missing ACK: "..table.concat(missing,", ")
+                    notify("BOX sync NOT confirmed for: "..table.concat(missing,", "));refresh()
+                else send("Z|"..wanted) end
+            end)
         end
-        if #missing>0 then
-            HB.boxSyncError=true
-            notify("BOX sync NOT confirmed for: "..table.concat(missing,", "))
-            refresh()
-        end
-    end) end
+    end
     notify("BOX "..(enabled and "ON" or "OFF").." sent to your team.")
     return true
 end
@@ -603,11 +620,35 @@ end
 local function trustedTeamSignature()
     return readySignature()
 end
+local function requestLeader(signature,force)
+    if not signature or (requestKey==signature and not force) then return false end
+    requestKey=signature
+    requestSerial=requestSerial+1
+    local serial=requestSerial
+    lastSyncReason="waiting for leader"
+    send("Z|?")
+    if C_Timer and C_Timer.After then
+        for attempt,delay in ipairs({2,5,10}) do
+            local final=attempt==3
+            C_Timer.After(delay,function()
+                if requestSerial~=serial or readySignature()~=signature or autoTeamDone then return end
+                if final then
+                    requestKey=nil
+                    HB.boxSyncError=true;lastSyncReason="no leader reply";refresh()
+                    notify("BOX: no leader response. Use REFRESH SYNC or /hb boxstatus.")
+                else send("Z|?") end
+            end)
+        end
+    end
+    return true
+end
 function HB.AutoBoxReconcile()
     if not HB.db then return false end
     local signature, state=trustedTeamSignature()
     if state~="ready" then
         autoTeamKey, autoTeamDone=nil, false
+        requestKey=nil;requestSerial=requestSerial+1
+        lastSyncReason="party "..tostring(state)
         if HB.db.boxMode or pendingMode==true then
             if locked() then pendingMode=false else localApply(false,false) end
         end
@@ -615,6 +656,7 @@ function HB.AutoBoxReconcile()
     end
     if signature~=autoTeamKey then
         autoTeamKey, autoTeamDone=signature, false
+        requestKey=nil;requestSerial=requestSerial+1
     end
     if autoTeamDone then
         if HB.PrepareSmartFollow then HB.PrepareSmartFollow() end
@@ -625,7 +667,9 @@ function HB.AutoBoxReconcile()
     if HB.IAmLeader and HB.IAmLeader() then
         ok=HB.SetBoxMode(true)
     else
-        ok=localApply(true,true)
+        -- Followers never decide BOX ON independently. Ask the actual leader.
+        requestLeader(signature,false)
+        return false
     end
     if ok then autoTeamDone=true end
     return not not ok
@@ -653,7 +697,6 @@ local function confirmedBoxAcks()
 end
 -- Manual recovery lives in the technical Options panel, never Quick Menu.
 function HB.RefreshBoxSync()
-    if not HB.boxSyncError then return false end
     local signature,state=trustedTeamSignature()
     if state~="ready" then
         notify("REFRESH SYNC requires an approved party of 2-5 characters.")
@@ -661,35 +704,40 @@ function HB.RefreshBoxSync()
     end
     if locked() then notify("REFRESH SYNC after combat.") return false end
     if HB.IAmLeader and HB.IAmLeader() then
-        return HB.SetBoxMode(true)
+        return HB.SetBoxMode(HB.db.boxMode==true)
     end
-    -- Recheck *only* the local owned macros, then request the leader's mode.
-    -- Never clear a genuine mismatch by only hiding the ERROR label.
-    local ok=localApply(true,true)
-    if ok then send("Z|?") end
-    return ok
+    autoTeamKey,autoTeamDone=signature,false
+    return requestLeader(signature,true)
 end
 
 function HB.OnBoxMessage(sender,code,arg)
     if code=="?" then
-        if HB.db and HB.IAmLeader and HB.IAmLeader() and isTeamLeader(myName()) then
-            send("Z|"..(HB.db.boxMode and "1" or "0"))
+        if HB.db and HB.IAmLeader and HB.IAmLeader() and isTeamLeader(myName()) and
+           trusted(sender) and readySignature() then
+            if not autoTeamDone then
+                HB.AutoBoxReconcile()
+            else
+                send("Z|"..(HB.db.boxMode and "1" or "0"))
+            end
         end
         return
     end
     if code=="A" then
         if HB.IAmLeader and HB.IAmLeader() and trusted(sender) and
-           HB.IsGroupMember and HB.IsGroupMember(sender) and
            (arg=="0" or arg=="1" or arg=="P" or arg=="E") then
-            HB.boxAcks[teamKey(sender)]=arg
+            local key=teamKey(sender)
+            if not key then return end
+            HB.boxAcks[key]=arg
             if arg=="E" then
                 HB.boxSyncError=true
+                lastSyncReason="follower rejected: "..sender
                 notify("BOX sync failed on "..sender)
                 refresh()
             elseif (arg=="0" or arg=="1") and confirmedBoxAcks() then
                 -- A late but complete round of acknowledgements resolves a
                 -- timeout without requiring the player to flip BOX OFF/ON.
                 HB.boxSyncError=false
+                lastSyncReason="all followers confirmed"
                 refresh()
             end
         end
@@ -697,14 +745,15 @@ function HB.OnBoxMessage(sender,code,arg)
     end
     if (code=="1" or code=="0") and isTeamLeader(sender) then
         local wanted=(code=="1")
-        if wanted and not readySignature() then ack("E");return end
-        autoTeamKey,autoTeamDone=readySignature(),true
+        local signature=readySignature()
+        if wanted and not signature then lastSyncReason="party not ready";ack("E");return end
+        requestKey=nil;requestSerial=requestSerial+1
+        autoTeamKey=signature
         if validatedMode==wanted and HB.db and HB.db.boxMode==wanted and pendingMode==nil then
-            -- Idempotent response, even while in combat: no protected edits,
-            -- no expensive macro/UI pass, but the leader still gets an ACK.
+            autoTeamDone=true
             ack(code)
         else
-            localApply(wanted,true)
+            autoTeamDone=localApply(wanted,true) or pendingMode~=nil
         end
     end
 end
@@ -782,6 +831,7 @@ e:SetScript("OnEvent",HB.Diag.WrapEvent("BoxMode event",function(_,event)
         end
         refresh()
         autoTeamKey, autoTeamDone=nil, false
+        requestKey=nil;requestSerial=requestSerial+1
         scheduleAutoBox(2.0)
     elseif event=="PLAYER_REGEN_ENABLED" then
         if pendingMode~=nil then localApply(pendingMode,true) end
@@ -817,11 +867,27 @@ e:SetScript("OnEvent",HB.Diag.WrapEvent("BoxMode event",function(_,event)
         end
         HB.PrepareSmartFollow()
         pulseCombat(true)
-        if IsInGroup and IsInGroup() and not (HB.IAmLeader and HB.IAmLeader()) then
-            send("Z|?")
-        end
         scheduleAutoBox(0.8)
     else
         HB.PrepareSmartFollow()
     end
 end))
+
+-- Diagnostic does not change settings or macros.
+function HB.BoxSyncStatus()
+    local _,state=readySignature()
+    local team=HB.TeamManagement and HB.TeamManagement.GetActiveTeam()
+    notify("BOX status: "..(HB.db and HB.db.boxMode and "ON" or "OFF")..
+        " | roster="..tostring(state).." | "..lastSyncReason)
+    if HB.lastBoxMismatch and HB.lastBoxMismatch.name then
+        notify("Macro mismatch: "..tostring(HB.lastBoxMismatch.name))
+    end
+    if not team then return end
+    for _,m in ipairs(team.members or {}) do
+        local isLeader=team.leader and m.guid==team.leader.guid
+        notify(tostring(m.name).." | "..(isLeader and "leader" or m.unit)..
+            " | "..(m.trusted and "trusted" or "NOT TRUSTED")..
+            " | "..(m.online and "online" or "offline")..
+            " | ACK="..tostring(HB.boxAcks[m.guid] or "-"))
+    end
+end
