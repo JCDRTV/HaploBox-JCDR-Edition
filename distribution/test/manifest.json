@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.59",
+  "version": "HF26.20.60",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.59-macro-profile-hotfix/distribution/test/HaploBox_HF26.20.59_Macro_Profile_Hotfix_TEST.zip",
-  "sha256": "f3039d96c468395525dcba8a0ae14f819b21552db3e63509a67d0ac35403d71e",
-  "notes": "HF26.20.59 TEST: macro profile, leader switch, Smart Follow and stable party display order. In-game acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/cd91cbc13abe9eda834237f048859b1faae3de6f/distribution/team-rebuild/output/HaploBox_HF26.20.60_Team_Management_Rebuild_TEST.zip",
+  "sha256": "0329e0896d93ec53f971767136dbad1d7b96711041f358b2858e8673b8a81e28",
+  "notes": "HF26.20.60 Phase 1: independent CM and TM; local planning only. In-game acceptance OPEN."
 }
