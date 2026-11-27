@@ -681,16 +681,21 @@ function HB.UpdateControlSize(parent)
             menuSectionLabels[index]={label=sectionLabel,rule=rule}
         end
     end
-    if not quickRows then
-        quickRows={}
-        for i=1,13 do
-            local bg=flyout:CreateTexture(nil,"BACKGROUND")
-            bg:SetColorTexture(0.13,0.16,0.20,(i%2==0) and 0.92 or 0.75)
-            local rowLabel=font(flyout,"")
-            rowLabel:SetTextColor(0.93,0.92,0.88)
-            if STANDARD_TEXT_FONT then rowLabel:SetFont(STANDARD_TEXT_FONT,11,"OUTLINE") end
-            quickRows[i]={bg=bg,label=rowLabel}
-        end
+    -- Size the row pool from the current menu definitions, not a fixed count.
+    local neededRows=0
+    for _,section in ipairs(sections) do neededRows=neededRows+#section[2] end
+    quickRows=quickRows or {}
+    for i=#quickRows+1,neededRows do
+        local bg=flyout:CreateTexture(nil,"BACKGROUND")
+        bg:SetColorTexture(0.13,0.16,0.20,(i%2==0) and 0.92 or 0.75)
+        local rowLabel=font(flyout,"")
+        rowLabel:SetTextColor(0.93,0.92,0.88)
+        if STANDARD_TEXT_FONT then rowLabel:SetFont(STANDARD_TEXT_FONT,11,"OUTLINE") end
+        quickRows[i]={bg=bg,label=rowLabel}
+    end
+    for i,row in ipairs(quickRows) do
+        row.bg:SetShown(i<=neededRows)
+        row.label:SetShown(i<=neededRows)
     end
     local approved={}
     for _,section in ipairs(sections) do

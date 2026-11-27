@@ -1,0 +1,7 @@
+HF26.20.57 TEST - Quick Menu hotfix
+Base: HF26.20.56 Team Management (SHA-256 verified).
+Fix reported ControlBar.lua:732: attempt to index local 'row' (a nil value).
+Previous fixed pool: 13 rows; current menu: 14 rows (2+5+7).
+Allocate row pool from actual section definitions and hide unused rows.
+Team Management, macro engine and role selection unchanged.
+Stored payload CRC and ZIP structure verified; in-game acceptance pending.
