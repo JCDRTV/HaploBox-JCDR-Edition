@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.49",
+  "version": "HF26.20.53",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/main/distribution/test/HaploBox_HF26.20.49_Profession_Advisor_Layout_TEST.zip",
-  "sha256": "e1951da4782ad77bb6ea78804ec16763ba79c6381cc4716b712dd797ecd5ab30",
-  "notes": "HF26.20.49 TEST: Profession Advisor visual layout refresh styled after Dungeon Advisor. Main panel enlarged, gold frame/header, readable headings, 3x3 profession cards, wider party skill rows, blue OPEN and green SCAN buttons. Compact run window receives same trim, gold step headings and aligned controls. No sync, profession data, Dungeon Advisor, BIS, Pawn, Weapon Sets or Quick Menu behavior modified. Only ProfessionGuide/UI.lua plus mandatory TOC version changed. ZIP CRC/SHA256 verified. INGAME VISUAL ACCEPTANCE OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/test/hf26.20.53-team-registry/distribution/test/HaploBox_HF26.20.53_Team_Registry_TEST.zip",
+  "sha256": "03875f6db54c06251b9e036dec0139d54404596cf98d36fbe602b04c38bb8305",
+  "notes": "HF26.20.53 TEST: TEAM-01 character registry foundation. Existing UI unchanged. Archive and TOC verified; in-game acceptance OPEN."
 }
