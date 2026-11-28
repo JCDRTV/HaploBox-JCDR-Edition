@@ -1,0 +1,14 @@
+{
+  "version": "JB26.3.22",
+  "base": "JB26.3.21",
+  "base_sha256": "09cf9fd4517c9ceb625fea1a063d72e07adcd408bbf24b0d818037e3b54c960a",
+  "sha256": "cf992bb10ff77a75af43339fb4d79a7391a5b04d85ad88c64838d0d2cfb1d2f5",
+  "unchanged_files": 178,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/BoxMode.lua",
+    "HaploBox/Gameplay.lua",
+    "HaploBox/ControlBar.lua"
+  ],
+  "status": "CM-only automatic local BOX mode; normal OFF in solo/guest/raid, combat defer, local manual override, legacy remote switching retired; candidate only"
+}
