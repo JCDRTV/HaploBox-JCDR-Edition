@@ -111,3 +111,16 @@ function C.Capture()
     if not decoded then return nil,why end
     return data,decoded
 end
+
+function C.EncodeLogin(r)
+    if type(r)~="table" or type(r.name)~="string" or type(r.realm)~="string" or type(r.class)~="string" or type(r.race)~="string" then return nil end
+    return table.concat({hex(r.name),hex(r.realm),hex(r.class),hex(r.race),tostring(r.level)},"|")
+end
+function C.DecodeLogin(data)
+    local f={}
+    for v in (data.."|"):gmatch("(.-)|") do f[#f+1]=v end
+    if #f~=5 then return nil end
+    local name,realm,class,race,level=unhex(f[1],120),unhex(f[2],100),unhex(f[3],40),unhex(f[4],40),tonumber(f[5])
+    if not name or not realm or not class or not race or not level or level%1~=0 or level<1 or level>255 then return nil end
+    return {name=name,realm=realm,class=class,race=race,level=level}
+end
