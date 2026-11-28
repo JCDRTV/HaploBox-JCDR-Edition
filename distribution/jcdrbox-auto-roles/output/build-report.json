@@ -1,0 +1,15 @@
+{
+  "version": "JB26.3.21",
+  "base": "JB26.3.20",
+  "base_sha256": "e736374406c113b04fa09fa7a8f7a5dabee19bef2d778c290f72300de76a573f",
+  "sha256": "09cf9fd4517c9ceb625fea1a063d72e07adcd408bbf24b0d818037e3b54c960a",
+  "unchanged_files": 177,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/TeamPlanner.lua",
+    "HaploBox/Core.lua",
+    "HaploBox/Party.lua",
+    "HaploBox/Gameplay.lua"
+  ],
+  "status": "TM role source, own native role on roster/register changes, distinct planned fallback; candidate only, ingame acceptance open"
+}
