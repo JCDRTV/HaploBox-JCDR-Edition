@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.12",
+  "base": "JB26.3.11",
+  "base_sha256": "3a893076ee15f282aa34b38eb40b8ff938d7adcec6173acf4fac6c21bade1f28",
+  "sha256": "2a8d21a9d8d5f6c4243005a6340b4e11327d804bfb4cccee70c11bbbb17078ce",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/TeamPlannerUI.lua"
+  ],
+  "status": "TM legacy shortcut removed, vertical order chevrons, existing swap logic unchanged; ingame acceptance open"
+}
