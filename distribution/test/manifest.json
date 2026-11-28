@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.4",
+  "version": "JB26.3.5",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/d200392eabd28eed48d1e099d3c2120ef932cbb1/distribution/jcdrbox-no-accept/output/JCDRbox_JB26.3.4_Automatic_Register_TEST.zip",
-  "sha256": "04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e3e45fad1d33",
-  "notes": "JB26.3.4: automatic CM/TM peer register sync, no manual accept button, automatic notification after edits. Requires BM26.2.0 central bridge and shared key; ingame acceptance OPEN. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/d5fc960b0407fa185a0cc6d43ec843ddb1d4ef99/distribution/jcdrbox-event-register/output/JCDRbox_JB26.3.5_Event_Register_TEST.zip",
+  "sha256": "04ce3237b51994e2882b3a8d840dcdfbafc4544254beb2eba0c41398c081efd7",
+  "notes": "JB26.3.5: CM/TM recurring tickers removed; event-driven register only. BM26.2.0 and other systems unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
