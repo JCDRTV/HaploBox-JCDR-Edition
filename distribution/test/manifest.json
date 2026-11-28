@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.11",
+  "version": "JB26.3.12",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/62b6eafd26def3809a38ee4e7dc408cd1ef97b99/distribution/jcdrbox-tm-preview/output/JCDRbox_JB26.3.11_TM_Screen_Layout_TEST.zip",
-  "sha256": "3a893076ee15f282aa34b38eb40b8ff938d7adcec6173acf4fac6c21bade1f28",
-  "notes": "JB26.3.11: responsive 16:9 main screen and four small screens; first names in class colors and roles below. TM window opens taller, CM height restored on tab switch. Compact previews may hide role/position labels if the screen is very small. Team and register logic unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/6a22488626921890a19ad528b5cb3c1952aa5ce7/distribution/jcdrbox-tm-controls/output/JCDRbox_JB26.3.12_TM_Controls_TEST.zip",
+  "sha256": "2a8d21a9d8d5f6c4243005a6340b4e11327d804bfb4cccee70c11bbbb17078ce",
+  "notes": "JB26.3.12: removed Legacy party controls shortcut from TM, replaced horizontal Order arrows with vertical chevrons. Existing position swaps, boundary guards, screen layout, CM and register logic unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
