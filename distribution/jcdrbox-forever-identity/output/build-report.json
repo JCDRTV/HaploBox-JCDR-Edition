@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.17",
+  "base": "JB26.3.16",
+  "base_sha256": "89dd1707b8a63e6453e8cb6dc71ada6c42835cb5f42c8810beca87700fa74bdd",
+  "sha256": "28cbdb2ccf8ba128094f766b0871c0274368c6a67e3ce633bd33c731b0b9be16",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/CharacterManagement.lua"
+  ],
+  "status": "Recognize legacy surname in realm field, require event GUID when real realm unavailable; no saved register mutation; ingame acceptance open"
+}
