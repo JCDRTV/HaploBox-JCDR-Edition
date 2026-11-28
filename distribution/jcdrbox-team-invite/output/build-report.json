@@ -1,0 +1,15 @@
+{
+  "version": "JB26.3.13",
+  "base": "JB26.3.12",
+  "base_sha256": "2a8d21a9d8d5f6c4243005a6340b4e11327d804bfb4cccee70c11bbbb17078ce",
+  "sha256": "acbb4129b00e5134face59059453ae53b0e18fbedea415b5567b1ca334fd6f8e",
+  "unchanged_files": 177,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/TeamPlannerUI.lua",
+    "HaploBox/TeamPlanner.lua",
+    "HaploBox/Gameplay.lua",
+    "HaploBox/Core.lua"
+  ],
+  "status": "Active team invite from TM and Quick Menu; full names and GUID roster guards; legacy automatic acceptance paused; ingame acceptance open"
+}
