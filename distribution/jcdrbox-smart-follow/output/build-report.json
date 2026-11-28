@@ -1,0 +1,14 @@
+{
+  "version": "JB26.3.25",
+  "base": "JB26.3.24",
+  "base_sha256": "4fb9bea5d4dd57c896bf407956b2a2e563b013e16f0e953156bf6bf9db666b91",
+  "sha256": "7e1c73f16ade9c585a13ada5c7d29593f8880d3dccfa9cba7b340c3c1c235495",
+  "unchanged_files": 178,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/BoxMode.lua",
+    "HaploBox/Core.lua",
+    "HaploBox/Gameplay.lua"
+  ],
+  "status": "Smart Follow uses live TM GUID healer roles, direct fallback, same expected chain, refresh on existing register and party events; spell templates and F1 binding unchanged; candidate only"
+}
