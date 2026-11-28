@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.6",
+  "version": "JB26.3.7",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/a86494f86acb5d3a737497bc64a6a84176415b67/distribution/jcdrbox-cm-scroll/output/JCDRbox_JB26.3.6_CM_Scroll_TEST.zip",
-  "sha256": "47e33a00ac4d3ff215a1c8e67836bf4f4d1c36dc337f29c46bba25cbb5d504e3",
-  "notes": "JB26.3.6: vertical CM list scrollbar, mouse wheel, fixed headers. Register and BM26.2.0 unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/ea9e78526e1eb5a408055c56a8fe04bf2415d83e/distribution/jcdrbox-cm-window/output/JCDRbox_JB26.3.7_CM_Window_TEST.zip",
+  "sha256": "8a9e08974ea489d37edc8eafe134cb24c44d3001ed3bad16944c1abbe3f3de8b",
+  "notes": "JB26.3.7: proportional scrollbar, up/down arrows, resizable and lockable management window, saved window settings per account. Register and BM26.2.0 unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
