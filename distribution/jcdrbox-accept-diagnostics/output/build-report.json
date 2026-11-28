@@ -1,0 +1,13 @@
+{
+  "version": "JB26.3.15",
+  "base": "JB26.3.14",
+  "base_sha256": "a87df9a2fd44fd00d37a0905b7cc537bc0ff707aed1f97275772ceaa7c889532",
+  "sha256": "cac6892243f2efeb2f806ee1aab790b319eaf90fda25dcf52689b95b9452b535",
+  "unchanged_files": 179,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/CharacterManagement.lua",
+    "HaploBox/Core.lua"
+  ],
+  "status": "Event-only diagnostic, trust guards unchanged; ingame acceptance open"
+}
