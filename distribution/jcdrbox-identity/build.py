@@ -42,8 +42,11 @@ CHANGES={
  ('rule:SetColorTexture(0.45,0.43,0.34,0.92)','rule:SetColorTexture('+EDGE+',0.92)'),
  ('bg:SetColorTexture(0.13,0.16,0.20,','bg:SetColorTexture('+PANEL+','),
  ('rowLabel:SetTextColor(0.93,0.92,0.88)','rowLabel:SetTextColor('+TEXT+')'),
+ ('headline=font(flyout,"Quick Menu")','headline=font(flyout,"JCDRbox | Quick Menu")\n        local credit=font(flyout,"Based on HaploBox")\n        credit:SetTextColor(0.51,0.58,0.65)\n        if STANDARD_TEXT_FONT then credit:SetFont(STANDARD_TEXT_FONT,9,"OUTLINE") end\n        credit:SetPoint("LEFT",headline,"RIGHT",7,0)'),
  ('"HaploBox Options"','"JCDRbox Options"'),
- ('"HaploBox Keybindings"','"JCDRbox Keybindings"')],
+ ('"HaploBox Keybindings"','"JCDRbox Keybindings"'),
+ ('local OFF={0.20,0.23,0.28,0.98}','local OFF={0.10,0.18,0.24,0.98}'),
+ ('local BLUE={0.14,0.30,0.48,0.97}','local BLUE={0.10,0.32,0.46,0.97}')],
  'ConfigUI.lua':[
  ('heading:SetTextColor(1,0.82,0.40)','heading:SetTextColor('+ACCENT+')'),
  (':SetTextColor(1,0.81,0.39)',':SetTextColor('+ACCENT+')')],
@@ -79,6 +82,7 @@ PALETTE={
  'bg':BASE_BG,'background':BASE_BG,'panel':PANEL,'surface':PANEL,
  'gold':ACCENT,'accent':ACCENT,'border':EDGE,'trim':EDGE,
  'hover':'0.102,0.278,0.376','normal':PANEL,'text':TEXT,
+ 'header':PANEL,'edge':EDGE,'neutral':'0.10,0.18,0.24','tile':PANEL,'white':TEXT,
 }
 def palette(s,filename):
     # Only inspect the leading style declarations, never gameplay functions.
@@ -130,6 +134,8 @@ def main():
             s=originals[n].decode('utf-8')
             print(filename+' original palette:\n'+'\n'.join(s.splitlines()[:40]))
             s,k=palette(s,filename)
+            if filename=='MenuStyle.lua':
+                s,j=literal(s,'text:SetTextColor(0.98,0.96,0.92)','text:SetTextColor('+TEXT+')');k+=j
             if k:modified[n]=s.encode('utf-8');counts[filename]=k
         with ZipFile(target,'w',compression=ZIP_DEFLATED) as new:
             for info in old.infolist():
