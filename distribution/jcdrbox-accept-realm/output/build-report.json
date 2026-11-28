@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.16",
+  "base": "JB26.3.15",
+  "base_sha256": "cac6892243f2efeb2f806ee1aab790b319eaf90fda25dcf52689b95b9452b535",
+  "sha256": "89dd1707b8a63e6453e8cb6dc71ada6c42835cb5f42c8810beca87700fa74bdd",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/Core.lua"
+  ],
+  "status": "Ignore unreliable false native realm flag; all CM identity guards and diagnostics retained; ingame acceptance open"
+}
