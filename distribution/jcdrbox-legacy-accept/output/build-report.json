@@ -1,0 +1,13 @@
+{
+  "version": "JB26.3.19",
+  "base": "JB26.3.17",
+  "base_sha256": "28cbdb2ccf8ba128094f766b0871c0274368c6a67e3ce633bd33c731b0b9be16",
+  "sha256": "e61abffd20d46ba1d5493b128e7fbe3be55d3ecb0ef8cf6332819278654f8a4c",
+  "unchanged_files": 179,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/CharacterManagement.lua",
+    "HaploBox/Core.lua"
+  ],
+  "status": "Original name-only invite event with unique registered full name and distinct CM account; no realm or event GUID dependency; ingame acceptance open"
+}
