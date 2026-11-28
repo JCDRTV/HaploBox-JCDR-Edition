@@ -1,0 +1,15 @@
+{
+  "version": "JB26.3.20",
+  "base": "JB26.3.19",
+  "base_sha256": "e61abffd20d46ba1d5493b128e7fbe3be55d3ecb0ef8cf6332819278654f8a4c",
+  "sha256": "e736374406c113b04fa09fa7a8f7a5dabee19bef2d778c290f72300de76a573f",
+  "unchanged_files": 177,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/Party.lua",
+    "HaploBox/Gameplay.lua",
+    "HaploBox/RegisterSync.lua",
+    "HaploBox/ControlBar.lua"
+  ],
+  "status": "GUID-based live party POS display and CM-only automatic loot; no new polling; ingame acceptance open"
+}
