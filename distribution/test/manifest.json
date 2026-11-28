@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.1",
+  "version": "JB26.3.3",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/aa70b43ab7734755c219b4b13e654277f9f8fe91/distribution/jcdrbox-sync/output/JCDRbox_JB26.3.1_Register_Sync_TEST.zip",
-  "sha256": "6bd639d387fc5ee8913f2929a375a68ae724d078b0748cb6ced24ef1933fb05a",
-  "notes": "JB26.3.1 CM/TM private online party register sync. Explicit consent for first unknown source, stale snapshot protection. Live party behavior and macro engine unchanged. Ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/ef581165216bcc18059428ede4d932f275559227/distribution/jcdrbox-central/output/JCDRbox_JB26.3.3_Central_Register_TEST.zip",
+  "sha256": "8877db5b616f20ecdd37a42f22e73cb72b6b2a9542215da319178feda4b99c70",
+  "notes": "JB26.3.3: central register with BM26.2.0 bridge, authenticated no-party online peer reconciliation and automatic party retry. Simulated tests pass; ingame acceptance OPEN. STABLE unchanged."
 }
