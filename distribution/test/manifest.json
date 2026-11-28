@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.0",
+  "version": "JB26.3.1",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/99f1344d7814fabae96afb9745471f490913eda5/distribution/jcdrbox-tm/output/JCDRbox_JB26.3.0_Team_Management_TEST.zip",
-  "sha256": "9b44a65f749d8e00ab364b36b3873795a01ed4d7b7b763300e5ec284f316c783",
-  "notes": "JB26.3.0: Team Management tab, saved teams, account-first slots, roles, active selection and preview. Local planning only; live party, invites, macro engine unchanged. Ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/aa70b43ab7734755c219b4b13e654277f9f8fe91/distribution/jcdrbox-sync/output/JCDRbox_JB26.3.1_Register_Sync_TEST.zip",
+  "sha256": "6bd639d387fc5ee8913f2929a375a68ae724d078b0748cb6ced24ef1933fb05a",
+  "notes": "JB26.3.1 CM/TM private online party register sync. Explicit consent for first unknown source, stale snapshot protection. Live party behavior and macro engine unchanged. Ingame acceptance OPEN."
 }
