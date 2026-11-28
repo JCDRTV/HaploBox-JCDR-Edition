@@ -1,0 +1,24 @@
+name: JB26.3.6 CM Scroll
+on:
+  push:
+    branches: [dev/jb26.3.6-cm-scroll]
+    paths: ['distribution/jcdrbox-cm-scroll/**', '.github/workflows/jb26-3-6.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-cm-scroll/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-cm-scroll/output/
+          git diff --cached --quiet || git commit -m "JB26.3.6 verified automatic register candidate"
+          git push origin HEAD:dev/jb26.3.6-cm-scroll
