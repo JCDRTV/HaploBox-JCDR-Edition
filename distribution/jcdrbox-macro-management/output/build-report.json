@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.23",
+  "base": "JB26.3.22",
+  "base_sha256": "cf992bb10ff77a75af43339fb4d79a7391a5b04d85ad88c64838d0d2cfb1d2f5",
+  "sha256": "25f11d113943ac86e92ef82e92a7b53fa5f9ad30ca9d300cb1b484bb65730db5",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/MacroLibrary.lua"
+  ],
+  "status": "Nine-class Forever catalogue, learned/level/special status, category filters, verified click/drag, existing BoxMode macro templates unchanged; candidate only"
+}
