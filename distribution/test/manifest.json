@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.2.0",
+  "version": "JB26.3.0",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/5a0c64a489b380ac1857989b1d75ef6cb43052e9/distribution/jcdrbox-cm/output/JCDRbox_JB26.2.0_Character_Management_TEST.zip",
-  "sha256": "b71582202a905e1447c1b652c4f622c353c5811aad4f41307aa027553169dd83",
-  "notes": "JB26.2.0 phase 2: local explicit character catalog, accounts, import, filters, Management tabs. Legacy trust and team/macro logic unchanged. Ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/99f1344d7814fabae96afb9745471f490913eda5/distribution/jcdrbox-tm/output/JCDRbox_JB26.3.0_Team_Management_TEST.zip",
+  "sha256": "9b44a65f749d8e00ab364b36b3873795a01ed4d7b7b763300e5ec284f316c783",
+  "notes": "JB26.3.0: Team Management tab, saved teams, account-first slots, roles, active selection and preview. Local planning only; live party, invites, macro engine unchanged. Ingame acceptance OPEN."
 }
