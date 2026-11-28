@@ -1,0 +1,24 @@
+name: JB26.3.25 Smart Follow
+on:
+  push:
+    branches: [dev/jb26.3.25-smart-follow]
+    paths: ['distribution/jcdrbox-smart-follow/build.py', 'distribution/jcdrbox-smart-follow/test_follow.lua', '.github/workflows/jb26-3-25.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-smart-follow/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-smart-follow/output/
+          git diff --cached --quiet || git commit -m "JB26.3.25 verified smart follow candidate"
+          git push origin HEAD:dev/jb26.3.25-smart-follow
