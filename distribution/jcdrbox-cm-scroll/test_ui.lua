@@ -13,7 +13,7 @@ function methods:GetMinMaxValues() return self.min,self.max end
 function methods:SetValue(v) v=math.max(self.min or 0,math.min(self.max or v,v));local old=self.value;self.value=v;if old~=v and self.scripts.OnValueChanged then self.scripts.OnValueChanged(self,v) end end
 function methods:GetThumbTexture() return self.thumb end
 local function node(kind,name,parent)
- local o=setmetatable({kind=kind,name=name,parent=parent,scripts={},shown=true},{__index=function(_,k)return methods[k] or noop end})
+ local o=setmetatable({kind=kind,name=name,parent=parent,scripts={},shown=true},{__index=function(_,k)return methods[k] or (type(k)=="string" and k:match("^[A-Z]") and noop or nil) end})
  nodes[#nodes+1]=o
  if name then _G[name]=o end
  return o
