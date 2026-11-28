@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           sudo apt-get update -qq
-          sudo apt-get install -y lua5.1
+          sudo apt-get install -y lua5.1 lua-bitop
           python3 distribution/jcdrbox-no-accept/build.py
       - name: Save tested candidate
         run: |
