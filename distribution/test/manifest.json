@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.3",
+  "version": "JB26.3.4",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/ef581165216bcc18059428ede4d932f275559227/distribution/jcdrbox-central/output/JCDRbox_JB26.3.3_Central_Register_TEST.zip",
-  "sha256": "8877db5b616f20ecdd37a42f22e73cb72b6b2a9542215da319178feda4b99c70",
-  "notes": "JB26.3.3: central register with BM26.2.0 bridge, authenticated no-party online peer reconciliation and automatic party retry. Simulated tests pass; ingame acceptance OPEN. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/d200392eabd28eed48d1e099d3c2120ef932cbb1/distribution/jcdrbox-no-accept/output/JCDRbox_JB26.3.4_Automatic_Register_TEST.zip",
+  "sha256": "04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e3e45fad1d33",
+  "notes": "JB26.3.4: automatic CM/TM peer register sync, no manual accept button, automatic notification after edits. Requires BM26.2.0 central bridge and shared key; ingame acceptance OPEN. STABLE unchanged."
 }
