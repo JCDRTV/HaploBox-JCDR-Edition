@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.14",
+  "version": "JB26.3.15",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/3c93db9c8ef782a62b1deac19bfc614970d2a2a5/distribution/jcdrbox-auto-accept/output/JCDRbox_JB26.3.14_Auto_Accept_TEST.zip",
-  "sha256": "a87df9a2fd44fd00d37a0905b7cc537bc0ff707aed1f97275772ceaa7c889532",
-  "notes": "JB26.3.14: CM-only automatic invite acceptance for unique full registered character names on the same realm, different registered account, own GUID and inviter GUID when provided; solo outside combat only. Unknown or ambiguous invites remain manual. Existing autoAcceptInvite=false respected. Native invite UI retained; no new timers or polling. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/c9511ece8dcfd8c885ef5cc4b8cc03c8add92722/distribution/jcdrbox-accept-diagnostics/output/JCDRbox_JB26.3.15_Accept_Diagnostics_TEST.zip",
+  "sha256": "cac6892243f2efeb2f806ee1aab790b319eaf90fda25dcf52689b95b9452b535",
+  "notes": "JB26.3.15: event-only Auto Accept diagnostics identify the failed trust check or AcceptGroup result in chat. Existing trust guards unchanged, no polling or new timers. Automated tests passed; ingame diagnosis open. STABLE unchanged."
 }
