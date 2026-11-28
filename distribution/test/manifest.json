@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.15",
+  "version": "JB26.3.16",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/c9511ece8dcfd8c885ef5cc4b8cc03c8add92722/distribution/jcdrbox-accept-diagnostics/output/JCDRbox_JB26.3.15_Accept_Diagnostics_TEST.zip",
-  "sha256": "cac6892243f2efeb2f806ee1aab790b319eaf90fda25dcf52689b95b9452b535",
-  "notes": "JB26.3.15: event-only Auto Accept diagnostics identify the failed trust check or AcceptGroup result in chat. Existing trust guards unchanged, no polling or new timers. Automated tests passed; ingame diagnosis open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/bd7aeab39cc1a05af8c9be4056ac93060cb47daf/distribution/jcdrbox-accept-realm/output/JCDRbox_JB26.3.16_Accept_Realm_TEST.zip",
+  "sha256": "89dd1707b8a63e6453e8cb6dc71ada6c42835cb5f42c8810beca87700fa74bdd",
+  "notes": "JB26.3.16: false native realm flag no longer blocks CM trust checks; all existing full-name, local realm, account, GUID checks and event diagnostics retained. Unknown and ambiguous invitations stay manual. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
