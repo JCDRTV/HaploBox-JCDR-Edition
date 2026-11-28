@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.9",
+  "base": "JB26.3.8",
+  "base_sha256": "c4b2ac135896c90287414496abf088f948f10e5dfa84ab0d638fd2b5c418c7a7",
+  "sha256": "81f5303ce4737c15ded01a3128303a9c78e83b94950806df9ea1104c948c2ebd",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "status": "10 px extra gap before scrollbar; action button widths and all behavior unchanged; ingame acceptance open"
+}
