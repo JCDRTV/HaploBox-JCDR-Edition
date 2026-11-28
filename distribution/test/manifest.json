@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.19",
+  "version": "JB26.3.20",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/cea10397c94f3a8b5745172fbfca5acde700ec27/distribution/jcdrbox-legacy-accept/output/JCDRbox_JB26.3.19_Legacy_Accept_TEST.zip",
-  "sha256": "e61abffd20d46ba1d5493b128e7fbe3be55d3ecb0ef8cf6332819278654f8a4c",
-  "notes": "JB26.3.19: restore original invite handler with CM unique full-name and distinct registered-account trust, no event GUID or realm dependency. Unknown or ambiguous names stay manual. Popup cleanup after join only. Existing registers and teams unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/ca27ed7406e366c0dc3d5d4cba981c71a4573fa5/distribution/jcdrbox-party-loot/output/JCDRbox_JB26.3.20_Party_Loot_TEST.zip",
+  "sha256": "e736374406c113b04fa09fa7a8f7a5dabee19bef2d778c290f72300de76a573f",
+  "notes": "JB26.3.20: live Party Frames ordered by active Team Management POS using GUIDs, guests appended; existing register change hooks refresh layout, combat-safe. Auto Loot uses CM registered GUID/account trust only: FFA for owned party, Group Loot for outsiders, real leader only; manual OFF respected, combat exit and leader change recheck. Invite/Accept unchanged. No new polling. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
