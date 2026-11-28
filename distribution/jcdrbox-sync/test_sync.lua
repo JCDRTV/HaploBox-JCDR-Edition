@@ -2,6 +2,7 @@ local args=arg
 local now,events,messages,clients=0,{}, {},{}
 local leader="P-1"
 local grouped=true
+local drop,combat=nil,{}
 local players={
  {guid="P-1",name="Warrior",class="WARRIOR",race="Human",level=20},
  {guid="P-2",name="Rogue",class="ROGUE",race="NightElf",level=15},
@@ -14,6 +15,10 @@ local function run(limit)
   local e=table.remove(events,1);now=e.at;e.fn();n=n+1
   assert(n<(limit or 10000),"event loop")
  end
+end
+local function tickAll()
+ for _,c in pairs(clients) do if c.tick then c.tick() end end
+ run()
 end
 local function client(i,db)
  local env=setmetatable({},{__index=_G})
@@ -38,9 +43,9 @@ local function client(i,db)
  env.IsInRaid=function()return false end
  env.GetNumGroupMembers=function()return grouped and 3 or 0 end
  env.UnitIsGroupLeader=function(u)local p=unit(u);return p and p.guid==leader end
- env.InCombatLockdown=function()return false end
+ env.InCombatLockdown=function()return combat[i] or false end
  env.GetTime=function()return now end
- env.C_Timer={After=later}
+ env.C_Timer={After=later,NewTicker=function(interval,fn)assert(interval==10);c.tick=fn;return {} end}
  env.CreateFrame=function()
   local f={events={}}
   function f:RegisterEvent(e)self.events[e]=true end
@@ -56,6 +61,7 @@ local function client(i,db)
   SendAddonMessage=function(prefix,msg,channel,target)
    assert(#msg<=255 and channel=="WHISPER")
    messages[#messages+1]={from=i,target=target,msg=msg}
+   if drop and drop(i,target,msg) then return true end
    for j,p in ipairs(players) do if p.name==target then
     later(.01,function()clients[j]:emit("CHAT_MSG_ADDON",prefix,msg,channel,players[i].name)end)
     return true
@@ -109,3 +115,44 @@ assert(#a.CM.Accounts()==count)
 a:emit("CHAT_MSG_ADDON","JCDRREG1","H|1|deadbeef|10","WHISPER","Rogue");run()
 assert(a.S.ActionLabel()=="Sync Register" and #a.CM.Accounts()==count)
 print("Register sync tests passed: explicit bootstrap, private own-GUID transfer, guest isolation, saved teams, leader handover, login refresh, stale and invalid snapshot rejection.")
+
+-- First advertisement lost: no manual Sync Register required.
+local lost=false
+drop=function(i,target,msg)
+ if not lost and i==2 and target=="Warrior" and msg:sub(1,2)=="H|" then lost=true;return true end
+end
+assert(b.CM.AddAccount("Heartbeat"));run()
+assert(lost and #a.CM.Accounts()==count)
+drop=nil;tickAll()
+assert(#a.CM.Accounts()==count+1)
+assert(a.S.ActionLabel()=="Sync Register")
+-- Transfer chunk lost: timeout followed by periodic recovery.
+lost=false
+drop=function(i,target,msg)
+ if not lost and i==2 and target=="Warrior" and msg:sub(1,2)=="D|" then lost=true;return true end
+end
+assert(b.CM.AddAccount("Retry"));run()
+assert(lost and #a.CM.Accounts()==count+1)
+drop=nil;tickAll()
+assert(#a.CM.Accounts()==count+2)
+-- Follower in combat accepts automatically on leaving combat.
+combat[1]=true
+assert(b.CM.AddAccount("Combat"));run()
+assert(#a.CM.Accounts()==count+2)
+combat[1]=false;a:emit("PLAYER_REGEN_ENABLED");run()
+assert(#a.CM.Accounts()==count+3)
+-- Missing leader/roster event on both clients; heartbeat detects current leader.
+leader="P-1"
+assert(a.CM.AddAccount("New leader"));run()
+assert(#b.CM.Accounts()==count+4)
+-- Independent leader edit at equal revision remains protected; clean follower
+-- follows the trusted leader even when the version number matches.
+local current=b.db.registerSync.rev
+a.db.ownedCharacterCatalog.accounts["equal"]="Equal"
+a.db.registerSync.rev=current
+a.db.registerSync.dirty=true
+tickAll()
+assert(b.db.ownedCharacterCatalog.accounts.equal=="Equal")
+assert(b.S.ActionLabel()=="Sync Register")
+for _,m in ipairs(messages) do assert(m.target~="Guest","guest received registry traffic") end
+print("Auto-sync recovery tests passed: lost announcement, missing data chunk, combat exit, leader change without event, trusted equal revision, guest isolation.")
