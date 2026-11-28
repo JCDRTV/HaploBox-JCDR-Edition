@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.8",
+  "version": "JB26.3.9",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/317a5a8c7fca98a4115c8c304809bf09929f5fa4/distribution/jcdrbox-flat-scroll/output/JCDRbox_JB26.3.8_Flat_Scroll_TEST.zip",
-  "sha256": "c4b2ac135896c90287414496abf088f948f10e5dfa84ab0d638fd2b5c418c7a7",
-  "notes": "JB26.3.8: flat CM scrollbar, custom arrows and hover; proportional scrolling, resize, lock, SavedVariables and register logic unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/8b31b8058aceea7393f9a38eda1e98e1eb5e806d/distribution/jcdrbox-scroll-spacing/output/JCDRbox_JB26.3.9_Scroll_Spacing_TEST.zip",
+  "sha256": "81f5303ce4737c15ded01a3128303a9c78e83b94950806df9ea1104c948c2ebd",
+  "notes": "JB26.3.9: 10 extra UI pixels between Remove and scrollbar at all window sizes. Action button widths, scrolling, resize, lock, SavedVariables and register logic unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
