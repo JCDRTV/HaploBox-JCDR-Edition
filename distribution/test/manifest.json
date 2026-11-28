@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "HF26.20.60",
+  "version": "JB26.1.0",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/cd91cbc13abe9eda834237f048859b1faae3de6f/distribution/team-rebuild/output/HaploBox_HF26.20.60_Team_Management_Rebuild_TEST.zip",
-  "sha256": "0329e0896d93ec53f971767136dbad1d7b96711041f358b2858e8673b8a81e28",
-  "notes": "HF26.20.60 Phase 1: independent CM and TM; local planning only. In-game acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/9f50e54424a0429de9024b5f1c2701ed2275ba57/distribution/jcdrbox-identity/output/JCDRbox_JB26.1.0_Identity_TEST.zip",
+  "sha256": "b69e9eb31c6d43a2a6c8d7dc91b1d772681545f01ade5e36e25e67f2e1662841",
+  "notes": "JCDRbox JB26.1.0 phase 1 identity and minimal Ice Blue restyle. Requires JB-compatible BoxManager. Ingame acceptance OPEN."
 }
