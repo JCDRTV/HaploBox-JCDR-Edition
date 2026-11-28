@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.2",
+  "base": "JB26.3.1",
+  "base_sha256": "6bd639d387fc5ee8913f2929a375a68ae724d078b0748cb6ced24ef1933fb05a",
+  "sha256": "6d843f3b9d5bb1d51ae5dbc89140e9a8b3096189c9d8eae0a867758c73e0fdda",
+  "unchanged_files": 178,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/RegisterSync.lua"
+  ],
+  "status": "Ingame acceptance open; 10-second periodic reconciliation, automatic retry, combat exit; no macro changes"
+}
