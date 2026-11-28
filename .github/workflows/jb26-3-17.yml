@@ -1,0 +1,28 @@
+name: JB26.3.17 Team Invite
+on:
+  push:
+    branches: [dev/jb26.3.17-forever-identity]
+    paths: ['distribution/jcdrbox-forever-identity/build.py', 'distribution/jcdrbox-forever-identity/test_accept.lua', '.github/workflows/jb26-3-17.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: cb62621967c477e432f7a5d0c5106fd735aa6419
+          path: base-manifest
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-forever-identity/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-forever-identity/output/
+          git diff --cached --quiet || git commit -m "JB26.3.17 verified auto accept candidate"
+          git push origin HEAD:dev/jb26.3.17-forever-identity
