@@ -9,7 +9,7 @@ SHA='04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e45fad1d33'
 OUT=SRC/'output';OUT.mkdir(exist_ok=True)
 TARGET=OUT/'JCDRbox_JB26.3.5_Event_Register_TEST.zip'
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
-assert digest(BASE)==SHA
+assert digest(BASE)==SHA, (str(BASE),digest(BASE),SHA)
 def replace(s,a,b):
     assert s.count(a)==1,(a,s.count(a))
     return s.replace(a,b)
