@@ -146,7 +146,7 @@ local function make()
     for i,k in ipairs({"account","class","realm"}) do
         local key=k
         local b=button(body,"", (i-1)*220,-30,214,function(self)
-            local opts={{label="All "..key.."s",value=""}}
+            local opts={{label=key=="class" and "All classes" or "All "..key.."s",value=""}}
             local seen={}
             if key=="account" then opts=accountOptions("All accounts")
             else
@@ -196,6 +196,7 @@ local function make()
             if removeGuid~=id then removeGuid=id;refresh();notice("Click Confirm to remove.");return end
             local ok,e
             if view=="accounts" then ok,e=CM.RemoveAccount(id) else ok,e=CM.RemoveCharacter(id) end
+            if ok and view=="accounts" and filters.account==id then filters.account="" end
             removeGuid=nil;refresh();notice(ok and "Removed." or e)
         end)
         body.rows[i]=r
@@ -223,10 +224,10 @@ refresh=function()
     for k,b in pairs(body.filterButtons) do
         b:SetShown(isList)
         local v=filters[k]
-        b:SetText(v=="" and "All "..k.."s" or (k=="account" and accountLabel(v) or v))
+        b:SetText(v=="" and (k=="class" and "All classes" or "All "..k.."s") or (k=="account" and accountLabel(v) or v))
     end
     for _,b in pairs(body.headers) do b:SetShown(isList) end
-    body.alias:SetShown(isAccounts);body.add:SetShown(isAccounts);body.add:SetEnabled(editable);body.alias:SetEnabled(editable)
+    body.alias:SetShown(isAccounts);body.add:SetShown(isAccounts);body.add:SetEnabled(editable);if editable then body.alias:Enable() else body.alias:Disable() end
     body.help:SetShown(not isList)
     body.help:SetText(isImport and "Check only your own characters. Assign an account to each checked row." or isAccounts and "Register account aliases once. No passwords or login details." or "New Team Management is phase 3. Existing functions remain available.")
     local items={}
