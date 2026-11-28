@@ -1,0 +1,2 @@
+-- JCDRbox central register inbox v1
+-- BoxManager writes only validated ASCII register data here.
