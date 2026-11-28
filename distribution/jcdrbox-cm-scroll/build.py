@@ -76,6 +76,7 @@ with ZipFile(TARGET) as out,tempfile.TemporaryDirectory() as temp:
     subprocess.run(['lua5.1',str(ROOT/'distribution/jcdrbox-tm/test_tm.lua'),str(Path(temp)/names[1])],check=True)
     subprocess.run(['lua5.1',str(ROOT/'distribution/jcdrbox-event-register/test_sync.lua'),*[str(Path(temp)/n) for n in names[:4]]],check=True)
     subprocess.run(['lua5.1',str(ROOT/'distribution/jcdrbox-event-register/test_peer.lua'),*[str(Path(temp)/n) for n in names[:6]]],check=True)
+    subprocess.run(['lua5.1',str(SRC/'test_ui.lua'),str(Path(temp)/'ManagementUI.lua')],check=True)
 report={'version':'JB26.3.6','base':'JB26.3.5','base_sha256':SHA,'sha256':digest(TARGET),'unchanged_files':len(original)-len(mods),'modified_files':list(mods),'status':'Vertical CM list scrolling; register and other systems unchanged; ingame acceptance open'}
 (OUT/'build-report.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))
