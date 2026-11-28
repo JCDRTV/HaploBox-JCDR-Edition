@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.6",
+  "base": "JB26.3.5",
+  "base_sha256": "04ce3237b51994e2882b3a8d840dcdfbafc4544254beb2eba0c41398c081efd7",
+  "sha256": "47e33a00ac4d3ff215a1c8e67836bf4f4d1c36dc337f29c46bba25cbb5d504e3",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "status": "Vertical CM list scrolling; register and other systems unchanged; ingame acceptance open"
+}
