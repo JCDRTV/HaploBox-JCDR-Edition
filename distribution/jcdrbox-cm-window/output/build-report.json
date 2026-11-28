@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.7",
+  "base": "JB26.3.6",
+  "base_sha256": "47e33a00ac4d3ff215a1c8e67836bf4f4d1c36dc337f29c46bba25cbb5d504e3",
+  "sha256": "8a9e08974ea489d37edc8eafe134cb24c44d3001ed3bad16944c1abbe3f3de8b",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "status": "Proportional scrollbar, arrows, resizable lockable window; register unchanged; ingame acceptance open"
+}
