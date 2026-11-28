@@ -1,0 +1,17 @@
+{
+  "version": "JB26.3.1",
+  "base": "JB26.3.0",
+  "base_sha256": "9b44a65f749d8e00ab364b36b3873795a01ed4d7b7b763300e5ec284f316c783",
+  "sha256": "6bd639d387fc5ee8913f2929a375a68ae724d078b0748cb6ced24ef1933fb05a",
+  "unchanged_files": 175,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua",
+    "HaploBox/TeamPlannerUI.lua"
+  ],
+  "added_files": [
+    "HaploBox/RegisterCodec.lua",
+    "HaploBox/RegisterSync.lua"
+  ],
+  "status": "ingame acceptance open; online own-party sync only; first unknown source requires consent; no live party or macro engine changes"
+}
