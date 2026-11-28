@@ -5,7 +5,7 @@ import hashlib,json,subprocess,tempfile
 ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/'distribution/jcdrbox-event-register'
 BASE=ROOT/'distribution/jcdrbox-no-accept/output/JCDRbox_JB26.3.4_Automatic_Register_TEST.zip'
-SHA='04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e45fad1d33'
+SHA='04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e3e45fad1d33'
 OUT=SRC/'output';OUT.mkdir(exist_ok=True)
 TARGET=OUT/'JCDRbox_JB26.3.5_Event_Register_TEST.zip'
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
