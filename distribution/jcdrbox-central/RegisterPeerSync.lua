@@ -8,6 +8,7 @@ local peers,queues,acks={}, {},{}
 local pending,discovery,working,ready,ticker
 local serial=0
 local lastAd,lastConflict
+local cached
 local function api(fn,...)
     if type(fn)~="function" then return nil end
     local ok,a,b=pcall(fn,...)
@@ -33,9 +34,12 @@ end
 local function snap()
     local d=state()
     if not d then return end
+    local cm,tm=HB.db.ownedCharacterCatalog,HB.db.plannedTeams
+    if cached and cached.rev==d.rev and cached.cm==cm and cached.tm==tm then return cached end
     local data=C.Capture()
     if not data then return end
-    return {rev=d.rev,hash=C.Hash(data),data=data}
+    cached={rev=d.rev,hash=C.Hash(data),data=data,cm=cm,tm=tm}
+    return cached
 end
 local function send(target,body)
     local d=state();local n=myName();local g=me()
@@ -99,7 +103,7 @@ local function offer(p,rev,hash,len)
     local s,d=snap(),state()
     if not s or not d then return end
     if hash==s.hash then
-        if rev>s.rev then d.rev=rev;d.dirty=false end
+        if rev>=s.rev then d.rev=rev;d.dirty=false end
         return
     end
     if rev<s.rev then return end
@@ -265,6 +269,7 @@ local function heartbeat()
     local changed=k~=lastAd
     lastAd=k
     for g,p in pairs(peers) do
+        if acks[g] and now()>acks[g].expires then acks[g]=nil end
         if now()-p.seen>180 then peers[g]=nil
         elseif not sameParty(g) and (changed or now()-(p.asked or 0)>=25) then
             if announce(p.name,"Q") then p.asked=now() end
