@@ -1,0 +1,24 @@
+name: JB26.3.22 Auto Box Mode
+on:
+  push:
+    branches: [dev/jb26.3.22-auto-box-mode]
+    paths: ['distribution/jcdrbox-auto-box-mode/build.py', 'distribution/jcdrbox-auto-box-mode/test_box.lua', '.github/workflows/jb26-3-22.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-auto-box-mode/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-auto-box-mode/output/
+          git diff --cached --quiet || git commit -m "JB26.3.22 verified auto box candidate"
+          git push origin HEAD:dev/jb26.3.22-auto-box-mode
