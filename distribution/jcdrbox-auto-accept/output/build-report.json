@@ -1,0 +1,13 @@
+{
+  "version": "JB26.3.14",
+  "base": "JB26.3.13",
+  "base_sha256": "acbb4129b00e5134face59059453ae53b0e18fbedea415b5567b1ca334fd6f8e",
+  "sha256": "a87df9a2fd44fd00d37a0905b7cc537bc0ff707aed1f97275772ceaa7c889532",
+  "unchanged_files": 179,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/CharacterManagement.lua",
+    "HaploBox/Core.lua"
+  ],
+  "status": "CM-only auto accept; unique full name, same realm, different registered account, own GUID, optional inviter GUID, solo and outside combat; ingame acceptance open"
+}
