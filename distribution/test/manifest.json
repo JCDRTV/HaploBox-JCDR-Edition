@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.16",
+  "version": "JB26.3.17",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/bd7aeab39cc1a05af8c9be4056ac93060cb47daf/distribution/jcdrbox-accept-realm/output/JCDRbox_JB26.3.16_Accept_Realm_TEST.zip",
-  "sha256": "89dd1707b8a63e6453e8cb6dc71ada6c42835cb5f42c8810beca87700fa74bdd",
-  "notes": "JB26.3.16: false native realm flag no longer blocks CM trust checks; all existing full-name, local realm, account, GUID checks and event diagnostics retained. Unknown and ambiguous invitations stay manual. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/5043ce3c136920b72a385372b22931037f752514/distribution/jcdrbox-forever-identity/output/JCDRbox_JB26.3.17_Forever_Identity_TEST.zip",
+  "sha256": "28cbdb2ccf8ba128094f766b0871c0274368c6a67e3ce633bd33c731b0b9be16",
+  "notes": "JB26.3.17: distinguish Forever surname from legacy CM realm field in Auto Accept. Require matching event GUID when verified realm unavailable. No register migration, existing characters and teams unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
