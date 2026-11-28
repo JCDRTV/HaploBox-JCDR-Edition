@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.12",
+  "version": "JB26.3.13",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/6a22488626921890a19ad528b5cb3c1952aa5ce7/distribution/jcdrbox-tm-controls/output/JCDRbox_JB26.3.12_TM_Controls_TEST.zip",
-  "sha256": "2a8d21a9d8d5f6c4243005a6340b4e11327d804bfb4cccee70c11bbbb17078ce",
-  "notes": "JB26.3.12: removed Legacy party controls shortcut from TM, replaced horizontal Order arrows with vertical chevrons. Existing position swaps, boundary guards, screen layout, CM and register logic unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/58489aa1647f04443faf4be7da961c599e7a7494/distribution/jcdrbox-team-invite/output/JCDRbox_JB26.3.13_Team_Invite_TEST.zip",
+  "sha256": "acbb4129b00e5134face59059453ae53b0e18fbedea415b5567b1ca334fd6f8e",
+  "notes": "JB26.3.13: Invite team from Management and Quick Menu uses only active saved team, full character names and GUID roster checks. Explicit click; existing members skipped, outsiders block, recent requests temporarily deduplicated. Legacy automatic invite acceptance paused pending CM-based Auto Accept. No new polling or network sync. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
