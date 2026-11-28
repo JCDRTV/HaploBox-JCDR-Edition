@@ -1,0 +1,12 @@
+{
+  "version": "JB26.3.18",
+  "base": "JB26.3.17",
+  "base_sha256": "28cbdb2ccf8ba128094f766b0871c0274368c6a67e3ce633bd33c731b0b9be16",
+  "sha256": "873d20d8971b505c3dad0c4c9ccddafd4d0cbb189e86f156223cf471d009c9da",
+  "unchanged_files": 180,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/Core.lua"
+  ],
+  "status": "Recognize both documented invite event layouts; retain CM trust guards; diagnostic event argument types; ingame acceptance open"
+}
