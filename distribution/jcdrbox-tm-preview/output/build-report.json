@@ -1,0 +1,13 @@
+{
+  "version": "JB26.3.11",
+  "base": "JB26.3.10",
+  "base_sha256": "f0359dfd0d3290fb47bbb3d37a568c31a40be36e8bda68d70753e6af96717e05",
+  "sha256": "3a893076ee15f282aa34b38eb40b8ff938d7adcec6173acf4fac6c21bade1f28",
+  "unchanged_files": 179,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/TeamPlannerUI.lua",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "status": "TM 16:9 screen preview, first name in class color, role below, adaptive layout and separate session height; register logic unchanged; ingame acceptance open"
+}
