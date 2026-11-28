@@ -1,0 +1,28 @@
+name: JB26.3.21 Auto Roles
+on:
+  push:
+    branches: [dev/jb26.3.21-auto-roles]
+    paths: ['distribution/jcdrbox-auto-roles/build.py', 'distribution/jcdrbox-auto-roles/test_roles.lua', '.github/workflows/jb26-3-21.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 7260f68bcb298cfad4f645715b2a338955055f0f
+          path: base-manifest
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-auto-roles/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-auto-roles/output/
+          git diff --cached --quiet || git commit -m "JB26.3.21 verified auto roles candidate"
+          git push origin HEAD:dev/jb26.3.21-auto-roles
