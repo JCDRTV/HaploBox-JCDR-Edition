@@ -1,0 +1,14 @@
+{
+  "version": "JB26.3.4",
+  "base": "JB26.3.3",
+  "base_sha256": "8877db5b616f20ecdd37a42f22e73cb72b6b2a9542215da319178feda4b99c70",
+  "sha256": "04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e3e45fad1d33",
+  "unchanged_files": 178,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua",
+    "HaploBox/RegisterSync.lua",
+    "HaploBox/RegisterPeerSync.lua"
+  ],
+  "status": "Requires BM26.2.0 shared key for automatic solo peer sync; removes manual acceptance; ingame acceptance open"
+}
