@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.17",
+  "version": "JB26.3.19",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/5043ce3c136920b72a385372b22931037f752514/distribution/jcdrbox-forever-identity/output/JCDRbox_JB26.3.17_Forever_Identity_TEST.zip",
-  "sha256": "28cbdb2ccf8ba128094f766b0871c0274368c6a67e3ce633bd33c731b0b9be16",
-  "notes": "JB26.3.17: distinguish Forever surname from legacy CM realm field in Auto Accept. Require matching event GUID when verified realm unavailable. No register migration, existing characters and teams unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/cea10397c94f3a8b5745172fbfca5acde700ec27/distribution/jcdrbox-legacy-accept/output/JCDRbox_JB26.3.19_Legacy_Accept_TEST.zip",
+  "sha256": "e61abffd20d46ba1d5493b128e7fbe3be55d3ecb0ef8cf6332819278654f8a4c",
+  "notes": "JB26.3.19: restore original invite handler with CM unique full-name and distinct registered-account trust, no event GUID or realm dependency. Unknown or ambiguous names stay manual. Popup cleanup after join only. Existing registers and teams unchanged. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
