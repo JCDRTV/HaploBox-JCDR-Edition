@@ -1,0 +1,28 @@
+name: JB26.3.12 TM Controls
+on:
+  push:
+    branches: [dev/jb26.3.12-tm-controls]
+    paths: ['distribution/jcdrbox-tm-controls/build.py', 'distribution/jcdrbox-tm-controls/test_tm_ui.lua', '.github/workflows/jb26-3-12.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ea37fead8d981db46a47d3b2dd36d0ac5c38eda4
+          path: base-manifest
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-tm-controls/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-tm-controls/output/
+          git diff --cached --quiet || git commit -m "JB26.3.12 verified TM controls candidate"
+          git push origin HEAD:dev/jb26.3.12-tm-controls
