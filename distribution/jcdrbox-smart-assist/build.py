@@ -23,21 +23,17 @@ with ZipFile(BASE) as old:
     s=replace(original[toc].decode(),'## Version: JB26.3.23','## Version: JB26.3.24')
     box='HaploBox/BoxMode.lua'
     b=original[box].decode()
-    # Existing secure macro engine; no automated targeting, casting or secure bypass.
-    b=replace(b,'local function buildSpell(spell,kind,profile,token)', '''-- JB26.3.24: an assist never casts at an unrelated stale target.
-local function assistGuard(token)
-    return "/stopmacro [nogroup:party][@"..token.."target,noharm][@"..token.."target,dead]\\n"
-end
+    # User-confirmed Forever invariant: party1 is the leader on each follower.
+    # Do not modify the follow resolver, healing, buffs, or other spell bodies.
+    b=replace(b,'local function buildSpell(spell,kind,profile,token)', '''-- JB26.3.24: fixed follower assist; keep historical exact bodies for ownership migration.
 local function legacyAssistBody(spell,kind,token)
     if kind=="assist" then return "#showtooltip "..spell.."\\n/assist "..token.."\\n/cast "..spell end
     if kind=="boxassist" then return "#showtooltip\\n/assist "..token end
 end
 local function buildSpell(spell,kind,profile,token)''')
-    b=replace(b,'        if profile=="on" then return head.."/assist "..token.."\\n/cast "..spell end','''        if profile=="on" then
-            return head..assistGuard(token).."/assist "..token.."\\n/cast [@"..token.."target,harm,nodead] "..spell
-        end''')
-    b=replace(b,'        return profile=="on" and ("#showtooltip\\n/assist "..token) or "#showtooltip\\n/stopmacro"','        return profile=="on" and ("#showtooltip\\n"..assistGuard(token).."/assist "..token) or "#showtooltip\\n/stopmacro"')
-    # Exact historical generated bodies still count as owned; arbitrary edits do not.
+    b=replace(b,'        if profile=="on" then return head.."/assist "..token.."\\n/cast "..spell end','        if profile=="on" then return head.."/assist party1\\n/cast "..spell end')
+    b=replace(b,'        return profile=="on" and ("#showtooltip\\n/assist "..token) or "#showtooltip\\n/stopmacro"','        return profile=="on" and "#showtooltip\\n/assist party1" or "#showtooltip\\n/stopmacro"')
+    # Preserve the exact known historical templates without accepting custom bodies.
     b=replace(b,'    -- Old TB19.1m records may carry a stale applied/body marker.','''    if not entry.legacyBody and type(entry.spell)=="string" and (entry.kind=="assist" or entry.kind=="boxassist") then
         for i=1,4 do
             if sameBody(body,legacyAssistBody(entry.spell,entry.kind,"party"..i)) then return true end
@@ -46,10 +42,9 @@ local function buildSpell(spell,kind,profile,token)''')
     -- Old TB19.1m records may carry a stale applied/body marker.''')
     b=replace(b,'        if sameBody(current,buildSpell(spell,kind,"on","party"..i)) then canonical=true end','''        if sameBody(current,buildSpell(spell,kind,"on","party"..i)) or
            (kind=="assist" and sameBody(current,legacyAssistBody(spell,kind,"party"..i))) then canonical=true end''')
-    # Revalidate leader identity even when a different leader occupies the same token.
-    b=replace(b,'    return profile..":"..(profile=="on" and leaderToken() or "-")','''    local token=profile=="on" and leaderToken() or "-"
-    local guid=profile=="on" and boxValue(UnitGUID,token) or nil
-    return profile..":"..token..":"..(type(guid)=="string" and guid or "-")''')
+    # Existing explicitly imported HB assist profiles also use the fixed slot.
+    # No other lines or unowned macros are changed.
+    b=replace(b,'on=on:gsub("(/assist )party[1-4]", "%1"..leaderToken(),1)','on=on:gsub("(/assist )party[1-4]", "%1party1",1)')
     mods={toc:s.encode(),box:b.encode()}
     with ZipFile(TARGET,'w',compression=ZIP_DEFLATED) as out:
         for info in old.infolist():out.writestr(copy(info),mods.get(info.filename,original[info.filename]))
@@ -82,6 +77,6 @@ with ZipFile(TARGET) as out,tempfile.TemporaryDirectory() as temp:
     (Path(temp)/'MacroLibrary.lua').write_bytes(out.read('HaploBox/MacroLibrary.lua'))
     subprocess.run(['lua5.1',str(ROOT/'distribution/jcdrbox-macro-management/test_macro.lua'),str(Path(temp)/'MacroLibrary.lua')],check=True)
     subprocess.run(['lua5.1',str(SRC/'test_assist.lua'),str(Path(temp)/'BoxMode.lua')],check=True)
-report={'version':'JB26.3.24','base':'JB26.3.23','base_sha256':SHA,'sha256':digest(TARGET),'unchanged_files':len(original)-len(mods),'modified_files':list(mods),'status':'Guarded hardware-triggered assist, live actual leader token, explicit hostile target cast, exact old generated macro migration; heal/buff/follow unchanged; candidate only'}
+report={'version':'JB26.3.24','base':'JB26.3.23','base_sha256':SHA,'sha256':digest(TARGET),'unchanged_files':len(original)-len(mods),'modified_files':list(mods),'status':'Fixed /assist party1 for follower BOX ON; ordinary leader/off cast; no target guard; heal/buff/follow and other templates unchanged; corrected candidate only'}
 (OUT/'build-report.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))
