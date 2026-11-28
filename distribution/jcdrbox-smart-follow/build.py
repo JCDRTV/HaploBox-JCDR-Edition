@@ -51,8 +51,8 @@ end
     g=replace(g,'    if HB.AutoBoxReconcile then HB.AutoBoxReconcile() end\n    if HB.TeamPlanner and HB.TeamPlanner.ApplyOwnPlannedRole then HB.TeamPlanner.ApplyOwnPlannedRole() end','    if HB.AutoBoxReconcile then HB.AutoBoxReconcile() end\n    if HB.TeamPlanner and HB.TeamPlanner.ApplyOwnPlannedRole then HB.TeamPlanner.ApplyOwnPlannedRole() end\n    if HB.PrepareSmartFollow then HB.PrepareSmartFollow() end\n    if HB.OnFollowStateChanged then HB.OnFollowStateChanged() end')
     # Prove spell generator (including the fixed party1 assist) is byte-identical.
     for a,z in [('local function buildSpell(', 'local function desiredProfile('),('local function updateMacros(', 'HB.UpdateBoxMacros=updateMacros'),('function HB.InstallSmartFollowBinding(', 'local lastSyncReason=')]:
-        old=original[box].decode()
-        assert old[old.index(a):old.index(z,old.index(a))]==b[b.index(a):b.index(z,b.index(a))],a
+        old_source=original[box].decode()
+        assert old_source[old_source.index(a):old_source.index(z,old_source.index(a))]==b[b.index(a):b.index(z,b.index(a))],a
     mods={toc:s.encode(),box:b.encode(),core:v.encode(),game:g.encode()}
     with ZipFile(TARGET,'w',compression=ZIP_DEFLATED) as out:
         for info in old.infolist():out.writestr(copy(info),mods.get(info.filename,original[info.filename]))
