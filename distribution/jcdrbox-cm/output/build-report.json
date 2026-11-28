@@ -1,0 +1,16 @@
+{
+  "version": "JB26.2.0",
+  "base": "JB26.1.0",
+  "base_sha256": "b69e9eb31c6d43a2a6c8d7dc91b1d772681545f01ade5e36e25e67f2e1662841",
+  "sha256": "b71582202a905e1447c1b652c4f622c353c5811aad4f41307aa027553169dd83",
+  "unchanged_files": 172,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ControlBar.lua"
+  ],
+  "added_files": [
+    "HaploBox/CharacterManagement.lua",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "status": "ingame acceptance open; local catalog only; legacy trust and TM unchanged"
+}
