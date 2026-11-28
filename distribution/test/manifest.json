@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.1.0",
+  "version": "JB26.2.0",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/9f50e54424a0429de9024b5f1c2701ed2275ba57/distribution/jcdrbox-identity/output/JCDRbox_JB26.1.0_Identity_TEST.zip",
-  "sha256": "b69e9eb31c6d43a2a6c8d7dc91b1d772681545f01ade5e36e25e67f2e1662841",
-  "notes": "JCDRbox JB26.1.0 phase 1 identity and minimal Ice Blue restyle. Requires JB-compatible BoxManager. Ingame acceptance OPEN."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/5a0c64a489b380ac1857989b1d75ef6cb43052e9/distribution/jcdrbox-cm/output/JCDRbox_JB26.2.0_Character_Management_TEST.zip",
+  "sha256": "b71582202a905e1447c1b652c4f622c353c5811aad4f41307aa027553169dd83",
+  "notes": "JB26.2.0 phase 2: local explicit character catalog, accounts, import, filters, Management tabs. Legacy trust and team/macro logic unchanged. Ingame acceptance OPEN."
 }
