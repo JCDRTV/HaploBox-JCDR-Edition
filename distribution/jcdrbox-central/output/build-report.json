@@ -1,0 +1,19 @@
+{
+  "version": "JB26.3.2",
+  "base": "JB26.3.1",
+  "base_sha256": "6bd639d387fc5ee8913f2929a375a68ae724d078b0748cb6ced24ef1933fb05a",
+  "sha256": "2968f9f94813f0b2b9cd90e7ce2dfa39d1b9e9a445844d929000b1ca2d14b535",
+  "unchanged_files": 177,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "removed_files": [
+    "HaploBox/RegisterSync.lua"
+  ],
+  "added_files": [
+    "HaploBox/RegisterInbox.lua",
+    "HaploBox/RegisterBridge.lua"
+  ],
+  "status": "Requires BM26.1.14 central bridge; no party or consent; logout/reload required for SavedVariables; ingame acceptance open"
+}
