@@ -1,4 +1,4 @@
--- JB26.3.1: event-driven peer sync of the separate owned CM/TM catalogs.
+-- JB26.3.2: event-driven and periodic recovery peer sync of the separate owned CM/TM catalogs.
 -- Only registered own GUIDs receive snapshots, via private addon whispers.
 -- A previously unknown source requires an explicit local confirmation.
 local HB=HaploBox
@@ -11,6 +11,8 @@ local outgoing,working={},false
 local status="Register sync not started."
 local loginRecord
 local schedule
+local ticker
+local lastLoginKey
 local function say(msg,changed)
     status=msg
     if S.OnChange then S.OnChange(changed) end
@@ -109,7 +111,8 @@ local function send(guid,msg,key,requireOwn)
     if not p or p.key~=key or not related(p,guid) or (requireOwn and not own(guid)) or #msg>255 then return false end
     local fn=C_ChatInfo and C_ChatInfo.SendAddonMessage
     if type(fn)~="function" then return false end
-    return pcall(fn,S.PREFIX,msg,"WHISPER",p.members[guid].target)
+    local ok,result=pcall(fn,S.PREFIX,msg,"WHISPER",p.members[guid].target)
+    return ok and result~=false
 end
 local function pump()
     local item=table.remove(outgoing,1)
@@ -130,7 +133,13 @@ local function pump()
     C_Timer.After(.22,pump)
 end
 local function queueSnapshot(guid,p,s)
-    for i=#outgoing,1,-1 do if outgoing[i].guid==guid then table.remove(outgoing,i) end end
+    for i=#outgoing,1,-1 do
+        local item=outgoing[i]
+        if item.guid==guid then
+            if item.key==p.key and item.rev==s.rev and item.hash==s.hash then return end
+            table.remove(outgoing,i)
+        end
+    end
     if #outgoing>=5 then return end
     outgoing[#outgoing+1]={guid=guid,key=p.key,rev=s.rev,hash=s.hash,data=s.data,index=0,count=math.ceil(#s.data/190)}
     if not working then working=true;pump() end
@@ -197,11 +206,17 @@ local function advertise()
     if not ready then return end
     local p=party()
     if not p or not own(localGuid()) then return end
-    if loginRecord and loginRecord.guid==localGuid() then
+    if loginRecord and loginRecord.guid==localGuid() and not isYes(api(InCombatLockdown)) then
         if p.leader==localGuid() then applyLogin(localGuid(),loginRecord)
         elseif own(p.leader) then
             local m=C.EncodeLogin(loginRecord)
-            if m and #m<=253 then send(p.leader,"L|"..m,p.key,true) end
+            -- Retry the login report until the shared register contains it.
+            local cat=HB.db.ownedCharacterCatalog
+            local rec=cat and cat.characters and cat.characters[localGuid()]
+            local recorded=rec and C.EncodeLogin(rec)
+            if m and #m<=253 and (m~=recorded or lastLoginKey~=p.key) then
+                if send(p.leader,"L|"..m,p.key,true) then lastLoginKey=p.key end
+            end
         end
     end
     local s=snapshot()
@@ -216,13 +231,22 @@ schedule=function()
     scheduled=true
     C_Timer.After(.8,function() scheduled=false;advertise() end)
 end
+local function automatic(o,p,s)
+    if not trusted(p.members[o.guid],p) then return false end
+    if p.leader==localGuid() then return o.rev>s.rev and not state().dirty end
+    if o.rev>s.rev or s.data=="V|1" then return true end
+    -- An already synchronized, unchanged follower can follow its current leader
+    -- at equal revision. Independently edited registers still require consent.
+    return o.rev==s.rev and o.guid==p.leader and state().lastSource~=nil and not state().dirty
+end
 local function request(o,manual)
     local p,s=party(),snapshot()
     if not p or p.key~=o.key or not related(p,o.guid) or not s or o.rev<s.rev then return false end
     if o.rev==s.rev and o.hash==s.hash then offer=nil;return true end
-    if not manual and (not trusted(p.members[o.guid],p) or (o.rev==s.rev and s.data~="V|1") or (p.leader==localGuid() and state().dirty)) then return false end
+    if not manual and not automatic(o,p,s) then return false end
     if pending then return false end
-    local lifetime=math.max(45,math.ceil(o.len/190)*.30+20)
+    -- Four followers may be queued behind one another; allow the full queue.
+    local lifetime=math.max(45,math.ceil(o.len/190)*.30*4+20)
     local token={guid=o.guid,key=o.key,rev=o.rev,hash=o.hash,len=o.len,localRev=s.rev,localHash=s.hash,manual=manual,expires=now()+lifetime}
     pending=token;offer=nil
     if not send(o.guid,table.concat({"R",o.rev,o.hash},"|"),o.key,false) then
@@ -230,7 +254,7 @@ local function request(o,manual)
     end
     say("Receiving register from "..p.members[o.guid].target.."...")
     C_Timer.After(lifetime,function()
-        if pending==token then pending=nil;say("Register sync timed out. Use Sync Register to retry.") end
+        if pending==token then pending=nil;say("Register sync interrupted; retrying automatically.");schedule() end
     end)
     return true
 end
@@ -309,21 +333,33 @@ local function receive(prefix,msg,channel,sender)
         rev,len=validOffer(rev,hash,len)
         if not rev then return end
         local s=snapshot()
-        if not s or rev<s.rev or (rev==s.rev and hash==s.hash) then return end
-        if pending then return end
+        if not s or rev<s.rev then return end
+        if rev==s.rev and hash==s.hash then
+            if offer and offer.guid==m.guid then offer=nil;say("Register up to date.") end
+            return
+        end
+        if pending then
+            if pending.guid~=m.guid or rev<=pending.rev then return end
+            pending=nil -- Newer offer supersedes an obsolete in-flight request.
+        end
         local o={guid=m.guid,key=p.key,rev=rev,hash=hash,len=len}
-        if trusted(m,p) and (rev>s.rev or s.data=="V|1") and not (p.leader==localGuid() and state().dirty) then
-            if isYes(api(InCombatLockdown)) then offer=o;say("Register available; accept after combat.") else request(o,false) end
+        if automatic(o,p,s) then
+            if isYes(api(InCombatLockdown)) then offer=o;say("Register available; syncing after combat.") else request(o,false) end
         else
-            -- Do not overwrite independent catalogs at the same revision.
-            offer=o;say("Register offered by "..m.target..". Accept only if this is your own client.")
+            -- Do not overwrite independent edits or trust an unknown client.
+            if not offer or offer.guid~=o.guid or offer.rev~=o.rev or offer.hash~=o.hash then
+                offer=o;say("Register offered by "..m.target..". Accept only if this is your own client.")
+            end
         end
         return
     end
     rev,hash=msg:match("^R|(%d+)|([0-9a-f]+)$")
     if rev then
         local s=snapshot()
-        if own(m.guid) and own(localGuid()) and s and tonumber(rev)==s.rev and hash==s.hash then queueSnapshot(m.guid,p,s) end
+        if own(m.guid) and own(localGuid()) and s then
+            if tonumber(rev)==s.rev and hash==s.hash then queueSnapshot(m.guid,p,s)
+            elseif s.rev>=tonumber(rev) then send(m.guid,table.concat({"H",s.rev,s.hash,#s.data},"|"),p.key,true) end
+        end
         return
     end
     local r=pending
@@ -371,9 +407,18 @@ f:SetScript("OnEvent",function(_,event,...)
         if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then api(C_ChatInfo.RegisterAddonMessagePrefix,S.PREFIX) end
         loginRecord=localMeta() or loginRecord
         ready=true;snapshot()
+        if not ticker and C_Timer and C_Timer.NewTicker then
+            ticker=C_Timer.NewTicker(10,function()
+                if ready and party() then schedule() end
+            end)
+        end
     end
     local p=party()
     if pending and (not p or pending.key~=p.key) then pending=nil;say("Party changed; previous transfer canceled.") end
     if offer and (not p or offer.key~=p.key) then offer=nil;say("Party changed; previous offer canceled.") end
+    if event=="PLAYER_REGEN_ENABLED" and offer and p and not pending then
+        local s=snapshot()
+        if s and automatic(offer,p,s) then request(offer,false) end
+    end
     schedule()
 end)
