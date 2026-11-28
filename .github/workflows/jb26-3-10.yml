@@ -1,0 +1,28 @@
+name: JB26.3.10 TM Alignment
+on:
+  push:
+    branches: [dev/jb26.3.10-tm-align]
+    paths: ['distribution/jcdrbox-tm-align/build.py', 'distribution/jcdrbox-tm-align/test_tm_ui.lua', '.github/workflows/jb26-3-10.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 59ff26b94140c3cbdcab54d62fd5f3146407e616
+          path: base-manifest
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-tm-align/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-tm-align/output/
+          git diff --cached --quiet || git commit -m "JB26.3.10 verified TM alignment candidate"
+          git push origin HEAD:dev/jb26.3.10-tm-align
