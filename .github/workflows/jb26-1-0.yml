@@ -1,0 +1,41 @@
+name: JB26.1.0 phase 1
+on:
+  push:
+    branches: [dev/jb26.1.0-identity]
+    paths: ['distribution/jcdrbox-identity/**', '.github/workflows/jb26-1-0.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect exact HF26.20.59 package
+        run: |
+          python3 - <<'PY'
+          import zipfile,re,hashlib
+          p='distribution/test/HaploBox_HF26.20.59_Macro_Profile_Hotfix_TEST.zip'
+          assert hashlib.sha256(open(p,'rb').read()).hexdigest()=='f3039d96c468395525dcba8a0ae14f819b21552db3e63509a67d0ac35403d71e'
+          with zipfile.ZipFile(p) as z:
+              print(z.read('HaploBox/HaploBox.toc').decode('utf-8-sig'))
+              for n in z.namelist():
+                  if not n.endswith('.lua'): continue
+                  lines=z.read(n).decode('utf-8-sig').splitlines()
+                  matches=[f'{i+1}: {l.strip()}' for i,l in enumerate(lines) if re.search(r'Set(?:ColorTexture|BackdropColor|BackdropBorderColor|TextColor)\(|local.*(?:GOLD|BG|ACCENT|BORDER|PANEL)\s*=|SetText\(.*HaploBox',l)]
+                  if matches: print(n+'\n'+'\n'.join(matches[:100]))
+          PY
+      - name: Build and verify candidate if implementation exists
+        run: |
+          if [ ! -f distribution/jcdrbox-identity/build.py ]; then exit 0; fi
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1
+          python3 distribution/jcdrbox-identity/build.py
+      - name: Store verified candidate on dev branch only
+        if: hashFiles('distribution/jcdrbox-identity/build.py') != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-identity/output/
+          git diff --cached --quiet || git commit -m "JB26.1.0: verified identity candidate"
+          git push origin HEAD:dev/jb26.1.0-identity
