@@ -2,11 +2,11 @@
   "version": "JB26.3.24",
   "base": "JB26.3.23",
   "base_sha256": "25f11d113943ac86e92ef82e92a7b53fa5f9ad30ca9d300cb1b484bb65730db5",
-  "sha256": "a47bf5f66b02a87858c20ae3185204e6d5be296190ccf911ccbd09df2729edf7",
+  "sha256": "4fb9bea5d4dd57c896bf407956b2a2e563b013e16f0e953156bf6bf9db666b91",
   "unchanged_files": 180,
   "modified_files": [
     "HaploBox/HaploBox.toc",
     "HaploBox/BoxMode.lua"
   ],
-  "status": "Guarded hardware-triggered assist, live actual leader token, explicit hostile target cast, exact old generated macro migration; heal/buff/follow unchanged; candidate only"
+  "status": "Fixed /assist party1 for follower BOX ON; ordinary leader/off cast; no target guard; heal/buff/follow and other templates unchanged; corrected candidate only"
 }
