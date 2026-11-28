@@ -1,0 +1,16 @@
+{
+  "version": "JB26.3.3",
+  "base": "JB26.3.2",
+  "base_sha256": "6d843f3b9d5bb1d51ae5dbc89140e9a8b3096189c9d8eae0a867758c73e0fdda",
+  "sha256": "8877db5b616f20ecdd37a42f22e73cb72b6b2a9542215da319178feda4b99c70",
+  "unchanged_files": 178,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/RegisterSync.lua"
+  ],
+  "added_files": [
+    "HaploBox/PeerAuth.lua",
+    "HaploBox/RegisterPeerSync.lua"
+  ],
+  "status": "Ingame acceptance open; BoxManager central key required for authenticated peer sync; no macro changes"
+}
