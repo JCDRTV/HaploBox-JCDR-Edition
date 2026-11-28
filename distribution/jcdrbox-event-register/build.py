@@ -9,7 +9,12 @@ SHA='04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e45fad1d33'
 OUT=SRC/'output';OUT.mkdir(exist_ok=True)
 TARGET=OUT/'JCDRbox_JB26.3.5_Event_Register_TEST.zip'
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
-subprocess.run(['sha256sum','--check','--strict'],input=f'{SHA}  {BASE}\n',text=True,check=True)
+# Verify the exact immutable Git object used by the published release.
+blob=subprocess.check_output(['git','hash-object',str(BASE)],cwd=ROOT,text=True).strip()
+assert blob=='eb2af6f925cd8fb0bba5b9246e9e10253a179078',blob
+actual=hashlib.sha256(BASE.read_bytes()).digest()
+assert actual==bytes.fromhex(SHA),(actual.hex(),SHA)
+print('Verified original Git blob and SHA-256:',blob,actual.hex())
 def replace(s,a,b):
     assert s.count(a)==1,(a,s.count(a))
     return s.replace(a,b)
