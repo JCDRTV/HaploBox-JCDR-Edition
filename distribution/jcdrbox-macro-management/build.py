@@ -85,7 +85,9 @@ local function baseSpellKey(spell)''')
 '''+c[end:]
     c=replace(c,'(Lv 1-60, active)','(Lv 1-60)')
     c=replace(c,'    page=which;waiting=nil;conflict=nil','    page=which;waiting=nil;conflict=nil\n    if which=="spells" then selectedCategory="All Spells";spellPage=1 end')
-    c=replace(c,'        panel.heading:SetText("HaploBox - JCDR Edition | Macro Menu")','        panel.heading:SetText("JCDRbox | "..tostring(me() or "").." | Macro Menu")')
+    import re
+    c,n=re.subn(r'panel\.heading:SetText\("[^"\n]*Macro Menu"\)', 'panel.heading:SetText("JCDRbox | "..tostring(me() or "").." | Macro Menu")', c)
+    assert n==1,("macro heading",n)
     c=replace(c,'{"PLAYER_ENTERING_WORLD","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB"}','{"PLAYER_ENTERING_WORLD","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB","PLAYER_LEVEL_UP"}')
     # Do not scan on each level event when the menu is closed; normal spell events remain.
     # Known catalog entries use live name lookup and actual icons where the client exposes them.
