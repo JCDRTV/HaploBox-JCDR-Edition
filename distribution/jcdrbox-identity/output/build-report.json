@@ -1,0 +1,23 @@
+{
+  "version": "JB26.1.0",
+  "base": "HF26.20.59",
+  "base_sha256": "f3039d96c468395525dcba8a0ae14f819b21552db3e63509a67d0ac35403d71e",
+  "sha256": "19aaa7b1739bb189f92a9c7de05448288a713246adf347783fdb01c7abc97142",
+  "modified_files": {
+    "ControlBar.lua": 16,
+    "ConfigUI.lua": 8,
+    "MacroLibrary.lua": 8,
+    "Party.lua": 2,
+    "Options.lua": 1,
+    "TeamManagement.lua": 1,
+    "LootAdvisor.lua": 2,
+    "LootPlanner.lua": 2,
+    "WeaponSets.lua": 2,
+    "Alpha4/Options.lua": 1,
+    "MenuStyle.lua": 1,
+    "ProfessionGuide/UI.lua": 5
+  },
+  "unchanged_files": 161,
+  "status": "candidate; ingame acceptance open",
+  "internal_folder": "HaploBox"
+}
