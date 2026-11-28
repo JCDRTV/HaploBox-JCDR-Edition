@@ -1,0 +1,28 @@
+name: JB26.3.15 Team Invite
+on:
+  push:
+    branches: [dev/jb26.3.15-accept-diagnostics]
+    paths: ['distribution/jcdrbox-accept-diagnostics/build.py', 'distribution/jcdrbox-accept-diagnostics/test_accept.lua', '.github/workflows/jb26-3-15.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 9eb2a03648bcffc5181dfa934ed6e371bac854eb
+          path: base-manifest
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua-bitop
+          python3 distribution/jcdrbox-accept-diagnostics/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-accept-diagnostics/output/
+          git diff --cached --quiet || git commit -m "JB26.3.15 verified auto accept candidate"
+          git push origin HEAD:dev/jb26.3.15-accept-diagnostics
