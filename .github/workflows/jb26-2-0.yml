@@ -1,0 +1,24 @@
+name: JB26.2.0 Character Management
+on:
+  push:
+    branches: [dev/jb26.2.0-character-management]
+    paths: ['distribution/jcdrbox-cm/**', '.github/workflows/jb26-2-0.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1
+          python3 distribution/jcdrbox-cm/build.py
+      - name: Save tested candidate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f distribution/jcdrbox-cm/output/
+          git diff --cached --quiet || git commit -m "JB26.2.0 verified CM candidate"
+          git push origin HEAD:dev/jb26.2.0-character-management
