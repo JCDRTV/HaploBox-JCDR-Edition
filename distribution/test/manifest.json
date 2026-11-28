@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "channel": "test",
-  "version": "JB26.3.13",
+  "version": "JB26.3.14",
   "addon_folder": "HaploBox",
-  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/58489aa1647f04443faf4be7da961c599e7a7494/distribution/jcdrbox-team-invite/output/JCDRbox_JB26.3.13_Team_Invite_TEST.zip",
-  "sha256": "acbb4129b00e5134face59059453ae53b0e18fbedea415b5567b1ca334fd6f8e",
-  "notes": "JB26.3.13: Invite team from Management and Quick Menu uses only active saved team, full character names and GUID roster checks. Explicit click; existing members skipped, outsiders block, recent requests temporarily deduplicated. Legacy automatic invite acceptance paused pending CM-based Auto Accept. No new polling or network sync. Automated tests passed; ingame acceptance open. STABLE unchanged."
+  "zip_url": "https://raw.githubusercontent.com/JCDRTV/HaploBox-JCDR-Edition/3c93db9c8ef782a62b1deac19bfc614970d2a2a5/distribution/jcdrbox-auto-accept/output/JCDRbox_JB26.3.14_Auto_Accept_TEST.zip",
+  "sha256": "a87df9a2fd44fd00d37a0905b7cc537bc0ff707aed1f97275772ceaa7c889532",
+  "notes": "JB26.3.14: CM-only automatic invite acceptance for unique full registered character names on the same realm, different registered account, own GUID and inviter GUID when provided; solo outside combat only. Unknown or ambiguous invites remain manual. Existing autoAcceptInvite=false respected. Native invite UI retained; no new timers or polling. Automated tests passed; ingame acceptance open. STABLE unchanged."
 }
