@@ -9,9 +9,11 @@ local ready=false
 local pending,offer,scheduled=nil,nil,false
 local outgoing,working={},false
 local status="Register sync not started."
-local function say(msg)
+local loginRecord
+local schedule
+local function say(msg,changed)
     status=msg
-    if S.OnChange then S.OnChange() end
+    if S.OnChange then S.OnChange(changed) end
 end
 function S.Status()return status end
 local function safe(v)
@@ -138,16 +140,78 @@ local function validOffer(rev,hash,len)
     if not rev or rev<1 or rev%1~=0 or rev>1000000000 or type(hash)~="string" or #hash~=8 or hash:find("[^0-9a-f]") or not len or len%1~=0 or len<3 or len>C.MAX then return nil end
     return rev,len
 end
+local function applyLogin(guid,meta)
+    local cat=HB.db and HB.db.ownedCharacterCatalog
+    local rec=cat and cat.characters and cat.characters[guid]
+    if not rec or not meta then return false end
+    local changed=false
+    for _,k in ipairs({"name","realm","class","race","level"}) do
+        if rec[k]~=meta[k] then rec[k]=meta[k];changed=true end
+    end
+    if changed then local d=state();d.rev=math.max(1,d.rev+1);d.dirty=true end
+    return changed
+end
+local function localMeta()
+    local guid=localGuid()
+    local name=api(HB.UnitIdent,"player")
+    local _,realm=api(UnitFullName,"player")
+    realm=type(realm)=="string" and realm~="" and realm or api(GetNormalizedRealmName) or api(GetRealmName)
+    local _,class=api(UnitClass,"player")
+    local _,race=api(UnitRace,"player")
+    local level=api(UnitLevel,"player")
+    if type(guid)~="string" or type(name)~="string" or type(realm)~="string" or type(class)~="string" or type(race)~="string" or type(level)~="number" or level%1~=0 or level<1 or level>255 then return nil end
+    return {guid=guid,name=name,realm=realm,class=class,race=race,level=level}
+end
+-- Keep a follower login-only metadata change separate from the shared revision.
+-- The actual leader commits it after receiving an authenticated login report.
+local originalLogin=CM.RefreshLogin
+CM.RefreshLogin=function()
+    local rec=CM.GetCharacter(localGuid())
+    local ok=originalLogin()
+    if ok and rec then
+        local fresh=CM.GetCharacter(localGuid())
+        loginRecord=fresh
+        HB.db.ownedCharacterCatalog.characters[rec.guid]=rec
+    end
+    return ok
+end
+local originalGet=CM.GetCharacter
+CM.GetCharacter=function(guid)
+    local rec=originalGet(guid)
+    if rec and loginRecord and guid==localGuid() and guid==loginRecord.guid then
+        for _,k in ipairs({"name","realm","class","race","level"}) do rec[k]=loginRecord[k] end
+    end
+    return rec
+end
+local originalList=CM.GetCharacters
+CM.GetCharacters=function()
+    local rows=originalList()
+    if loginRecord then for _,rec in ipairs(rows) do
+        if rec.guid==localGuid() and rec.guid==loginRecord.guid then
+            for _,k in ipairs({"name","realm","class","race","level"}) do rec[k]=loginRecord[k] end
+        end
+    end end
+    return rows
+end
 local function advertise()
     if not ready then return end
-    local p,s=party(),snapshot()
-    if not p or not s or s.rev==0 or not own(localGuid()) then return end
+    local p=party()
+    if not p or not own(localGuid()) then return end
+    if loginRecord and loginRecord.guid==localGuid() then
+        if p.leader==localGuid() then applyLogin(localGuid(),loginRecord)
+        elseif own(p.leader) then
+            local m=C.EncodeLogin(loginRecord)
+            if m and #m<=253 then send(p.leader,"L|"..m,p.key,true) end
+        end
+    end
+    local s=snapshot()
+    if not s or s.rev==0 then return end
     local msg=table.concat({"H",s.rev,s.hash,#s.data},"|")
     for guid in pairs(p.members) do
         if guid~=localGuid() and related(p,guid) and own(guid) then send(guid,msg,p.key,true) end
     end
 end
-local function schedule()
+schedule=function()
     if not ready or scheduled then return end
     scheduled=true
     C_Timer.After(.8,function() scheduled=false;advertise() end)
@@ -156,7 +220,7 @@ local function request(o,manual)
     local p,s=party(),snapshot()
     if not p or p.key~=o.key or not related(p,o.guid) or not s or o.rev<s.rev then return false end
     if o.rev==s.rev and o.hash==s.hash then offer=nil;return true end
-    if not manual and (not trusted(p.members[o.guid],p) or (o.rev==s.rev and s.data~="V|1")) then return false end
+    if not manual and (not trusted(p.members[o.guid],p) or (o.rev==s.rev and s.data~="V|1") or (p.leader==localGuid() and state().dirty)) then return false end
     if pending then return false end
     local lifetime=math.max(45,math.ceil(o.len/190)*.30+20)
     local token={guid=o.guid,key=o.key,rev=o.rev,hash=o.hash,len=o.len,localRev=s.rev,localHash=s.hash,manual=manual,expires=now()+lifetime}
@@ -185,7 +249,7 @@ function S.Action()
     -- Ask existing known peers to advertise; empty clients send no catalog.
     local p=party()
     if p then for guid in pairs(p.members) do
-        if guid~=localGuid() and related(p,guid) and own(guid) then send(guid,"Q",p.key,true) end
+        if guid~=localGuid() and related(p,guid) and (own(guid) or guid==p.leader) then send(guid,"Q",p.key,own(guid)) end
     end end
 end
 function S.ActionLabel()
@@ -213,10 +277,10 @@ local function commit()
     end
     HB.db.ownedCharacterCatalog=decoded.cm
     HB.db.plannedTeams=decoded.tm
-    d.rev=r.rev;d.lastSource=r.guid
+    d.rev=r.rev;d.lastSource=r.guid;d.dirty=false
     if p.leader==localGuid() and r.rev==s.rev and r.hash~=s.hash then d.rev=d.rev+1 end
     pending=nil;offer=nil
-    say("Register synced: "..#CM.Accounts().." accounts / "..#CM.GetCharacters().." characters / "..#T.List().." teams.")
+    say("Register synced: "..#CM.Accounts().." accounts / "..#CM.GetCharacters().." characters / "..#T.List().." teams.",true)
     send(r.guid,"K|"..r.rev.."|"..r.hash,p.key,true)
     schedule()
 end
@@ -227,6 +291,19 @@ local function receive(prefix,msg,channel,sender)
     local m=resolve(p,sender)
     if not m or not related(p,m.guid) then return end
     if msg=="Q" then if own(m.guid) and own(localGuid()) then schedule() end;return end
+    if msg:sub(1,2)=="L|" then
+        if p.leader==localGuid() and own(m.guid) and own(localGuid()) and not isYes(api(InCombatLockdown)) then
+            local meta=C.DecodeLogin(msg:sub(3))
+            if meta and applyLogin(m.guid,meta) then schedule();say("Character login information updated.",true) end
+        end
+        return
+    end
+    local kr,kh=msg:match("^K|(%d+)|([0-9a-f]+)$")
+    if kr then
+        local s=snapshot()
+        if own(m.guid) and s and s.rev==tonumber(kr) and s.hash==kh then state().dirty=false end
+        return
+    end
     local rev,hash,len=msg:match("^H|(%d+)|([0-9a-f]+)|(%d+)$")
     if rev then
         rev,len=validOffer(rev,hash,len)
@@ -235,7 +312,7 @@ local function receive(prefix,msg,channel,sender)
         if not s or rev<s.rev or (rev==s.rev and hash==s.hash) then return end
         if pending then return end
         local o={guid=m.guid,key=p.key,rev=rev,hash=hash,len=len}
-        if trusted(m,p) and (rev>s.rev or s.data=="V|1") then
+        if trusted(m,p) and (rev>s.rev or s.data=="V|1") and not (p.leader==localGuid() and state().dirty) then
             if isYes(api(InCombatLockdown)) then offer=o;say("Register available; accept after combat.") else request(o,false) end
         else
             -- Do not overwrite independent catalogs at the same revision.
@@ -271,7 +348,7 @@ local function receive(prefix,msg,channel,sender)
 end
 local function bump()
     local d=state()
-    if d then d.rev=math.max(1,d.rev+1);schedule() end
+    if d then d.rev=math.max(1,d.rev+1);d.dirty=true;schedule() end
 end
 for _,pair in ipairs({{CM,"AddAccount"},{CM,"RemoveAccount"},{CM,"Import"},{CM,"SetAccount"},{CM,"RemoveCharacter"},{T,"Save"},{T,"Select"},{T,"Delete"}}) do
     local obj,k=pair[1],pair[2]
@@ -287,15 +364,16 @@ for _,pair in ipairs({{CM,"AddAccount"},{CM,"RemoveAccount"},{CM,"Import"},{CM,"
     end
 end
 local f=CreateFrame("Frame")
-for _,e in ipairs({"PLAYER_LOGIN","PLAYER_ENTERING_WORLD","GROUP_ROSTER_UPDATE","PARTY_LEADER_CHANGED","CHAT_MSG_ADDON"}) do f:RegisterEvent(e) end
+for _,e in ipairs({"PLAYER_LOGIN","PLAYER_ENTERING_WORLD","GROUP_ROSTER_UPDATE","PARTY_LEADER_CHANGED","PLAYER_REGEN_ENABLED","CHAT_MSG_ADDON"}) do f:RegisterEvent(e) end
 f:SetScript("OnEvent",function(_,event,...)
     if event=="CHAT_MSG_ADDON" then receive(...);return end
     if event=="PLAYER_LOGIN" then
         if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then api(C_ChatInfo.RegisterAddonMessagePrefix,S.PREFIX) end
+        loginRecord=localMeta() or loginRecord
         ready=true;snapshot()
     end
     local p=party()
     if pending and (not p or pending.key~=p.key) then pending=nil;say("Party changed; previous transfer canceled.") end
-    if offer and (not p or offer.key~=p.key) then offer=nil end
+    if offer and (not p or offer.key~=p.key) then offer=nil;say("Party changed; previous offer canceled.") end
     schedule()
 end)
