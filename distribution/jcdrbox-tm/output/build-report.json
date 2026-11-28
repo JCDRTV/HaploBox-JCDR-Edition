@@ -1,0 +1,16 @@
+{
+  "version": "JB26.3.0",
+  "base": "JB26.2.0",
+  "base_sha256": "b71582202a905e1447c1b652c4f622c353c5811aad4f41307aa027553169dd83",
+  "sha256": "9b44a65f749d8e00ab364b36b3873795a01ed4d7b7b763300e5ec284f316c783",
+  "unchanged_files": 174,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/ManagementUI.lua"
+  ],
+  "added_files": [
+    "HaploBox/TeamPlanner.lua",
+    "HaploBox/TeamPlannerUI.lua"
+  ],
+  "status": "ingame acceptance open; local saved teams; live party, invites, macro engine unchanged"
+}
