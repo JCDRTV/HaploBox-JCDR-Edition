@@ -1,0 +1,13 @@
+{
+  "version": "JB26.3.5",
+  "base": "JB26.3.4",
+  "base_sha256": "04b14039285a037037804a18598fa7c8e268eb702203ed9cc3e3e3e45fad1d33",
+  "sha256": "04ce3237b51994e2882b3a8d840dcdfbafc4544254beb2eba0c41398c081efd7",
+  "unchanged_files": 179,
+  "modified_files": [
+    "HaploBox/HaploBox.toc",
+    "HaploBox/RegisterSync.lua",
+    "HaploBox/RegisterPeerSync.lua"
+  ],
+  "status": "CM/TM recurring tickers removed; event-driven only; BM26.2.0 and other systems unchanged; ingame acceptance open"
+}
